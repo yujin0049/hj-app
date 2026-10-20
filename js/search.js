@@ -75,6 +75,11 @@
     (ent.computers || []).forEach(function (c) {
       push(out, '컴퓨터', (c.location || '') + ' ' + (c.model || ''), (c.user_type || '') + ' ' + (c.user || '') + ' ' + (c.os_version || '') + ' ' + (c.maker || ''), '#/computers/' + c.id, q);
     });
+    var dormRows = (ent.dorm && ent.dorm.rows) || [];
+    dormRows.forEach(function (r) {
+      if (!r || r['구분'] === '빈방') return;
+      push(out, '기숙사', (r['이름'] || '') + ' ' + (r['건물'] || '') + ' ' + (r['호실'] || ''), (r['구분'] || '') + ' ' + (r['상태'] || '') + ' ' + (r['비고'] || ''), '#/dorm', q);
+    });
     return out.slice(0, 40);
   }
   function searchAll(guide, view, q) {

@@ -1,4 +1,4 @@
-var CACHE = 'shell-v06';
+var CACHE = 'shell-v07';
 var FILES = [
   './',
   './index.html',
@@ -10,6 +10,7 @@ var FILES = [
   './js/search.js',
   './js/news.js',
   './js/computers.js',
+  './js/dorm.js',
   './js/registry.js',
   './js/app.js',
   './js/modules/home.js',
@@ -20,6 +21,7 @@ var FILES = [
   './js/modules/search.js',
   './js/modules/news.js',
   './js/modules/computers.js',
+  './js/modules/dorm.js',
   './js/modules/more.js',
   './icons/favicon-32.png',
   './icons/apple-touch-icon.png',

@@ -62,6 +62,7 @@
     el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p></section>' +
       menuBtn('news', '교육원 소식', '행사, 일정, 공지') +
       menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
+      menuBtn('dorm', '기숙사 현황판', '도면, 겨울방학 이동, 기숙사비') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
       menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
       menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +
@@ -74,7 +75,7 @@
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
-        else if (id === 'news' || id === 'computers') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });

@@ -18,7 +18,7 @@
     });
   }
   function emptyEdits() {
-    return { rules: {}, monthly: {}, monthlyAdded: [], monthlyDeleted: [], budget: {}, work_items: null, news: {}, newsAdded: [], newsDeleted: [], computersList: null };
+    return { rules: {}, monthly: {}, monthlyAdded: [], monthlyDeleted: [], budget: {}, work_items: null, news: {}, newsAdded: [], newsDeleted: [], computersList: null, dorm: null };
   }
   function copyRow(row) { return Object.assign({}, row); }
   function newsRows(pack, ed) {
@@ -275,6 +275,11 @@
         state.edits.computersList = merged.rows;
         return persist().then(function () { return merged; });
       },
+      dormState: function () { return state.edits && state.edits.dorm; },
+      saveDorm: function (payload) {
+        state.edits.dorm = payload;
+        return persist();
+      },
       markStudy: function (day, on) {
         if (on) state.records.study.done[day] = new Date().toISOString();
         else delete state.records.study.done[day];
@@ -338,7 +343,7 @@
     var route = parseHash();
     var id = route.name;
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' ? 'more' : id);
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' ? 'more' : id);
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
@@ -349,6 +354,7 @@
     document.getElementById('lock').classList.add('hidden');
     var el = document.getElementById('view');
     var mod = ShellModules[id];
+    el.classList.remove('wide');
     el.innerHTML = '';
     try { mod.render(el, api()); }
     catch (e) {
