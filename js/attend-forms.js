@@ -9,7 +9,9 @@
    footer: 'countO' = 맨 아래 출석 인원 줄(엑셀 수식)
    tpl: 엑셀 저장 때 채울 빈 양식(forms/ 폴더). 테두리·병합·인쇄 설정이 그대로 남아요.
         first/last = 양식의 명단 첫 줄·끝 줄, map = { 열: 'no' | 필드 이름 | '=수식{r}' },
-        set = { 칸: 글자 틀 } ({title} {when} {place} {host} {kind}), sess = { from: 열, label } 날짜 칸 이름,
+        set = { 칸: 글자 틀 } ({title} {when} {place} {host} {kind}),
+        sess = 날짜 칸: { from: 첫 열, count, label(i, 날짜) } (제목 줄 바로 위 줄 = first-1) 또는 { cells: [열…], row, count, label, cell(i, 날짜) }.
+               미리보기도 같은 count·label을 써서 화면과 엑셀이 같아요.
         sum = { row, from, to, f } 맨 아래 합계 줄 수식({c} 열, {a}~{b} 명단 범위), titles = 쪽마다 반복할 제목 줄 */
 (function (root) {
   'use strict';
@@ -45,7 +47,9 @@
     {
       id: 'noncredit', name: '비교과 출석부 (학교 양식)', kind: '출석부', orient: 'landscape', src: '엑셀봇_비교과출석부_빈양식_v01.xlsx',
       sessions: { count: 16, label: function (i, d) { return (i + 1) + '주' + (d ? '\n' + d : '\n( / )'); } }, sub: '월,일 / 교시',
-      tpl: { file: 'forms/noncredit_attend.xlsx', titles: '6:9', first: 10, last: 24, map: { A: 'no', C: 'sid', E: 'name' }, set: { A1: '{title}' } },
+      tpl: { file: 'forms/noncredit_attend.xlsx', titles: '6:9', first: 10, last: 24, map: { A: 'no', C: 'sid', E: 'name' }, set: { A1: '{title}' },
+        sess: { cells: ['A', 'D', 'H', 'M', 'S', 'Y', 'AD', 'AI', 'AO', 'AT', 'AY', 'BD', 'BJ', 'BP', 'BU', 'CA'], row: 4, count: 16,
+          label: function (i, d) { return (i + 1) + '주' + (d ? '\n' + d : ''); }, cell: function (i, d) { return d || ''; } } },
       cols: [{ label: '순번', kind: 'no' }, { label: '학번', field: 'sid' }, { label: '성명', field: 'name' },
         { kind: 'sessions' }, { label: '보강', kind: 'blank', w: 6 }, { label: '출석점수', kind: 'blank', w: 7 }]
     },

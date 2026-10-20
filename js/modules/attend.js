@@ -39,10 +39,19 @@
       if (!/^#\/attend/.test(location.hash)) {
         var keepForm = S.formId, keepSort = S.sort;
         S = blank(); S.formId = keepForm; S.sort = keepSort;
-        var box = document.getElementById('att-print');
-        if (box) box.innerHTML = '';
+        printCleanup();
       }
     });
+  }
+  /* 인쇄 뒤 정리: afterprint가 안 오는 폰도 있어서 matchMedia('print') 변화·화면 이동 때도 불러요. */
+  var pendingPrint = null;
+  function printCleanup() {
+    if (pendingPrint) { var p = pendingPrint; pendingPrint = null; p(); }
+    document.body.classList.remove('att-printing');
+    var st = document.getElementById('att-page');
+    if (st) st.textContent = '';
+    var box = document.getElementById('att-print');
+    if (box) box.innerHTML = '';
   }
 
   function render(el, api) {
@@ -71,7 +80,8 @@
       '</div><div class="at-main">' +
       card(4, '미리보기·검산', '<div id="at-check"><p class="muted">명단을 넣으면 인원을 맞춰 봐요.</p></div><div class="at-pv" id="at-pv"></div>') +
       card(5, '저장', '<div class="row at-btns"><button class="btn" id="at-print-btn" type="button" disabled>인쇄 / PDF 저장</button><button class="btn-ghost" id="at-xlsx-btn" type="button" disabled>엑셀로 저장</button></div>' +
-        '<p class="muted at-tip">PDF는 인쇄 창에서 ‘PDF로 저장’을 고르세요. 엑셀은 받은 양식 그대로(테두리·인쇄 설정) 채워요.</p><p class="muted" id="at-fname"></p>') +
+        '<p class="muted at-tip">PDF는 인쇄 창에서 ‘PDF로 저장’을 고르세요. 엑셀은 받은 양식 그대로(테두리·인쇄 설정) 채워요.</p>' +
+        '<p class="muted">📱 아이폰·안드로이드 인쇄는 가로 방향과 쪽 번호가 빠질 수 있어요. 가로 서식은 PC에서 인쇄하거나 엑셀로 저장하세요.</p><p class="muted" id="at-fname"></p>') +
       '</div></div>';
 
     el.querySelector('#at-back').onclick = function () { api.go('#/more'); };
@@ -96,8 +106,9 @@
     });
     ['at-title', 'at-when', 'at-dates', 'at-sess', 'at-place', 'at-host', 'at-confirm'].forEach(function (id) {
       var n = el.querySelector('#' + id);
-      n.addEventListener('input', function () { saveForm(values(el)); paint(el, api); });
-      n.addEventListener('change', function () { saveForm(values(el)); paint(el, api); });
+      var redo = function () { saveForm(values(el)); paint(el, api); };
+      if (n.type === 'checkbox') n.addEventListener('change', redo);
+      else n.addEventListener('input', function () { clearTimeout(S.tm); S.tm = setTimeout(redo, 150); });   // 글자 칠 때마다 다시 그리지 않게
     });
     el.querySelector('#at-print-btn').onclick = function () { doPrint(el); S.saved = true; steps(el); };
     el.querySelector('#at-xlsx-btn').onclick = function () { doXlsx(el, api); };
@@ -126,7 +137,7 @@
         catch (e) { txt = new TextDecoder('euc-kr').decode(bytes); }   // 한글 엑셀 csv(CP949)
         wb = XLSX.read(txt.replace(/^\uFEFF/, ''), { type: 'string', raw: true });
       } else {
-        wb = XLSX.read(buf, { type: 'array', cellDates: true });
+        wb = XLSX.read(buf, { type: 'array', cellNF: true });   // 날짜는 아래 sheetAoa에서 직접 yyyy.mm.dd로
       }
       S.file = file.name; S.wb = wb; S.hdr = null; S.override = {}; S.picked = null; S.saved = false;
       S.sheet = bestSheet(wb);
@@ -136,8 +147,22 @@
     });
   }
 
+  /* 시트 → 2차원 배열. 날짜 서식 칸(기본 서식 14번은 SheetJS가 10/21/26처럼 미국식으로 써서)은 직접 yyyy.mm.dd로 바꿔요. */
   function sheetAoa(ws) {
-    return XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, blankrows: true, dateNF: 'yyyy.mm.dd' });
+    var aoa = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '', raw: false, blankrows: true });
+    var rg = XLSX.utils.decode_range(ws['!ref']);
+    Object.keys(ws).forEach(function (addr) {
+      if (addr.charAt(0) === '!') return;
+      var cell = ws[addr];
+      var isDate = cell.t === 'd' || (cell.t === 'n' && cell.z && XLSX.SSF.is_date(cell.z));
+      if (!isDate) return;
+      var p = XLSX.utils.decode_cell(addr), y, m, d;
+      if (cell.t === 'd') { var dt = new Date(cell.v); y = dt.getFullYear(); m = dt.getMonth() + 1; d = dt.getDate(); }
+      else { var dc = XLSX.SSF.parse_date_code(cell.v); if (!dc) return; y = dc.y; m = dc.m; d = dc.d; }
+      var row = aoa[p.r - rg.s.r];
+      if (row) row[p.c - rg.s.c] = y + '.' + String(m).padStart(2, '0') + '.' + String(d).padStart(2, '0');
+    });
+    return aoa;
   }
   function bestSheet(wb) {
     var best = wb.SheetNames[0], score = -1;
@@ -251,6 +276,7 @@
     el.querySelectorAll('[data-form]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-form') === f.id); });
     el.querySelectorAll('[data-sort]').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-sort') === S.sort); });
     el.querySelector('#at-sessbox').classList.toggle('hidden', !f.sessions);
+    el.querySelector('#at-sess').closest('.field').classList.toggle('hidden', !!(f.tpl && f.tpl.sess));   // 양식 서식은 칸 수가 정해져 있어요
     var ready = !!(S.roster && S.roster.rows.length);
     el.querySelector('#at-print-btn').disabled = !ready;
     el.querySelector('#at-xlsx-btn').disabled = !ready;
@@ -262,7 +288,7 @@
     pv.innerHTML = '<div class="at-pvwrap"><div class="at-sheet ' + cur.t.orient + '">' + sheetHtml(cur, esc) + '</div></div>';
     var pages = pageCount(pv, cur.t.orient);   // 줄이기(zoom) 전에 실제 크기로 재요
     fitPreview(pv);
-    paintCheck(el, api, cur, pages);
+    paintCheck(el, api, cur, pages, clipped(pv));
     el.querySelector('#at-fname').textContent = '파일 이름: ' + fileStem(cur) + '.xlsx / .pdf';
   }
 
@@ -271,7 +297,13 @@
     return miss.length ? '<p class="muted">명단에 없는 칸은 비워 둬요: ' + esc(miss.join(', ')) + '</p>' : '';
   }
 
-  function paintCheck(el, api, cur, pages) {
+  /* 미리보기에서 글자가 칸 밖으로 넘친 칸 수 */
+  function clipped(pv) {
+    var n = 0;
+    pv.querySelectorAll('.at-table td').forEach(function (td) { if (td.textContent && td.scrollWidth > td.clientWidth + 1) n += 1; });
+    return n;
+  }
+  function paintCheck(el, api, cur, pages, clip) {
     var esc = api.esc, rows = cur.t.rows, n = S.roster.rows.length, lines = cur.t.body.length;
     var ck = APAttend.checks(rows);
     var h = '<div class="at-badges">';
@@ -282,6 +314,8 @@
     if (S.roster.nameCol < 0) h += '<div class="warnbox">성명·이름 칸을 못 찾았어요. 2단계에서 칸 뜻을 ‘성명’으로 골라 주세요.</div>';
     if (ck.blank.length) h += '<div class="warnbox">이름 빈칸: ' + ck.blank.map(function (i) { return (i + 1) + '번(원본 ' + rows[i]._row + '행)'; }).join(', ') + '</div>';
     if (ck.dup.length) h += '<div class="warnbox">겹치는 이름: ' + ck.dup.map(function (p) { return esc(rows[p[1]].name) + ' (' + (p[0] + 1) + '번·' + (p[1] + 1) + '번)'; }).join(', ') + '</div>';
+    if (cur.t.droppedDates) h += '<div class="warnbox">이 서식은 날짜 칸이 ' + cur.t.sessions + '개예요. 넣은 날짜 중 ' + cur.t.droppedDates + '개는 빠져요.</div>';
+    if (clip) h += '<div class="warnbox">미리보기에서 글자가 잘린 칸 ' + clip + '개가 있어요. 보일 칸을 줄이거나 엑셀로 저장해 주세요.</div>';
     var sk = S.roster.skipped, skipped = [];
     if (sk.blank) skipped.push('빈 줄 ' + sk.blank);
     if (sk.header) skipped.push('반복된 제목 줄 ' + sk.header);
@@ -359,6 +393,7 @@
 
   function doPrint(el) {
     var cur = current(el);
+    printCleanup();   // 앞 인쇄가 덜 끝났으면 먼저 정리
     var box = document.getElementById('att-print');
     if (!box) { box = document.createElement('div'); box.id = 'att-print'; document.body.appendChild(box); }
     box.innerHTML = '<div class="at-sheet print ' + cur.t.orient + '">' + sheetHtml(cur, escHtml) + '</div>';
@@ -366,17 +401,19 @@
     if (!st) { st = document.createElement('style'); st.id = 'att-page'; document.head.appendChild(st); }
     st.textContent = '@page { size: A4 ' + cur.t.orient + '; margin: 12mm 10mm 14mm; @bottom-center { content: counter(page) " / " counter(pages); font-size: 9pt; color: #555; } }';
     document.body.classList.add('att-printing');
-    var done = function () {
-      document.body.classList.remove('att-printing');
-      st.textContent = '';
-      box.innerHTML = '';
-      window.removeEventListener('afterprint', done);
-    };
-    window.addEventListener('afterprint', done);
     var oldTitle = document.title;
-    document.title = fileStem(cur);   // PDF 저장 때 파일 이름
+    var mq = window.matchMedia ? window.matchMedia('print') : null;
+    function onMq(e) { if (!e.matches) printCleanup(); }
+    /* 인쇄가 끝나면(afterprint, print 미디어 해제, 화면 이동 중 먼저 오는 것) 한 번만 정리 */
+    pendingPrint = function () {
+      document.title = oldTitle;   // 폰은 print()가 바로 돌아와서, 끝난 뒤에 제목(PDF 파일 이름)을 되돌려요
+      window.removeEventListener('afterprint', printCleanup);
+      if (mq && mq.removeEventListener) mq.removeEventListener('change', onMq);
+    };
+    window.addEventListener('afterprint', printCleanup);
+    if (mq && mq.addEventListener) mq.addEventListener('change', onMq);
+    document.title = fileStem(cur);
     window.print();
-    document.title = oldTitle;   // 인쇄 전용 규칙은 @media print 안에만 있어서 남아 있어도 화면엔 영향 없어요.
   }
   function fileStem(cur) { return yymmdd(new Date()) + '_' + safeName(titleOf(cur)) + '_v01'; }
 
@@ -422,28 +459,14 @@
       var ws = wb.worksheets[0];
       var n = t.rows.length, cap = tp.last - tp.first + 1, extra = Math.max(0, n - cap);
       var maxCol = ws.columnCount;
+      /* 양식의 예시 값만 지우고 수식(출석일수 등)은 남겨요 */
       for (var r0 = tp.first; r0 <= tp.last; r0++) for (var c0 = 1; c0 <= maxCol; c0++) {
         var cell = ws.getCell(r0, c0);
-        if (!cell.isMerged || cell.master === cell) cell.value = null;
+        if (cell.isMerged && cell.master !== cell) continue;
+        if (APAttendXlsx.formulaOf(cell.value)) continue;
+        cell.value = null;
       }
-      if (extra) {
-        var merges = (ws.model.merges || []).slice();
-        var rowPat = [], below = [];
-        merges.forEach(function (m) {
-          var p = m.match(/^([A-Z]+)(\d+):([A-Z]+)(\d+)$/);
-          if (!p) return;
-          var r1 = +p[2], r2 = +p[4];
-          if (r1 === tp.last && r2 === tp.last) rowPat.push([p[1], p[3]]);
-          if (r1 > tp.last) { below.push([p[1], r1, p[3], r2]); ws.unMergeCells(m); }
-        });
-        ws.duplicateRow(tp.last, extra, true);
-        below.forEach(function (b) { ws.mergeCells(b[0] + (b[1] + extra) + ':' + b[2] + (b[3] + extra)); });
-        for (var k = 1; k <= extra; k++) rowPat.forEach(function (p) { ws.mergeCells(p[0] + (tp.last + k) + ':' + p[1] + (tp.last + k)); });
-        var pa = ws.pageSetup.printArea;
-        if (pa) ws.pageSetup.printArea = pa.replace(/(\$?[A-Z]+\$?)(\d+)$/, function (m, col, row) { return col + (Number(row) + extra); });
-      }
-      var fieldOf = {};
-      t.spec.forEach(function (s, j) { fieldOf[s.src === 'no' ? 'no' : (s.field || '')] = j; });
+      APAttendXlsx.growRows(ws, tp.first, tp.last, extra);
       t.rows.forEach(function (rec, i) {
         var r = tp.first + i;
         Object.keys(tp.map).forEach(function (col) {
@@ -465,6 +488,13 @@
         var any = keys.some(function (k) { k = k.slice(1, -1); return k === 'title' || k === 'title0' ? !!v.title : !!v[k]; });
         if (any) ws.getCell(addr).value = fillText(tp.set[addr], cur);
       });
+      if (tp.sess) {   // 날짜 칸: 미리보기와 같은 count·label
+        var dates = splitDates(v.dates);
+        for (var d = 0; d < tp.sess.count; d++) {
+          if (tp.sess.cells) ws.getCell(tp.sess.cells[d] + tp.sess.row).value = tp.sess.cell(d, dates[d] || '') || null;
+          else ws.getCell(APAttend.colName(colNum(tp.sess.from) - 1 + d) + (tp.first - 1)).value = tp.sess.label(d, dates[d] || '');
+        }
+      }
       ws.pageSetup.paperSize = 9;
       ws.pageSetup.fitToPage = true;
       ws.pageSetup.fitToWidth = 1;
@@ -473,10 +503,7 @@
       if (tp.titles) ws.pageSetup.printTitlesRow = tp.titles;
       ws.headerFooter = ws.headerFooter || {};
       if (!ws.headerFooter.oddFooter) ws.headerFooter.oddFooter = '&C&P / &N';
-      if (tp.sess) {
-        var dates = splitDates(v.dates);
-        for (var d = 0; d < tp.sess.count; d++) ws.getCell(APAttend.colName(colNum(tp.sess.from) - 1 + d) + (tp.first - 1)).value = tp.sess.label(d, dates[d] || '');
-      }
+      wb.calcProperties = Object.assign(wb.calcProperties || {}, { fullCalcOnLoad: true });   // 수식 결과를 열 때 다시 계산
       return wb.xlsx.writeBuffer();
     });
   }
@@ -535,6 +562,7 @@
     });
     ws.pageSetup.printTitlesRow = hr + ':' + hr;
     ws.views = [{ state: 'frozen', ySplit: hr }];
+    wb.calcProperties = Object.assign(wb.calcProperties || {}, { fullCalcOnLoad: true });
     return wb.xlsx.writeBuffer();
   }
 

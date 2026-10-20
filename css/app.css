@@ -467,6 +467,7 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
 .at-sheet .at-meta { font-size: 10.5pt; margin-bottom: 3mm; }
 .at-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 10pt; }
 .at-table th, .at-table td { border: 1px solid #000; padding: 1mm 1mm; text-align: center; vertical-align: middle; overflow: hidden; white-space: nowrap; text-overflow: clip; height: 8mm; }
+.at-table td.c-txt, .at-table td.c-name { white-space: normal; word-break: keep-all; overflow-wrap: normal; line-height: 1.15; }
 .at-table th { background: #F2F4F6; font-weight: 700; white-space: normal; height: 10mm; line-height: 1.15; }
 .at-table.tall td { height: 11mm; }
 .at-table.dense { font-size: 8.5pt; }
@@ -493,7 +494,7 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
   body.att-printing #att-print { display: block; }
   body.att-printing .at-sheet { width: auto; padding: 0; zoom: 1 !important; }
   body.att-printing .at-table tr.flag td { background: none; }
-  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body.att-printing * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 .at-hero { padding-bottom: 0; }
 .at-steps { list-style: none; display: flex; gap: 6px; padding: 0; margin: 12px 0 4px; }
