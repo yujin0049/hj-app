@@ -75,6 +75,10 @@
     (ent.computers || []).forEach(function (c) {
       push(out, '컴퓨터', (c.location || '') + ' ' + (c.model || ''), (c.user_type || '') + ' ' + (c.user || '') + ' ' + (c.os_version || '') + ' ' + (c.maker || ''), '#/computers/' + c.id, q);
     });
+    var scheduleItems = (ent.schedule && ent.schedule.items) || [];
+    scheduleItems.forEach(function (item) {
+      push(out, '일정', item.title, (item.date || '') + ' ' + (item.owner || '') + ' ' + (item.memo || '') + ' ' + (item.confirmNote || ''), '#/schedule/' + item.id, q);
+    });
     var dormRows = (ent.dorm && ent.dorm.rows) || [];
     dormRows.forEach(function (r) {
       if (!r || r['구분'] === '빈방') return;

@@ -1,4 +1,4 @@
-var CACHE = 'shell-v08';
+var CACHE = 'shell-v13';
 var FILES = [
   './',
   './index.html',
@@ -12,6 +12,12 @@ var FILES = [
   './js/news.js',
   './js/computers.js',
   './js/dorm.js',
+  './js/schedule.js',
+  './js/vendor/opentype.min.js',
+  './js/banner-widths.js',
+  './js/banner-core.js',
+  './js/banner-name.js',
+  './js/banner-outline.js',
   './js/registry.js',
   './js/app.js',
   './js/modules/home.js',
@@ -23,6 +29,10 @@ var FILES = [
   './js/modules/news.js',
   './js/modules/computers.js',
   './js/modules/dorm.js',
+  './js/modules/schedule.js',
+  './js/modules/banner.js',
+  './img/banner-plane.png',
+  './img/logo-clean.png',
   './js/modules/more.js',
   './icons/favicon-32.png',
   './icons/apple-touch-icon.png',
@@ -43,7 +53,7 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var path = '';
   try { path = new URL(req.url).pathname; } catch (err) { path = ''; }
-  if (path.endsWith('/pack.enc') || path.endsWith('pack.enc')) {
+  if (path.endsWith('/pack.enc') || path.endsWith('pack.enc') || /\/banner(\/|$)/.test(path)) {
     e.respondWith(fetch(req, { cache: 'no-store' }));
     return;
   }

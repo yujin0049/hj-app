@@ -18,7 +18,7 @@
     });
   }
   function emptyEdits() {
-    return { rules: {}, monthly: {}, monthlyAdded: [], monthlyDeleted: [], budget: {}, work_items: null, news: {}, newsAdded: [], newsDeleted: [], computersList: null, dorm: null };
+    return { rules: {}, monthly: {}, monthlyAdded: [], monthlyDeleted: [], budget: {}, work_items: null, news: {}, newsAdded: [], newsDeleted: [], computersList: null, dorm: null, schedule: null };
   }
   function copyRow(row) { return Object.assign({}, row); }
   function newsRows(pack, ed) {
@@ -38,6 +38,21 @@
   function computerRows(pack, ed) {
     if (ed.computersList) return ed.computersList.map(copyRow);
     return (pack.entities.computers || []).map(copyRow);
+  }
+  function scheduleView(pack, ed) {
+    var seed = (pack.entities && pack.entities.schedule) || {};
+    var saved = ed.schedule;
+    var items = (saved && Array.isArray(saved.items)) ? saved.items : (seed.items || []);
+    return {
+      sheetTitle: seed.sheetTitle || '',
+      tab: seed.tab || '남은일정',
+      sheetUrl: seed.sheetUrl || '',
+      scriptUrl: (saved && saved.scriptUrl) || seed.scriptUrl || '',
+      items: items.map(copyRow),
+      pending: !!(saved && saved.pending),
+      syncedAt: (saved && saved.syncedAt) || '',
+      at: (saved && saved.at) || ''
+    };
   }
   function emptyRecords() {
     var id = (crypto.randomUUID && crypto.randomUUID()) || ('d' + Date.now());
@@ -117,7 +132,7 @@
       corrections: p.corrections || [],
       catalogs: p.catalogs || {},
       conflicts: (ed.conflicts || []).slice(),
-      entities: Object.assign({}, p.entities, { rules: rules, monthly_todos: todos, budget_lines: budget, work_items: work, news: newsRows(p, ed), computers: computerRows(p, ed) })
+      entities: Object.assign({}, p.entities, { rules: rules, monthly_todos: todos, budget_lines: budget, work_items: work, news: newsRows(p, ed), computers: computerRows(p, ed), schedule: scheduleView(p, ed) })
     };
   }
 
@@ -281,6 +296,11 @@
         state.edits.dorm = payload;
         return persist();
       },
+      scheduleState: function () { return state.edits && state.edits.schedule; },
+      saveSchedule: function (payload) {
+        state.edits.schedule = payload;
+        return persist();
+      },
       markStudy: function (day, on) {
         if (on) state.records.study.done[day] = new Date().toISOString();
         else delete state.records.study.done[day];
@@ -344,7 +364,7 @@
     var route = parseHash();
     var id = route.name;
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' ? 'more' : id);
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : id);
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });

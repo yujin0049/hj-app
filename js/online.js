@@ -13,6 +13,7 @@
   function hasEdits(ed) {
     if (!ed) return false;
     if (ed.dorm) return true;
+    if (ed.schedule) return true;
     if (ed.computersList) return true;
     if (ed.work_items) return true;
     var bags = ['rules', 'monthly', 'budget', 'news'];
@@ -53,6 +54,7 @@
     if (ed.computersList && JSON.stringify(oldE.computers || []) !== JSON.stringify(newE.computers || [])) note('컴퓨터');
     if (ed.work_items && JSON.stringify(oldE.work_items || []) !== JSON.stringify(newE.work_items || [])) note('업무');
     if (ed.dorm && JSON.stringify(oldE.dorm || null) !== JSON.stringify(newE.dorm || null)) note('기숙사');
+    if (ed.schedule && JSON.stringify(oldE.schedule || null) !== JSON.stringify(newE.schedule || null)) note('일정');
     (ed.conflicts || []).forEach(note);
     ed.conflicts = conflicts;
     return { edits: ed, conflicts: conflicts };

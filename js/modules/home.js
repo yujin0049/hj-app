@@ -60,9 +60,13 @@
 
   function reviewItems(pack) {
     var out = [];
-    var conflictHref = { '기숙사': '#/dorm', '컴퓨터': '#/computers', '소식': '#/news', '예산': '#/more/budget', '할 일': '#/more/month', '규칙': '#/more', '업무': '#/board' };
+    var conflictHref = { '기숙사': '#/dorm', '컴퓨터': '#/computers', '소식': '#/news', '예산': '#/more/budget', '할 일': '#/more/month', '규칙': '#/more', '업무': '#/board', '일정': '#/schedule' };
     (pack.conflicts || []).forEach(function (label) {
       out.push({ href: conflictHref[label] || '#/home', title: label + ' 수정이 새 자료와 겹쳐요', why: '확인 필요' });
+    });
+    var scheduleItems = (pack.entities.schedule && pack.entities.schedule.items) || [];
+    scheduleItems.forEach(function (item) {
+      if (item && !item.done && item.needsConfirm) out.push({ href: '#/schedule/' + item.id, title: item.title, why: item.confirmNote || '일정 확인 필요' });
     });
     (pack.entities.news || []).forEach(function (n) {
       if (n.status === '확인 필요') out.push({ href: '#/news/' + n.id, title: n.title, why: '소식 확인 필요' });
@@ -82,7 +86,7 @@
         out.push({ href: '#/more/month', title: t.title, why: '일정 확인 필요' });
       }
     });
-    return out.slice(0, 8);
+    return out.slice(0, 10);
   }
 
   function render(el, api) {
@@ -118,6 +122,20 @@
       h += '<p class="muted">' + api.esc(c.date) + ' · ' + api.esc(c.text) + '</p>';
     });
     h += '</section>';
+
+    if (window.APSchedule && pack.entities.schedule) {
+      var schedItems = pack.entities.schedule.items || [];
+      var schedCount = APSchedule.counts(schedItems, today);
+      var schedNext = APSchedule.sortItems(schedItems).filter(function (it) { return !it.done; }).slice(0, 3);
+      h += '<section class="card"><h2>남은 일정</h2><div class="statgrid"><div><b>' + schedCount.over + '</b><span>지남</span></div><div><b>' + schedCount.today + '</b><span>오늘</span></div><div><b>' + schedCount.week + '</b><span>이번 주</span></div><div><b>' + schedCount.open + '</b><span>남은 일</span></div></div>';
+      if (!schedNext.length) h += '<p class="muted">남은 일정이 없어요.</p>';
+      schedNext.forEach(function (it) {
+        h += '<button class="list-btn" type="button" data-go="#/schedule/' + api.esc(it.id) + '"><b>' + api.esc(it.title) + '</b><div class="item-meta">' + api.esc(APSchedule.whenLabel(it, today)) + ' · ' + api.esc(APSchedule.dday(it, today)) + '</div></button>';
+      });
+      h += '<button class="btn-ghost small" type="button" data-go="#/schedule">남은 일정 열기</button></section>';
+    }
+
+    h += '<section class="card"><h2>현수막</h2><p class="muted">제목, 일시, 장소를 적으면 기본 시안과 예전 현수막이 나와요. 가로는 4m 또는 5m입니다.</p><button class="btn-ghost small" type="button" data-go="#/banner">현수막 만들기</button></section>';
 
     var latest = window.APNews ? APNews.byNewest(pack.entities.news || []).slice(0, 3) : [];
     h += '<section class="card"><h2>최근 소식</h2>';
