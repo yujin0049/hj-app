@@ -291,7 +291,7 @@
   function editorName() {
     var phone = false;
     try { phone = matchMedia('(pointer: coarse)').matches; } catch (e) {}
-    return '연습장(' + (phone ? '폰' : 'PC') + ')';
+    return '연습장 ' + (phone ? '폰' : 'PC');
   }
   root.APSheet = { post: sheetPost, editor: editorName };
 
