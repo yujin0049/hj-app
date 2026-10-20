@@ -437,3 +437,6 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
 .tile-img b, .tile-img .tile-sub { padding: 0 18px; }
 @media (min-width: 700px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
 .top input[type="search"] { background-color: #fff !important; }
+
+.sched-conflict { background: var(--warnbg); border-radius: 14px; padding: 12px 14px; margin: 10px 0; }
+.sched-conflict b { color: var(--warn); }

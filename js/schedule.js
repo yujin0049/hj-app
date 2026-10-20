@@ -71,6 +71,7 @@
       editKey: '',
       pending: false,
       syncedAt: '',
+      base: '',
       at: ''
     };
   }
@@ -82,6 +83,7 @@
     if (saved.editKey) state.editKey = String(saved.editKey);
     state.pending = !!saved.pending;
     state.syncedAt = saved.syncedAt || '';
+    state.base = saved.base || '';
     state.at = saved.at || '';
     return state;
   }
@@ -92,6 +94,7 @@
       editKey: state.editKey || '',
       pending: !!state.pending,
       syncedAt: state.syncedAt || '',
+      base: state.base || '',
       at: state.at || ''
     };
   }
@@ -225,6 +228,19 @@
   function postBody(key, rows, stamp) {
     return JSON.stringify({ key: String(key || ''), tab: '남은일정', stamp: String(stamp || ''), rows: rows });
   }
+  /* 시트 「남은일정」 탭 줄 → 앱 항목 */
+  function fromSheet(rows) {
+    return ensureIds((rows || []).map(function (o) {
+      return cleanItem({
+        id: o['아이디'], date: o['날짜'], end: o['끝날짜'], title: o['할일'], owner: o['담당'], memo: o['메모'],
+        done: norm(o['완료']) === 'Y', needsConfirm: norm(o['확인필요']) === 'Y', confirmNote: o['확인메모']
+      });
+    }).filter(function (it) { return it.title; }));
+  }
+  function sameItems(a, b) {
+    var key = function (list) { return JSON.stringify(sortItems((list || []).map(cleanItem))); };
+    return key(a) === key(b);
+  }
   function allowedUrl(url) {
     return /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec\/?$/.test(norm(url));
   }
@@ -254,6 +270,31 @@
     }));
   }
 
+  /* 구글 시트 웹앱(Apps Script) 부르기. 남은 일정·기숙사가 같이 씀. 주소·열쇠는 기기 저장에서만 받음 */
+  function sheetPost(url, body, ms) {
+    if (!allowedUrl(url)) return Promise.reject(new Error('link'));
+    var ctl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctl) ctl.abort(); }, ms || 20000);
+    return fetch(norm(url), {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+      body: JSON.stringify(body),
+      redirect: 'follow',
+      cache: 'no-store',
+      signal: ctl ? ctl.signal : undefined
+    }).then(function (res) {
+      clearTimeout(timer);
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      return res.json();
+    }, function (err) { clearTimeout(timer); throw err; });
+  }
+  function editorName() {
+    var phone = false;
+    try { phone = matchMedia('(pointer: coarse)').matches; } catch (e) {}
+    return '연습장(' + (phone ? '폰' : 'PC') + ')';
+  }
+  root.APSheet = { post: sheetPost, editor: editorName };
+
   root.APSchedule = {
     cleanItem: cleanItem,
     createState: createState,
@@ -273,6 +314,8 @@
     sheetTable: sheetTable,
     postBody: postBody,
     allowedUrl: allowedUrl,
+    fromSheet: fromSheet,
+    sameItems: sameItems,
     stamp: stamp,
     readBox: readBox,
     writeBox: writeBox,

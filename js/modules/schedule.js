@@ -31,78 +31,84 @@
     state.pending = true;
     saveLocal(state);
   }
-  function wait(ms) { return new Promise(function (res) { setTimeout(res, ms); }); }
-  function jsonp(url, stamp) {
-    return new Promise(function (resolve, reject) {
-      var cb = 'apS' + String(stamp).replace(/[^A-Za-z0-9]/g, '').slice(0, 24);
-      var el = document.createElement('script');
-      var timer = setTimeout(function () { cleanup(); reject(new Error('timeout')); }, 8000);
-      function cleanup() {
-        clearTimeout(timer);
-        try { delete window[cb]; } catch (err) { window[cb] = undefined; }
-        if (el.parentNode) el.parentNode.removeChild(el);
+  var conflict = null;   // 시트가 그새 바뀜: { rows, hash }
+  var pulled = false;
+  var lastFail = 0;     // 이번에 연 뒤 시트를 한 번 읽었는지
+  function linked(state) { return APSchedule.allowedUrl(state.scriptUrl) && !!state.editKey; }
+  function stored(api, state) {
+    saveLocal(state);
+    return api.saveSchedule(APSchedule.serial(state));
+  }
+  function push(api, state, force) {
+    if (!linked(state)) return Promise.reject(new Error('link'));
+    var body = {
+      action: 'schedule', key: state.editKey, editor: APSheet.editor(),
+      base: force ? force : (state.base || ''),
+      summary: '남은 일정 ' + state.items.length + '개 저장',
+      rows: APSchedule.sheetTable(state.items, state.at)
+    };
+    return APSheet.post(state.scriptUrl, body).then(function (res) {
+      if (res && res.conflict) {
+        conflict = { rows: res.rows || [], hash: res.hash || '' };
+        throw new Error('conflict');
       }
-      window[cb] = function (data) { cleanup(); resolve(data || {}); };
-      var join = url.indexOf('?') >= 0 ? '&' : '?';
-      el.src = url + join + 'action=status&stamp=' + encodeURIComponent(stamp) + '&callback=' + cb;
-      el.onerror = function () { cleanup(); reject(new Error('jsonp')); };
-      document.body.appendChild(el);
-    });
-  }
-  function poll(url, stamp, left) {
-    return jsonp(url, stamp).then(function (data) {
-      if (data && data.ok && data.stamp === stamp) return data;
-      if (left <= 1) throw new Error('status');
-      return wait(800).then(function () { return poll(url, stamp, left - 1); });
-    }, function (err) {
-      if (left <= 1) throw err;
-      return wait(800).then(function () { return poll(url, stamp, left - 1); });
-    });
-  }
-  function push(api, state) {
-    if (!APSchedule.allowedUrl(state.scriptUrl) || !state.editKey) return Promise.reject(new Error('link'));
-    var stamp = APSchedule.stamp();
-    var body = APSchedule.postBody(state.editKey, APSchedule.sheetTable(state.items, state.at), stamp);
-    return fetch(state.scriptUrl, {
-      method: 'POST',
-      mode: 'no-cors',
-      cache: 'no-store',
-      headers: { 'Content-Type': 'text/plain;charset=UTF-8' },
-      body: body
-    }).then(function () {
-      return poll(state.scriptUrl, stamp, 4);
-    }).then(function () {
+      if (!res || !res.ok) throw new Error((res && res.msg) || 'save');
+      conflict = null;
       state.pending = false;
+      state.base = res.hash || '';
       state.syncedAt = new Date().toISOString();
-      state.stamp = stamp;
-      saveLocal(state);
-      return api.saveSchedule(APSchedule.serial(state)).then(function () {
-        api.toast('시트에 저장했어요.');
-      });
+      return stored(api, state).then(function () { api.toast('시트에 저장했어요.'); });
+    });
+  }
+  /* 열 때 시트를 읽어 다른 기기(폰↔PC)에서 고친 것을 가져옴 */
+  function pull(api, state) {
+    return APSheet.post(state.scriptUrl, { action: 'schedule_read', key: state.editKey }).then(function (res) {
+      if (!res || !res.ok) throw new Error((res && res.msg) || 'read');
+      if (!res.exists || !(res.rows || []).length) {
+        state.base = res.hash || '';
+        state.pending = true;              // 시트에 탭이 없으면 지금 목록으로 처음 채움
+        return 'seed';
+      }
+      var items = APSchedule.fromSheet(res.rows);
+      if (state.pending && !APSchedule.sameItems(items, state.items) && state.base !== res.hash) {
+        conflict = { rows: res.rows, hash: res.hash };
+        return 'conflict';
+      }
+      if (!state.pending) state.items = items;
+      state.base = res.hash || '';
+      if (!state.pending) state.syncedAt = new Date().toISOString();
+      return stored(api, state).then(function () { return 'ok'; });
     });
   }
   function commit(api, state) {
     mark(state);
     api.refresh();
     return api.saveSchedule(APSchedule.serial(state)).then(function () {
-      if (!state.scriptUrl || !state.editKey) {
+      if (!linked(state)) {
         api.toast('이 기기에 저장했어요.');
         return;
       }
-      return push(api, state).catch(function () {
-        api.toast('시트에 못 올렸어요. 이 기기에 저장해 두었어요.');
+      return push(api, state).catch(function (err) {
+        api.toast(err && err.message === 'conflict' ? '시트가 그새 바뀌었어요. 위에서 골라 주세요.' : '시트에 못 올렸어요. 이 기기에 저장해 두었어요.');
         api.refresh();
       });
     });
   }
   function maybeSync(api, state) {
-    if (syncing || !state.pending || !APSchedule.allowedUrl(state.scriptUrl) || !state.editKey) return;
+    if (syncing || conflict || !linked(state) || Date.now() - lastFail < 30000) return;
     syncing = true;
-    push(api, state).then(function () {
+    var job = pulled ? Promise.resolve('skip') : pull(api, state).then(function (r) { pulled = true; return r; });
+    job.then(function (r) {
+      if (r === 'conflict') return 'conflict';
+      if (state.pending) return push(api, state).then(function () { return 'pushed'; });
+      return r;
+    }).then(function (r) {
       syncing = false;
-      api.refresh();
+      if (r !== 'skip') api.refresh();
     }, function () {
       syncing = false;
+      lastFail = Date.now();   // 30초 동안은 저절로 다시 안 보냄(버튼으로는 됨)
+      api.refresh();
     });
   }
 
@@ -127,9 +133,15 @@
     var h = '<button class="linkish" id="back" type="button">← 더보기</button>';
     h += '<section class="card sched-head"><p class="kicker">현황판</p><h1>남은 일정</h1>';
     h += '<div class="statgrid"><div><b>' + c.over + '</b><span>지남</span></div><div><b>' + c.today + '</b><span>오늘</span></div><div><b>' + c.week + '</b><span>이번 주</span></div><div><b>' + c.open + '</b><span>남은 일</span></div></div>';
+    var dated = state.items.filter(function (it) { return it.date; }).length;
+    h += '<p class="muted" id="count">전체 ' + state.items.length + '개 · 날짜 있는 일 ' + dated + ' · 수시 ' + (state.items.length - dated) + '</p>';
     h += '<p class="muted" id="sync">' + api.esc(statusText(state)) + '</p>';
+    if (conflict) {
+      h += '<div class="sched-conflict" id="conflict"><b>시트가 다른 기기에서 먼저 바뀌었어요.</b><p class="muted">시트 ' + conflict.rows.length + '개 · 이 기기 ' + state.items.length + '개. 어느 쪽을 남길까요?</p>' +
+        '<div class="row"><button class="btn" id="take" type="button">시트 것 받기</button><button class="btn-ghost" id="mine" type="button">이 기기 것으로 시트 덮기</button></div></div>';
+    }
     h += '<div class="row"><button class="btn" id="add" type="button">일정 추가</button>';
-    if (state.pending && state.scriptUrl) h += '<button class="btn-ghost" id="retry" type="button">시트로 다시 보내기</button>';
+    if (state.pending && linked(state) && !conflict) h += '<button class="btn-ghost" id="retry" type="button">시트로 다시 보내기</button>';
     h += '<button class="btn-ghost" id="link" type="button">시트 연결</button></div></section>';
     h += '<div class="chips"><button class="chip' + (show === 'open' ? ' on' : '') + '" type="button" data-show="open">남은 일</button>';
     h += '<button class="chip' + (show === 'all' ? ' on' : '') + '" type="button" data-show="all">전체</button>';
@@ -156,6 +168,21 @@
         api.refresh();
       });
     };
+    var take = el.querySelector('#take');
+    if (take) take.onclick = function () {
+      state.items = APSchedule.fromSheet(conflict.rows);
+      state.base = conflict.hash;
+      state.pending = false;
+      state.syncedAt = new Date().toISOString();
+      conflict = null;
+      stored(api, state).then(function () { api.toast('시트 것을 받았어요.'); api.refresh(); });
+    };
+    var mine = el.querySelector('#mine');
+    if (mine) mine.onclick = function () {
+      var h2 = conflict.hash;
+      conflict = null;
+      push(api, state, h2).then(function () { api.refresh(); }, function () { api.toast('시트에 못 올렸어요.'); api.refresh(); });
+    };
     el.querySelectorAll('[data-show]').forEach(function (b) {
       b.onclick = function () { show = b.getAttribute('data-show'); api.refresh(); };
     });
@@ -172,10 +199,16 @@
   }
 
   function statusText(state) {
-    if (state.syncedAt && !state.pending) return '시트에 저장됨';
-    if (state.pending && state.scriptUrl) return '이 기기에 저장해 두었어요. 나중에 시트로 다시 보내요.';
-    if (!state.scriptUrl) return '이 기기에 저장돼요. 시트에 올리려면 연결을 한 번 넣어요.';
+    if (syncing) return '시트와 맞추는 중…';
+    if (linked(state) && state.syncedAt && !state.pending) return '✅ 시트와 같아요 · ' + hm(state.syncedAt);
+    if (state.pending && linked(state)) return '⚠️ 이 기기에 저장해 두었어요. 인터넷이 되면 시트로 다시 보내요.';
+    if (!linked(state)) return '이 기기에만 저장돼요. 폰·PC가 같이 보려면 「시트 연결」을 한 번 해요.';
     return '이 기기에 저장돼요.';
+  }
+  function hm(iso) {
+    var d = new Date(iso);
+    if (isNaN(d)) return '';
+    return (d.getMonth() + 1) + '.' + d.getDate() + '. ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
   }
   function row(api, item, today) {
     var b = APSchedule.bucket(item, today);
@@ -263,7 +296,7 @@
     var h = '<button class="linkish" id="back" type="button">← 남은 일정</button>';
     h += '<section class="card"><h1>시트 연결</h1>';
     h += '<p>고친 일정은 「' + api.esc(seed.sheetTitle || '업무 현황판') + '」 ' + api.esc(seed.tab || '남은일정') + ' 탭에 올립니다.</p>';
-    h += '<p class="muted">웹앱 주소와 수정 열쇠는 이 기기 저장에만 둡니다. 화면 코드에는 넣지 않아요. 열쇠는 비워 두면 이미 있는 값을 유지해요.</p>';
+    h += '<p class="muted">기숙사 현황판도 이 연결을 같이 써요. 웹앱 주소와 수정 열쇠는 이 기기 저장에만 둡니다. 화면 코드에는 넣지 않아요. 열쇠는 비워 두면 이미 있는 값을 유지해요. 폰과 PC에 한 번씩 넣어요.</p>';
     h += field('웹앱 주소', '<input id="f-url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" value="' + api.esc(state.scriptUrl || '') + '">');
     h += field('수정 열쇠', '<input id="f-key" class="mask" type="text" autocomplete="off" value="">');
     if (seed.sheetUrl) h += '<p><a class="btn-ghost" id="sheet" href="' + api.esc(seed.sheetUrl) + '" target="_blank" rel="noopener">시트 열기</a></p>';
@@ -281,7 +314,9 @@
       state.scriptUrl = url;
       if (key) state.editKey = key;
       el.querySelector('#f-key').value = '';
-      commit(api, state).then(function () { api.refresh(); });
+      pulled = false;
+      conflict = null;
+      stored(api, state).then(function () { api.toast(url ? '연결을 저장했어요. 시트와 맞춰요.' : '연결을 뺐어요.'); api.go('#/schedule'); });
     };
   }
 
