@@ -7,6 +7,18 @@
   'use strict';
   let W = 4000;
   const H = 900, M = 160;
+  // 색 테마: 강조색만 바꿈(글자 검정·회색은 그대로). 기본 = 파랑
+  const BASE = { blue: '#3182F6', blueDark: '#1B64DA', blue50: '#E8F3FF', sky: '#4C97FF', link: '#317BBF', edge: '#1E5BB8', navy: '#0C3D86' };
+  const THEMES = [
+    { id: 'blue', name: '파랑', c: {} },
+    { id: 'navy', name: '남색', c: { blue: '#1E40AF', blueDark: '#172554', blue50: '#E6ECF8', sky: '#60A5FA', link: '#1E40AF', edge: '#1E3A8A', navy: '#0B1F4D' } },
+    { id: 'green', name: '초록', c: { blue: '#0E9F6E', blueDark: '#047857', blue50: '#E7F8F0', sky: '#34D399', link: '#059669', edge: '#047857', navy: '#064E3B' } },
+    { id: 'red', name: '빨강', c: { blue: '#E5484D', blueDark: '#B42318', blue50: '#FDECEC', sky: '#FF8A8A', link: '#D92D20', edge: '#B42318', navy: '#7A1717' } },
+    { id: 'black', name: '검정', c: { blue: '#191F28', blueDark: '#000000', blue50: '#F2F4F6', sky: '#8B95A1', link: '#333D4B', edge: '#333D4B', navy: '#191F28' } }
+  ];
+  const SIZES = [{ id: 'l', name: '크게', k: 1 }, { id: 'm', name: '보통', k: 0.88 }, { id: 's', name: '작게', k: 0.76 }];
+  let P = Object.assign({}, BASE);
+  let TS = 1; // 제목 글자 크기 배율(1 = 칸에 꽉 차게)
   const C = { blue: '#3182F6', blueDark: '#1B64DA', blue50: '#E8F3FF', dark: '#191F28',
     g700: '#4E5968', g600: '#6B7684', g500: '#8B95A1', g200: '#E5E8EB', g100: '#F2F4F6', white: '#FFFFFF' };
   // 글자 윗선·아랫선 (em 기준, 한글 기준 대략값)
@@ -55,11 +67,11 @@
     wt = wt || 800; lh = lh || 1.12;
     const raw = String(title || '').split(/\n/).map(norm).filter(Boolean);
     if (!raw.length) return { lines: [], size: 0, lh };
-    if (raw.length > 1) { const L = raw.slice(0, 3); return { lines: L, size: fitBlock(L, bw, bh, maxSize, wt, lh), lh }; }
+    if (raw.length > 1) { const L = raw.slice(0, 3); return { lines: L, size: fitBlock(L, bw, bh, maxSize, wt, lh) * TS, lh }; }
     const one = fitBlock(raw, bw, bh, maxSize, wt, lh);
     const two = splitTwo(raw[0], wt);
-    if (two) { const s2 = fitBlock(two, bw, bh, maxSize * 0.82, wt, lh); if (s2 > one * 1.3) return { lines: two, size: s2, lh }; }
-    return { lines: raw, size: one, lh };
+    if (two) { const s2 = fitBlock(two, bw, bh, maxSize * 0.82, wt, lh); if (s2 > one * 1.3) return { lines: two, size: s2 * TS, lh }; }
+    return { lines: raw, size: one * TS, lh };
   }
   // 상자 안에 여러 줄 (세로 가운데)
   function drawLines(ft, bx, by, bw, bh, wt, fill, align, valign) {
@@ -284,7 +296,7 @@
     if (bits.length) {
       const label = bits.join('   ');
       const sz = fit(label, Math.max(280, textW - (x - left)), 58, 600);
-      b += G('일시', `<rect x="${r(x)}" y="${r(by - 46)}" width="4" height="62" rx="2" fill="#96A0AC"/>` + T(label, x + 28, by, sz, 600, '#317BBF'));
+      b += G('일시', `<rect x="${r(x)}" y="${r(by - 46)}" width="4" height="62" rx="2" fill="#96A0AC"/>` + T(label, x + 28, by, sz, 600, P.link));
     }
     if (d.place) b += G('장소', '');
     return b;
@@ -292,7 +304,7 @@
 
   // G. 예전 현수막 v04. 남색 바탕, 왼쪽 흰 카드.
   designs.push({ key: 'G', name: '남색 카드', group: '예전 현수막', build(d, logo) {
-    const navy = '#0C3D86';
+    const navy = P.navy;
     const cardW = Math.min(1360, Math.max(980, W * 0.28));
     const cardH = 540;
     const cardX = 100;
@@ -323,8 +335,8 @@
 
   // H. 참고로 받은 현수막. 양쪽 파란 꺾임, 큰 한 줄 제목.
   designs.push({ key: 'H', name: '참고', group: '예전 현수막', build(d, logo) {
-    const edge = '#1E5BB8';
-    const edge2 = '#4C97FF';
+    const edge = P.edge;
+    const edge2 = P.sky;
     let deco = `<polygon points="0,0 460,0 0,${H}" fill="${edge}"/>`;
     deco += `<polygon points="0,0 250,0 0,520" fill="${edge2}"/>`;
     deco += `<polygon points="${W},0 ${W - 420},0 ${W},${H}" fill="${edge}"/>`;
@@ -357,6 +369,11 @@
   }
   function buildAll(data, logo, opt) {
     W = opt && Number(opt.w) === 5000 ? 5000 : 4000;
+    const th = THEMES.find(t => t.id === (opt && opt.theme)) || THEMES[0];
+    P = Object.assign({}, BASE, th.c);
+    C.blue = P.blue; C.blueDark = P.blueDark; C.blue50 = P.blue50;
+    const sz = SIZES.find(z => z.id === (opt && opt.size)) || SIZES[0];
+    TS = sz.k;
     const d = clean(data);
     const extra = opt || {};
     return designs.map(x => ({
@@ -368,5 +385,5 @@
       svg: wrapSvg(`시안${x.key} ${x.name}`, x.build(d, logo || null, extra))
     }));
   }
-  return { buildAll, parseSvgLogo, measure, designs: designs.map(x => ({ key: x.key, name: x.name, group: x.group || '기본 시안' })), widths: [4000, 5000], W, H };
+  return { buildAll, parseSvgLogo, measure, themes: THEMES.map(t => ({ id: t.id, name: t.name, color: Object.assign({}, BASE, t.c).blue })), sizes: SIZES.map(z => ({ id: z.id, name: z.name })), designs: designs.map(x => ({ key: x.key, name: x.name, group: x.group || '기본 시안' })), widths: [4000, 5000], W, H };
 });

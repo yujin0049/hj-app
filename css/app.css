@@ -437,3 +437,13 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
 .tile-img b, .tile-img .tile-sub { padding: 0 18px; }
 @media (min-width: 700px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
 .top input[type="search"] { background-color: #fff !important; }
+
+/* 현수막: 색 테마·제목 글자 */
+.bn-opts { display: grid; gap: 12px; margin: 4px 0 12px; }
+.bn-opts .flabel { display: block; margin-bottom: 6px; }
+.bn-themes { display: flex; flex-wrap: wrap; gap: 8px; }
+.bn-themes button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-weight: 700; color: var(--ink-2); }
+.bn-themes button i { width: 16px; height: 16px; border-radius: 50%; display: inline-block; }
+.bn-themes button.on { border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink) inset; color: var(--ink); }
+.bn-tsize { margin: 0; }
+@media (min-width: 900px) { .bn-opts { grid-template-columns: 1fr 320px; align-items: end; } }
