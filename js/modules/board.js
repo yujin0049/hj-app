@@ -46,7 +46,8 @@
     if (id) return detail(el, api, id);
     var items = list(api);
     var h = '<section class="card"><h1>업무현황표</h1><p class="muted">건명, 예산, 금액, 단계, 마감, 결재선, 빠진 서류, 메모를 이 기기에만 저장해요.</p>' +
-      '<button class="btn block" id="add" type="button">일 추가</button></section>';
+      '<button class="btn block" id="add" type="button">일 추가</button></section>' +
+      '<button class="list-btn" type="button" id="go-check"><span class="badge warn" id="check-n">확인 필요</span> <b>스크립트 대조 결과</b><div class="item-meta">불일치·판단 불가만 모아 봐요</div></button>';
     if (!items.length) h += '<section class="card"><p>아직 올린 일이 없어요.</p></section>';
     items.forEach(function (w) {
       var amt = w.amount == null || w.amount === '' ? '금액 확인 필요' : api.won(w.amount);
@@ -56,6 +57,10 @@
     });
     el.innerHTML = h;
     el.querySelector('#add').onclick = function () { api.go('#/board/new'); };
+    el.querySelector('#go-check').onclick = function () { api.go('#/check'); };
+    if (window.ShellModules.check) window.ShellModules.check.count().then(function (n) {
+      var b = el.querySelector('#check-n'); if (b) b.textContent = '확인 필요 ' + n + '건';
+    }).catch(function () {});
     el.querySelectorAll('[data-id]').forEach(function (b) {
       b.onclick = function () { api.go('#/board/' + b.getAttribute('data-id')); };
     });
