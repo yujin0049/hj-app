@@ -251,8 +251,8 @@
     var rec = api.records();
     el.innerHTML = '<button class="linkish" id="back" type="button">← 더보기</button>' +
       '<section class="card"><h1>설정</h1>' +
-      '<div class="warnbox"><b>PIN을 잊으면 복구할 수 없어요.</b><br>초기화한 뒤 데이터 묶음을 다시 가져와요. 점수는 백업 파일이 있어야 되살릴 수 있어요.</div>' +
-      '<p class="muted">잠금은 6자리 PIN, 5분이면 자동으로 잠겨요. 파일로 내보낼 때는 PIN과 다른 8자 이상 암호를 써요.</p>' +
+      '<div class="warnbox"><b>기숙사만 비밀문구로 잠겨요.</b><br>5분 동안 쓰지 않으면 학생 개인정보는 다시 잠겨요. 다른 메뉴에서 고친 내용은 이 기기에 남아요.</div>' +
+      '<p class="muted">파일로 내보낼 때는 8자 이상 암호를 써요. 점수는 그 백업 파일이 있어야 되살릴 수 있어요.</p>' +
       '<p class="muted">마지막 백업: ' + api.esc(rec.lastBackupAt ? rec.lastBackupAt.slice(0, 10) : '없음') + '</p></section>' +
       '<section class="card"><h2>새 묶음 가져오기</h2><p class="muted">점수는 남기고, 과제·규칙·문제만 바꿉니다. 규칙 ID가 같으면 기록이 이어져요.</p>' +
       '<label class="opt"><input type="checkbox" id="keep-rec" checked><span>점수·공부 기록 유지</span></label>' +

@@ -108,7 +108,8 @@
     var cont = rec.continue || {};
     var task = (pack.entities.tasks || []).filter(function (t) { return t.id === cont.taskId; })[0];
     var day = (pack.entities.study_days || []).filter(function (d) { return d.day === cont.studyDay; })[0];
-    var backupOld = !rec.lastBackupAt || (Date.now() - new Date(rec.lastBackupAt).getTime() > 14 * 86400000);
+    var hasLocal = (rec.tasks && Object.keys(rec.tasks).length) || (rec.study && rec.study.done && Object.keys(rec.study.done).length) || (rec.questions && Object.keys(rec.questions).length);
+    var backupOld = hasLocal && (!rec.lastBackupAt || (Date.now() - new Date(rec.lastBackupAt).getTime() > 14 * 86400000));
 
     var review = reviewItems(pack);
     var h = '<section class="card"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1>오늘 볼 일</h1>';
@@ -167,6 +168,8 @@
       if (dormSum.reservedRooms) h += '<p class="muted">여자 강사 전용 ' + dormSum.reservedRooms + '실은 연수생 빈방에서 빼요.</p>';
       h += '<p class="muted">' + api.esc(dormSeed.deadlineNote || '') + '</p>';
       h += '<button class="btn-ghost small" type="button" data-go="#/dorm">기숙사 도면 열기</button></section>';
+    } else {
+      h += '<section class="card"><h2>기숙사 현황판</h2><p class="muted">학생 개인정보라 비밀문구로 열어요.</p><button class="btn-ghost small" type="button" data-go="#/dorm">기숙사 현황판 열기</button></section>';
     }
 
     h += '<section class="card"><h2>이번 달 할 일</h2>';

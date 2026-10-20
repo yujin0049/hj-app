@@ -1,4 +1,4 @@
-var CACHE = 'shell-v13';
+var CACHE = 'shell-v14';
 var FILES = [
   './',
   './index.html',
@@ -53,7 +53,7 @@ self.addEventListener('fetch', function (e) {
   if (req.method !== 'GET') return;
   var path = '';
   try { path = new URL(req.url).pathname; } catch (err) { path = ''; }
-  if (path.endsWith('/pack.enc') || path.endsWith('pack.enc') || /\/banner(\/|$)/.test(path)) {
+  if (path.endsWith('/pack.enc') || path.endsWith('pack.enc') || path.endsWith('/public-pack.json') || path.endsWith('public-pack.json') || /\/banner(\/|$)/.test(path)) {
     e.respondWith(fetch(req, { cache: 'no-store' }));
     return;
   }

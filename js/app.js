@@ -7,7 +7,7 @@
   var DB_NAME = 'ap3';
 
   var state = {
-    pin: null, key: null, env: null, pack: null, edits: null, records: null, guide: null, online: null, remoteEnv: null, updateReady: false,
+    pin: null, key: null, env: null, pack: null, edits: null, records: null, guide: null, online: null, remoteEnv: null, updateReady: false, dormOpen: false,
     fails: 0, lockedUntil: 0, lastActive: Date.now(), hiddenAt: 0, booted: false
   };
   window.ShellModules = window.ShellModules || {};
@@ -116,8 +116,7 @@
   }
 
   function view() {
-    var p = state.pack;
-    if (!p) return null;
+    var p = state.pack || { appTitle: '행정 연습장', packVersion: '', corrections: [], catalogs: {}, entities: {} };
     var ed = state.edits || emptyEdits();
     var rules = (p.entities.rules || []).map(function (r) { return Object.assign({}, r, (ed.rules || {})[r.id] || {}); });
     var deleted = ed.monthlyDeleted || [];
@@ -140,7 +139,27 @@
     state.records.updatedAt = new Date().toISOString();
     return { pack: state.pack, edits: state.edits, records: state.records, savedAt: state.records.updatedAt, online: state.online || null };
   }
+  function readPublicStore() {
+    var edits = emptyEdits();
+    var records = emptyRecords();
+    try {
+      var raw = localStorage.getItem('ap3-public');
+      if (raw) {
+        var obj = JSON.parse(raw);
+        if (obj && obj.edits) edits = Object.assign(emptyEdits(), obj.edits);
+        if (obj && obj.records && obj.records.deviceId) records = obj.records;
+      }
+    } catch (e) { /* 이 기기 저장이 없으면 빈 기록 */ }
+    edits.dorm = null;
+    return { edits: edits, records: records };
+  }
+  function writePublicStore() {
+    if (!state.pack || !state.edits || !state.records) return;
+    var edits = Object.assign({}, state.edits, { dorm: null });
+    try { localStorage.setItem('ap3-public', JSON.stringify({ edits: edits, records: state.records })); } catch (e) { /* 용량이 차도 화면은 유지 */ }
+  }
   function persist() {
+    writePublicStore();
     if (!state.key || !state.env) return Promise.resolve();
     return APCrypto.encryptWithKey(payload(), state.key, { iter: state.env.iter, salt: state.env.salt }).then(function (env) {
       state.env = env;
@@ -151,24 +170,18 @@
   function bump() { state.lastActive = Date.now(); }
   function setLockButton() {
     var b = document.getElementById('lock-btn');
-    if (b) b.textContent = state.key ? '잠금' : '열기';
+    if (!b) return;
+    b.textContent = '잠금';
+    b.classList.toggle('hidden', !state.dormOpen);
   }
-  function lockNow() {
-    state.pin = null;
-    state.key = null;
-    state.pack = null;
-    state.edits = null;
-    state.records = null;
-    document.getElementById('lock').classList.add('hidden');
-    document.getElementById('shell').classList.remove('hidden');
-    document.title = '행정 연습장';
-    var title = document.getElementById('title');
-    if (title) title.textContent = '행정 연습장';
-    var sub = document.getElementById('sub');
-    if (sub) sub.textContent = '';
+  function lockDorm() {
+    state.dormOpen = false;
+    if (state.pack && state.pack.entities) delete state.pack.entities.dorm;
+    if (state.edits) state.edits.dorm = null;
+    var lock = document.getElementById('lock');
+    if (lock) lock.classList.add('hidden');
     setLockButton();
-    var id = parseHash().name;
-    if (window.MODULE_LOCK && window.MODULE_LOCK[id]) location.hash = '#/home';
+    if (parseHash().name === 'dorm') location.hash = '#/home';
     else renderRoute();
   }
   function armWatch() {
@@ -176,11 +189,11 @@
     document.addEventListener('keydown', bump);
     document.addEventListener('visibilitychange', function () {
       if (document.hidden) state.hiddenAt = Date.now();
-      else if (state.key && state.hiddenAt && Date.now() - state.hiddenAt >= LOCK_MS) lockNow();
+      else if (state.dormOpen && state.hiddenAt && Date.now() - state.hiddenAt >= LOCK_MS) lockDorm();
       else state.hiddenAt = 0;
     });
     setInterval(function () {
-      if (state.key && Date.now() - state.lastActive >= LOCK_MS) lockNow();
+      if (state.dormOpen && Date.now() - state.lastActive >= LOCK_MS) lockDorm();
     }, 15000);
   }
 
@@ -198,10 +211,13 @@
   function api() {
     return {
       pack: view,
-      records: function () { return state.records; },
+      records: function () {
+        if (!state.records) state.records = emptyRecords();
+        return state.records;
+      },
       route: parseHash,
       go: function (hash) { location.hash = hash; },
-      unlocked: function () { return !!state.key; },
+      unlocked: function () { return !!state.pack; },
       guide: function () { return state.guide || { sections: [] }; },
       openLock: function () { showUnlock(); },
       esc: esc,
@@ -214,7 +230,7 @@
       refresh: renderRoute,
       save: persist,
       touch: bump,
-      lock: lockNow,
+      lock: lockDorm,
       patchRule: function (id, obj) {
         state.edits.rules[id] = Object.assign({}, state.edits.rules[id] || {}, obj);
         return persist();
@@ -347,14 +363,31 @@
         });
       },
       resetAll: function () {
-        return idbDel('vault').then(function () { lockNow(); showImport(); });
+        try { localStorage.removeItem('ap3-public'); } catch (e) { /* 저장이 없어도 지운 것으로 봄 */ }
+        state.pin = null;
+        state.key = null;
+        state.env = null;
+        state.dormOpen = false;
+        if (state.pack && state.pack.entities) delete state.pack.entities.dorm;
+        state.edits = emptyEdits();
+        state.records = emptyRecords();
+        setLockButton();
+        return idbDel('vault').then(function () {
+          toast('이 기기의 고친 내용을 지웠어요.');
+          if (parseHash().name === 'dorm') location.hash = '#/home';
+          else renderRoute();
+        });
       },
       importText: importText,
       replacePack: function (pack, opts) {
         opts = opts || {};
+        if (pack && pack.entities) delete pack.entities.dorm;
         state.pack = pack;
+        state.dormOpen = false;
         if (!opts.keepEdits) state.edits = emptyEdits();
+        else if (state.edits) state.edits.dorm = null;
         if (!opts.keepRecords) state.records = emptyRecords();
+        setLockButton();
         return persist();
       }
     };
@@ -368,8 +401,8 @@
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
-    if (window.MODULE_LOCK && window.MODULE_LOCK[id] && !state.key) {
-      showUnlock();
+    if (id === 'dorm' && !state.dormOpen) {
+      showDormPhrase();
       return;
     }
     document.getElementById('lock').classList.add('hidden');
@@ -520,6 +553,54 @@
       };
       reader.readAsText(file);
     };
+  }
+
+  function showDormPhrase() {
+    var panel = lockBox(
+      '<p class="kicker">기숙사</p><h1>기숙사 열기</h1>' +
+      '<p>학생 개인정보라 비밀문구로만 열어요. 남은 일정, 현수막, 공부, 업무는 잠금 없이 쓸 수 있어요.</p>' +
+      '<label class="field"><span>비밀문구</span><input id="phrase" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="xxxx-xxxx-xxxx-xxxx"></label>' +
+      '<button class="btn block" id="phrase-go" type="button">열기</button>' +
+      '<p id="import-msg" class="muted"></p>' +
+      '<button class="btn-ghost block" id="back" type="button">돌아가기</button>'
+    );
+    var input = panel.querySelector('#phrase');
+    panel.querySelector('#back').onclick = function () {
+      document.getElementById('lock').classList.add('hidden');
+      if (parseHash().name === 'dorm') location.hash = '#/home';
+      else renderRoute();
+    };
+    function go() {
+      var phrase = input.value.trim();
+      var msg = panel.querySelector('#import-msg');
+      var btn = panel.querySelector('#phrase-go');
+      if (!phrase) { msg.textContent = '비밀문구를 적어 주세요.'; return; }
+      if (!state.pack) { msg.textContent = '공개 자료를 먼저 받지 못했어요.'; return; }
+      btn.disabled = true;
+      msg.textContent = '여는 중이에요. 잠시만 기다려 주세요.';
+      fetch(new URL('pack.enc', document.baseURI).href, { cache: 'no-store' }).then(function (res) {
+        if (!res.ok) throw new Error('missing');
+        return res.json();
+      }).then(function (env) {
+        return APCrypto.decryptOnline(env, phrase).then(function (r) {
+          if (!r.ok) { btn.disabled = false; msg.textContent = '비밀문구가 맞지 않아요.'; return; }
+          var dorm = r.pack && r.pack.entities && r.pack.entities.dorm;
+          if (!dorm) { btn.disabled = false; msg.textContent = '기숙사 자료가 없어요.'; return; }
+          state.pack.entities.dorm = dorm;
+          state.dormOpen = true;
+          if (!state.edits) state.edits = emptyEdits();
+          state.edits.dorm = null;
+          document.getElementById('lock').classList.add('hidden');
+          setLockButton();
+          renderRoute();
+        });
+      }).catch(function () {
+        btn.disabled = false;
+        msg.textContent = '자료 파일을 받지 못했어요.';
+      });
+    }
+    panel.querySelector('#phrase-go').onclick = go;
+    input.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } };
   }
 
   function showPhrase() {
@@ -802,6 +883,40 @@
     return next();
   }
 
+  function paintShell() {
+    document.getElementById('lock').classList.add('hidden');
+    document.getElementById('shell').classList.remove('hidden');
+    if (!state.edits) state.edits = emptyEdits();
+    if (!state.records) state.records = emptyRecords();
+    state.edits.dorm = state.dormOpen ? state.edits.dorm : null;
+    setLockButton();
+    var v = view();
+    document.getElementById('title').textContent = (state.pack && v.appTitle) || '행정 연습장';
+    document.getElementById('sub').textContent = state.pack && v.packVersion ? ('묶음 ' + v.packVersion) : '';
+    document.title = (state.pack && v.appTitle) || '행정 연습장';
+    buildTabs();
+    if (!location.hash) location.hash = '#/home';
+    renderRoute();
+    bump();
+  }
+  function acceptPublic(pack) {
+    if (pack && pack.entities) delete pack.entities.dorm;
+    state.pack = pack;
+    state.dormOpen = false;
+    var saved = readPublicStore();
+    state.edits = saved.edits;
+    state.records = saved.records;
+    paintShell();
+  }
+  function loadPublicPack() {
+    return fetch(new URL('public-pack.json', document.baseURI).href, { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error('missing');
+      return res.json();
+    }).then(function (pack) {
+      if (!isPack(pack)) throw new Error('shape');
+      return pack;
+    });
+  }
   function boot() {
     if (!crypto.subtle) {
       lockBox('<h1>암호화를 쓸 수 없어요</h1><p>https 주소로 열어 주세요.</p>');
@@ -822,17 +937,16 @@
         location.hash = '#/search/' + encodeURIComponent(document.getElementById('find-q').value.trim());
       };
       document.getElementById('lock-btn').onclick = function () {
-        if (state.key) lockNow();
-        else showUnlock();
+        if (state.dormOpen) lockDorm();
       };
       if ('serviceWorker' in navigator && location.protocol !== 'file:') {
         navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href).catch(function () {});
       }
-      document.getElementById('shell').classList.remove('hidden');
-      setLockButton();
-      buildTabs();
-      if (!location.hash) location.hash = '#/home';
-      renderRoute();
+      return loadPublicPack().then(acceptPublic).catch(function () {
+        state.pack = null;
+        state.dormOpen = false;
+        paintShell();
+      });
     }).catch(function () {
       lockBox('<h1>화면 파일을 불러오지 못했어요</h1><p>같은 폴더의 파일을 함께 올려 두었는지 확인해 주세요.</p>');
     });
