@@ -20,7 +20,13 @@
   --tab: 64px;
 }
 * { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  /* 위 머리줄·아래 탭에 버튼이 숨지 않게: 화면 이동(포커스·scrollIntoView) 때 여백을 둠 */
+  scroll-padding-top: 128px;
+  scroll-padding-bottom: calc(var(--tab) + 20px + env(safe-area-inset-bottom));
+}
 body {
   margin: 0;
   min-height: 100vh;
@@ -83,6 +89,7 @@ p { margin: .35rem 0; }
   border-top: 1px solid #F2F4F6;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 6;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, .04);
 }
 .tabs button {
   flex: 1;
@@ -437,3 +444,9 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
 .tile-img b, .tile-img .tile-sub { padding: 0 18px; }
 @media (min-width: 700px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
 .top input[type="search"] { background-color: #fff !important; }
+
+/* PC: 탭을 화면 아래에서 띄워 본문 버튼과 헷갈리지 않게 */
+@media (min-width: 900px) and (hover: hover) {
+  .tabs { bottom: 12px; border-radius: 20px; border: 1px solid var(--line); padding-bottom: 0; }
+  #view { padding-bottom: calc(var(--tab) + 56px); }
+}
