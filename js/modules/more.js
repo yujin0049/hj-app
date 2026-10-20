@@ -65,7 +65,7 @@
       menuBtn('dorm', '기숙사 현황판', '도면, 겨울방학 이동, 기숙사비') +
       menuBtn('schedule', '남은 일정', '날짜, 담당, 완료, 시트 저장') +
       menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
-      menuLink('https://silseupdong-3d.yujin06344.workers.dev', '교육원 3D', '항공정비 실습동 3D 모델 · 새 창') +
+      menuBtn('3d', '교육원 전경 3D', '앱 안에서 보기 · 입장 번호 필요') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
       menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
       menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +
@@ -78,7 +78,7 @@
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === '3d') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });
