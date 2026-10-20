@@ -1,5 +1,6 @@
 {
  "obsidianVault": "옵시디언",
  "obsidianVaultRootInBox": "봇공유",
- "_설명": "obsidianVault = PC·휴대폰 옵시디언에 등록된 볼트 이름(지금 「옵시디언」 하나, 10.21.). 비어 있으면 「옵시디언에서 열기」 버튼을 숨겨요. obsidianVaultRootInBox: 박스 공유 폴더 이름. 그 볼트 안에서도 같은 이름(봇공유/)이라 파일 경로 앞에 그대로 붙여요(없으면 붙이고, 두 번은 안 붙임)."
+ "_설명": "obsidianVault = PC·휴대폰 옵시디언에 등록된 볼트 이름(지금 「옵시디언」 하나, 10.21.). 비어 있으면 「옵시디언에서 열기」 버튼을 숨겨요. obsidianVaultRootInBox: 박스 공유 폴더 이름. 그 볼트 안에서도 같은 이름(봇공유/)이라 파일 경로 앞에 그대로 붙여요(없으면 붙이고, 두 번은 안 붙임).",
+ "threeD": {"src": "https://silseupdong-3d.yujin06344.workers.dev/"}
 }

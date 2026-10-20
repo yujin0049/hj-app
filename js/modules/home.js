@@ -127,7 +127,7 @@
       tile('#/schedule', '🗓️', '남은 일정', schedOpen ? ('남은 일 ' + schedOpen + '개') : '체크리스트', 'green') +
       tile('#/dorm', '🏠', '기숙사 현황판', '방 배정·도면', 'orange') +
       tile('#/banner', '🪧', '현수막 만들기', '시안·예전 현수막', 'purple') +
-      tileLink('https://silseupdong-3d.yujin06344.workers.dev', '3d-thumb', '교육원 3D', '실습동 3D 모델 ↗') +
+      tile('#/3d', '🏫', '교육원 전경 3D', '앱 안에서 보기', 'blue') +
       tile('#/study', '📚', '공부', '하루 10분', 'teal') +
       '</div>';
     h += '<section class="card"><h2>확인 필요</h2>';

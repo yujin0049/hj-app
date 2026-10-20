@@ -439,3 +439,17 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
 .top input[type="search"] { background-color: #fff !important; }
 /* 위임전결 실무 기준 끝의 규정 원문 메모 (js/app.js styleNotes) */
 .reg-note { font-size: .78em; color: var(--muted); font-weight: 400; }
+
+/* 교육원 전경 3D (앱 안 전체 화면) */
+html.v3d-on, html.v3d-on body { overflow: hidden; }
+html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
+.v3d { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; background: #fff; }
+.v3d-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: calc(8px + env(safe-area-inset-top)) 12px 8px; border-bottom: 1px solid var(--line); background: #fff; }
+.v3d-bar b { font-size: 1rem; font-weight: 800; }
+.v3d-btn { min-height: 44px; min-width: 44px; padding: 0 14px; border: 0; border-radius: 12px; background: var(--soft); color: var(--ink); font-weight: 700; display: inline-flex; align-items: center; text-decoration: none; }
+.v3d-stage { position: relative; flex: 1; }
+.v3d-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
+.v3d-wait { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
+.v3d-hint { position: absolute; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); margin: 0 auto; max-width: 520px; padding: 10px 14px; border-radius: 14px; background: rgba(25, 31, 40, .86); color: #fff; font-size: .86rem; transition: opacity .6s; pointer-events: none; }
+.v3d-hint.fade { opacity: 0; }
+@media (max-width: 420px) { .v3d-btn span { display: none; } }
