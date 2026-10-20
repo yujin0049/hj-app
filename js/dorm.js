@@ -445,6 +445,9 @@
     toCsv: toCsv,
     fromCsv: fromCsv,
     importRows: importRows,
-    toTsv: toTsv
+    toTsv: toTsv,
+    cleanRow: cleanRow,
+    ensureIds: ensureIds,
+    addLog: addLog
   };
 })(typeof globalThis !== 'undefined' ? globalThis : this);

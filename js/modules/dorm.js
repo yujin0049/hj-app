@@ -19,7 +19,174 @@
     return window.matchMedia && window.matchMedia('(pointer: fine)').matches;
   }
 
+  /* ── 시트 「기숙사」 탭 바로 저장 (남은 일정과 같은 연결) ── */
+  var META = 'ap3-dorm-sheet';
+  var sync = { busy: false, timer: null, conflict: null, pulled: false, lastFail: 0, msg: '' };
+  function meta() {
+    try { return JSON.parse(localStorage.getItem(META) || 'null') || null; } catch (e) { return null; }
+  }
+  function setMeta(m) { try { localStorage.setItem(META, JSON.stringify(m)); } catch (e) {} }
+  function getMeta(api) {
+    var m = meta();
+    if (!m) m = { pending: !!(api.dormState && api.dormState()), base: '', planBase: '', syncedAt: '' };
+    return m;
+  }
+  function link(api) {
+    var s = (api.scheduleState && api.scheduleState()) || {};
+    var url = s.scriptUrl || '';
+    var key = s.editKey || '';
+    return (window.APSchedule && APSchedule.allowedUrl(url) && key) ? { url: url, key: key } : null;
+  }
+  function sheetRows(rows, plan) {
+    return (rows || []).map(function (raw) {
+      var r = APDorm.cleanRow(raw);
+      var o = {};
+      APDorm.COLS.slice(0, 8).forEach(function (c) { o[c] = r[c] || ''; });
+      if (plan) o['원래 호실'] = raw._from || '';
+      return o;
+    });
+  }
+  function fromSheet(list, plan) {
+    return (list || []).map(function (o) {
+      var r = APDorm.cleanRow(o);
+      if (plan && o['원래 호실']) r._from = o['원래 호실'];
+      return r;
+    });
+  }
+  function sig(rows) {
+    return JSON.stringify(sheetRows(rows).map(function (o) { return APDorm.COLS.slice(0, 8).map(function (c) { return o[c]; }).join('|'); }).sort());
+  }
+  function adopt(api, st, res) {
+    st.rows = APDorm.ensureIds(fromSheet(res.rows));
+    if (res.plan && res.plan.rows && res.plan.rows.length) st.plan = APDorm.ensureIds(fromSheet(res.plan.rows, true));
+    APDorm.normalize(st, st.rows, 'cur');
+    if (st.plan) APDorm.normalize(st, st.plan, 'plan');
+    st.undo = [];
+    APDorm.addLog(st, 'cur', '시트에서 받음', '-', res.rows.length + '줄');
+    return api.saveDorm(APDorm.serial(st));
+  }
+  function push(api, force) {
+    var L = link(api);
+    if (!L) return Promise.reject(new Error('link'));
+    var m = getMeta(api);
+    var st = load(api);
+    return APSheet.post(L.url, { action: 'read', key: L.key }).then(function (cur) {
+      if (!cur || !cur.ok) throw new Error((cur && cur.msg) || 'read');
+      if (!force && cur.hash !== m.base && sig(cur.rows) !== sig(st.rows)) {
+        sync.conflict = cur;
+        throw new Error('conflict');
+      }
+      var body = {
+        action: 'sync', key: L.key, editor: APSheet.editor(),
+        summary: '연습장 기숙사 ' + st.rows.length + '줄' + (st.plan ? ' + 겨울계획 ' + st.plan.length + '줄' : '') + ' 저장',
+        cur: { replace: sheetRows(st.rows), base: cur.hash }
+      };
+      if (st.plan) body.plan = { replace: sheetRows(st.plan, true), base: (cur.plan && cur.plan.hash) || '' };
+      return APSheet.post(L.url, body);
+    }).then(function (res) {
+      if (res && res.conflict) { sync.conflict = res; throw new Error('conflict'); }
+      if (!res || !res.ok) throw new Error((res && res.msg) || 'save');
+      sync.conflict = null;
+      setMeta({ pending: false, base: res.hash || '', planBase: (res.plan && res.plan.hash) || '', syncedAt: new Date().toISOString() });
+    });
+  }
+  function pull(api) {
+    var L = link(api);
+    var m = getMeta(api);
+    return APSheet.post(L.url, { action: 'read', key: L.key }).then(function (res) {
+      if (!res || !res.ok) throw new Error((res && res.msg) || 'read');
+      var st = load(api);
+      var same = sig(res.rows) === sig(st.rows);
+      if (same) { m.base = res.hash; if (!m.pending) m.syncedAt = new Date().toISOString(); setMeta(m); return 'same'; }
+      if (m.pending && res.hash !== m.base) { sync.conflict = res; return 'conflict'; }
+      if (m.pending) return 'push';
+      return adopt(api, st, res).then(function () {
+        setMeta({ pending: false, base: res.hash, planBase: (res.plan && res.plan.hash) || '', syncedAt: new Date().toISOString() });
+        return 'adopted';
+      });
+    });
+  }
+  function runSync(api, force) {
+    if (sync.busy || !link(api)) return;
+    if (!force && (sync.conflict || Date.now() - sync.lastFail < 30000)) return;
+    if (!force && sync.pulled && !getMeta(api).pending) return;   // 할 일 없음
+    sync.busy = true;
+    paintSync(api);
+    var job = (sync.pulled || force) ? Promise.resolve('push') : pull(api).then(function (r) { sync.pulled = true; return r; });
+    job.then(function (r) {
+      if (r === 'conflict') return r;
+      if (force || getMeta(api).pending) return push(api, force).then(function () { api.toast('시트에 저장했어요.'); return 'pushed'; });
+      return r;
+    }).then(function (r) {
+      sync.busy = false;
+      if (r === 'adopted') api.toast('시트에서 새 배치를 받았어요.');
+      if (r === 'adopted' || r === 'conflict' || force) api.refresh(); else paintSync(api);   // 저장만 됐으면 화면을 다시 그리지 않음(누르는 중 흔들림 방지)
+    }, function (err) {
+      sync.busy = false;
+      if (!(err && err.message === 'conflict')) { sync.lastFail = Date.now(); sync.msg = (err && err.message) || ''; }
+      api.refresh();
+    });
+  }
+  function withSheet(api) {
+    var o = Object.assign({}, api);
+    o.saveDorm = function (payload) {
+      return api.saveDorm(payload).then(function () {
+        var m = getMeta(api);
+        m.pending = true;
+        setMeta(m);
+        if (!link(api)) return;
+        clearTimeout(sync.timer);
+        sync.timer = setTimeout(function () { sync.lastFail = 0; runSync(o); }, 700);
+      });
+    };
+    return o;
+  }
+  function syncText(api) {
+    var m = getMeta(api);
+    if (!link(api)) return '이 기기에만 저장돼요. 「남은 일정 → 시트 연결」을 한 번 하면 「기숙사」 탭에 바로 저장돼요.';
+    if (sync.busy) return '시트와 맞추는 중…';
+    if (sync.conflict) return '⚠️ 시트가 다른 곳에서 먼저 바뀌었어요. 아래에서 골라 주세요.';
+    if (m.pending) return '⚠️ 이 기기에 저장해 두었어요. 시트로 다시 보내요.' + (sync.msg && sync.msg !== 'Failed to fetch' ? ' (' + sync.msg + ')' : '');
+    if (m.syncedAt) {
+      var d = new Date(m.syncedAt);
+      return '✅ 「기숙사」 탭과 같아요 · ' + (d.getMonth() + 1) + '.' + d.getDate() + '. ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+    return '시트와 맞추는 중…';
+  }
+  function paintSync(api) {
+    var n = document.getElementById('dorm-sync');
+    if (n) n.textContent = syncText(api);
+    var b = document.getElementById('dorm-push');
+    if (b && !getMeta(api).pending) b.remove();
+  }
+  function syncHtml(api) {
+    var h = '<p class="muted" id="dorm-sync">' + api.esc(syncText(api)) + '</p>';
+    if (link(api) && getMeta(api).pending && !sync.busy && !sync.conflict) h += '<button class="btn-ghost small" id="dorm-push" type="button">시트로 다시 보내기</button>';
+    if (sync.conflict) {
+      h += '<div class="sched-conflict" id="dorm-conflict"><b>시트와 이 기기 배치가 달라요.</b><p class="muted">다른 기기나 시트에서 먼저 고쳤어요. 어느 쪽을 남길까요?</p>' +
+        '<div class="row"><button class="btn" id="dorm-take" type="button">시트 것 받기</button><button class="btn-ghost" id="dorm-mine" type="button">이 기기 것으로 시트 덮기</button></div></div>';
+    }
+    return h;
+  }
+  function bindSync(el, api) {
+    var b = el.querySelector('#dorm-push');
+    if (b) b.onclick = function () { sync.lastFail = 0; runSync(api); };
+    var t = el.querySelector('#dorm-take');
+    if (t) t.onclick = function () {
+      var res = sync.conflict;
+      sync.conflict = null;
+      adopt(api, load(api), res).then(function () {
+        setMeta({ pending: false, base: res.hash, planBase: (res.plan && res.plan.hash) || '', syncedAt: new Date().toISOString() });
+        api.toast('시트 것을 받았어요.');
+        api.refresh();
+      });
+    };
+    var mi = el.querySelector('#dorm-mine');
+    if (mi) mi.onclick = function () { sync.conflict = null; runSync(api, true); };
+  }
+
   function render(el, api) {
+    api = withSheet(api);
     el.classList.add('wide');
     var parts = api.route().parts;
     if (parts[1] === 'import') return importer(el, api);
@@ -57,6 +224,8 @@
     el.querySelector('#log').innerHTML = logHtml(api, state);
     el.querySelector('#sel').innerHTML = selHtml(api, rows);
     bind(el, api, state, mode, rows);
+    bindSync(el, api);
+    runSync(api);
   }
 
   function head(api, sum, seed) {
@@ -77,7 +246,8 @@
       '<p><b>' + api.esc(seed.deadlineNote || '마감 11.5.(목)') + '</b></p>' +
       '<div class="row"><a class="btn-ghost" id="sheet" target="_blank" rel="noopener">시트 열기</a>' +
       '<button class="btn-ghost" id="import" type="button">CSV 가져오기</button></div>' +
-      '<p class="muted">시트는 여기서 자동으로 읽지 않아요. 「' + api.esc(seed.sheetTitle || '업무 현황판') + '」 ' + api.esc(seed.tab || '기숙사') + ' 탭을 열어 CSV로 가져오세요. 전화번호·비밀번호·주민번호는 받지 않아요.</p></section>' +
+      syncHtml(api) +
+      '<p class="muted">「' + api.esc(seed.sheetTitle || '업무 현황판') + '」 ' + api.esc(seed.tab || '기숙사') + ' 탭과 같이 써요. 겨울방학 계획은 「기숙사_겨울계획」 탭. 전화번호·비밀번호·주민번호는 받지 않아요.</p></section>' +
       '<div class="dorm-legend"><span><i class="sw occ"></i>연수생</span><span><i class="sw tch"></i>강사</span><span><i class="sw hold"></i>여자 강사 전용</span><span><i class="sw pend"></i>예정</span><span><i class="sw emp"></i>미배정(빈방)</span><span><i class="sw half"></i>빈자리 있음</span></div>' +
       '<p class="muted">' + api.esc(seed.roomListNote || '층별 호실 목록은 아직 다 몰라요. 자료에 없는 방은 만들지 않아요.') + '</p>';
   }
