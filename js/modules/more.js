@@ -65,6 +65,7 @@
       menuBtn('dorm', '기숙사 현황판', '도면, 겨울방학 이동, 기숙사비') +
       menuBtn('schedule', '남은 일정', '날짜, 담당, 완료, 시트 저장') +
       menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
+      menuLink('https://silseupdong-3d.yujin06344.workers.dev', '교육원 3D', '항공정비 실습동 3D 모델 · 새 창') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
       menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
       menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +
@@ -72,7 +73,7 @@
       menuBtn('records', '내 기록', '점수와 자주 틀린 규칙') +
       menuBtn('rules', '규칙 목록', '문장과 근거를 고칠 수 있어요') +
       menuBtn('month', '매달 할 일', '알림 문구 수정') +
-      menuBtn('settings', '설정', '가져오기, 백업, PIN');
+      menuBtn('settings', '설정', '백업, 초기화');
     el.querySelectorAll('[data-page]').forEach(function (b) {
       b.onclick = function () {
         var id = b.getAttribute('data-page');
@@ -81,6 +82,9 @@
         else api.go('#/more/' + id);
       };
     });
+  }
+  function menuLink(href, title, sub) {
+    return '<a class="list-btn" href="' + href + '" target="_blank" rel="noopener"><b>' + title + ' ↗</b><div class="item-meta">' + sub + '</div></a>';
   }
   function menuBtn(id, title, sub) {
     return '<button class="list-btn" type="button" data-page="' + id + '"><b>' + title + '</b><div class="item-meta">' + sub + '</div></button>';
@@ -114,7 +118,7 @@
   }
   function budget(el, api) {
     var rows = api.pack().entities.budget_lines || [];
-    var h = '<button class="linkish" id="back" type="button">← 더보기</button><section class="card"><h1>예산 집행률</h1><p class="muted">배정액이나 집행액이 비어 있으면 확인 필요예요. 집행률은 배정액이 있을 때만 계산해요. 숫자는 이 기기에 잠겨 저장돼요.</p></section>';
+    var h = '<button class="linkish" id="back" type="button">← 더보기</button><section class="card"><h1>예산 집행률</h1><p class="muted">배정액이나 집행액이 비어 있으면 확인 필요예요. 집행률은 배정액이 있을 때만 계산해요. 숫자는 이 기기에 저장돼요.</p></section>';
     rows.forEach(function (b) {
       var alloc = b.allocated;
       var spent = b.spent;
@@ -251,76 +255,37 @@
     var rec = api.records();
     el.innerHTML = '<button class="linkish" id="back" type="button">← 더보기</button>' +
       '<section class="card"><h1>설정</h1>' +
-      '<div class="warnbox"><b>기숙사만 비밀문구로 잠겨요.</b><br>5분 동안 쓰지 않으면 학생 개인정보는 다시 잠겨요. 다른 메뉴에서 고친 내용은 이 기기에 남아요.</div>' +
-      '<p class="muted">파일로 내보낼 때는 8자 이상 암호를 써요. 점수는 그 백업 파일이 있어야 되살릴 수 있어요.</p>' +
+      '<p class="muted">고친 내용과 공부 기록은 이 기기(브라우저)에 저장돼요. 다른 기기로 옮길 때는 백업 파일을 써요.</p>' +
       '<p class="muted">마지막 백업: ' + api.esc(rec.lastBackupAt ? rec.lastBackupAt.slice(0, 10) : '없음') + '</p></section>' +
-      '<section class="card"><h2>새 묶음 가져오기</h2><p class="muted">점수는 남기고, 과제·규칙·문제만 바꿉니다. 규칙 ID가 같으면 기록이 이어져요.</p>' +
-      '<label class="opt"><input type="checkbox" id="keep-rec" checked><span>점수·공부 기록 유지</span></label>' +
-      '<label class="opt"><input type="checkbox" id="keep-ed" checked><span>내가 고친 규칙·현황표·예산 유지</span></label>' +
-      '<label class="btn block" for="in-file">파일 고르기</label><input id="in-file" class="hidden" type="file" accept="application/json,.json"></section>' +
-      '<section class="card"><h2>내보내기</h2>' +
-      '<label class="field"><span>8자 이상 암호</span><input id="exp-pw" type="text" autocomplete="off"></label>' +
-      '<label class="field"><span>암호 다시</span><input id="exp-pw2" type="text" autocomplete="off"></label>' +
-      '<button class="btn block" id="exp-pack" type="button">묶음만 내보내기</button>' +
-      '<button class="btn-ghost block" id="exp-all" type="button">백업(기록 포함) 내보내기</button></section>' +
-      '<section class="card"><h2>PIN 바꾸기</h2><p class="muted">새 PIN 6자리를 두 번 적어요.</p>' +
-      '<label class="field"><span>새 PIN</span><input id="pin1" type="text" inputmode="numeric" maxlength="6" autocomplete="off"></label>' +
-      '<label class="field"><span>한 번 더</span><input id="pin2" type="text" inputmode="numeric" maxlength="6" autocomplete="off"></label>' +
-      '<button class="btn block" id="pin-go" type="button">PIN 바꾸기</button></section>' +
+      '<section class="card"><h2>백업</h2>' +
+      '<button class="btn block" id="exp-all" type="button">백업 파일 내려받기</button>' +
+      '<label class="btn-ghost block" for="in-file" style="margin-top:8px">백업 파일 불러오기</label><input id="in-file" class="hidden" type="file" accept="application/json,.json"></section>' +
       '<section class="card"><h2>초기화</h2><button class="btn-ghost block" id="wipe" type="button">이 기기 저장 지우기</button>' +
-      '<p class="muted">홈 화면 추가는 Safari 공유 → 홈 화면에 추가. 가져온 파일은 파일 앱에서 지워 주세요.</p></section>';
+      '<p class="muted">홈 화면에 추가하면 앱처럼 열려요. 삼성 인터넷·크롬 메뉴 → 홈 화면에 추가.</p></section>';
     el.querySelector('#back').onclick = function () { api.go('#/more'); };
+    el.querySelector('#exp-all').onclick = function () {
+      var body = api.exportBackup();
+      var d = new Date();
+      var stamp = String(d.getFullYear()).slice(2) + String(d.getMonth() + 1).padStart(2, '0') + String(d.getDate()).padStart(2, '0');
+      download(stamp + '_연습장백업_v01.json', JSON.stringify(body), 'application/json');
+      api.toast('백업을 내려받았어요.');
+    };
     el.querySelector('#in-file').onchange = function (e) {
       var file = e.target.files && e.target.files[0];
       if (!file) return;
       var reader = new FileReader();
       reader.onload = function () {
-        var text = String(reader.result || '');
-        var pw = '';
-        function go(secret) {
-          api.importText(text, secret).then(function (info) {
-            if (info.needSecret) {
-              pw = prompt('파일 암호 (8자 이상)') || '';
-              if (pw.length < 8) { api.toast('암호가 짧아요.'); return; }
-              return go(pw);
-            }
-            if (!info.ok) { api.toast(info.message || '가져오지 못했어요.'); return; }
-            api.replacePack(info.pack, {
-              keepRecords: document.getElementById('keep-rec').checked,
-              keepEdits: document.getElementById('keep-ed').checked
-            }).then(function () {
-              api.toast('새 묶음을 넣었어요. 원본 파일은 지워 주세요.');
-              api.go('#/home');
-            });
-          });
-        }
-        go(null);
+        var obj = null;
+        try { obj = JSON.parse(String(reader.result || '')); } catch (err) { obj = null; }
+        api.importBackup(obj).then(function (ok) {
+          api.toast(ok ? '백업을 불러왔어요.' : '연습장 백업 파일이 아니에요.');
+          if (ok) api.go('#/home');
+        });
       };
       reader.readAsText(file);
     };
-    function pwOk() {
-      var a = document.getElementById('exp-pw').value;
-      var b = document.getElementById('exp-pw2').value;
-      if (a.length < 8) { api.toast('암호는 8자 이상이에요.'); return null; }
-      if (a !== b) { api.toast('암호가 서로 달라요.'); return null; }
-      return a;
-    }
-    el.querySelector('#exp-pack').onclick = function () {
-      var pw = pwOk(); if (!pw) return;
-      api.exportSealed(pw, 'pack').then(function (env) { download('datapack-sealed.json', JSON.stringify(env)); api.toast('묶음을 내려받았어요.'); });
-    };
-    el.querySelector('#exp-all').onclick = function () {
-      var pw = pwOk(); if (!pw) return;
-      api.exportSealed(pw, 'backup').then(function (env) { download('backup-sealed.json', JSON.stringify(env)); api.toast('백업을 내려받았어요.'); });
-    };
-    el.querySelector('#pin-go').onclick = function () {
-      var a = document.getElementById('pin1').value;
-      var b = document.getElementById('pin2').value;
-      if (!/^\d{6}$/.test(a) || a !== b) { api.toast('6자리 숫자를 두 번 같게 적어 주세요.'); return; }
-      api.changePin(a).then(function () { api.toast('PIN을 바꿨어요.'); });
-    };
     el.querySelector('#wipe').onclick = function () {
-      if (confirm('이 기기의 내용과 점수를 모두 지울까요? PIN으로는 되돌릴 수 없어요.')) api.resetAll();
+      if (confirm('이 기기에서 고친 내용과 점수를 모두 지울까요?')) api.resetAll();
     };
   }
 

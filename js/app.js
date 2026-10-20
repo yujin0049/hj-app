@@ -1,15 +1,10 @@
-/* 빈 껍데기. 기관 내용·사람 이름·금액은 가져온 데이터 묶음에만 있어요. */
+/* 행정 연습장 껍데기. 잠금 없이 바로 열려요. 자료는 public-pack.json + dorm.json. */
 (function () {
   'use strict';
-  var PIN_ITER = 100000;
-  var BACKUP_ITER = 150000;
-  var LOCK_MS = 5 * 60 * 1000;
-  var DB_NAME = 'ap3';
+  var OLD_DBS = ['ap3', 'vault', 'ap2', 'ap'];
+  var STORE = 'ap3-public';
 
-  var state = {
-    pin: null, key: null, env: null, pack: null, edits: null, records: null, guide: null, online: null, remoteEnv: null, updateReady: false, dormOpen: false,
-    fails: 0, lockedUntil: 0, lastActive: Date.now(), hiddenAt: 0, booted: false
-  };
+  var state = { pack: null, edits: null, records: null, guide: null, booted: false };
   window.ShellModules = window.ShellModules || {};
 
   function esc(s) {
@@ -58,10 +53,6 @@
     var id = (crypto.randomUUID && crypto.randomUUID()) || ('d' + Date.now());
     return { deviceId: id, updatedAt: new Date().toISOString(), tasks: {}, questions: {}, study: { done: {} }, learning: {}, continue: {}, drafts: {}, lastBackupAt: null };
   }
-  function waitMs(fails) {
-    if (fails < 5) return 0;
-    return Math.min(15 * 60 * 1000, 30000 * Math.pow(2, fails - 5));
-  }
   function toast(msg) {
     var t = document.getElementById('toast');
     if (!t) {
@@ -76,43 +67,25 @@
     toast._t = setTimeout(function () { t.classList.add('hidden'); }, 2400);
   }
 
-  function openDb() {
-    return new Promise(function (res, rej) {
-      var r = indexedDB.open(DB_NAME, 1);
-      r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
-      r.onsuccess = function () { res(r.result); };
-      r.onerror = function () { rej(r.error); };
-    });
-  }
-  function idbGet(key) {
-    return openDb().then(function (db) {
-      return new Promise(function (res, rej) {
-        var tx = db.transaction('kv', 'readonly');
-        var q = tx.objectStore('kv').get(key);
-        q.onsuccess = function () { res(q.result); };
-        q.onerror = function () { rej(q.error); };
+  /* 예전 PIN 저장소(IndexedDB)는 열 때마다 지워요. 다시는 잠금 화면이 나오지 않게. */
+  function purgeOld() {
+    var jobs = [];
+    try {
+      OLD_DBS.forEach(function (name) {
+        jobs.push(new Promise(function (res) {
+          try {
+            var r = indexedDB.deleteDatabase(name);
+            r.onsuccess = r.onerror = r.onblocked = function () { res(); };
+          } catch (e) { res(); }
+          setTimeout(res, 1500);
+        }));
       });
-    });
-  }
-  function idbSet(key, val) {
-    return openDb().then(function (db) {
-      return new Promise(function (res, rej) {
-        var tx = db.transaction('kv', 'readwrite');
-        tx.objectStore('kv').put(val, key);
-        tx.oncomplete = function () { res(); };
-        tx.onerror = function () { rej(tx.error); };
-      });
-    });
-  }
-  function idbDel(key) {
-    return openDb().then(function (db) {
-      return new Promise(function (res, rej) {
-        var tx = db.transaction('kv', 'readwrite');
-        tx.objectStore('kv').delete(key);
-        tx.oncomplete = function () { res(); };
-        tx.onerror = function () { rej(tx.error); };
-      });
-    });
+    } catch (e) { /* indexedDB 없음 */ }
+    try {
+      ['ap3-vault', 'ap3-lock', 'ap3-pin', 'ap3-online'].forEach(function (k) { localStorage.removeItem(k); });
+      sessionStorage.clear();
+    } catch (e) { /* 저장소 없음 */ }
+    return Promise.all(jobs);
   }
 
   function view() {
@@ -135,68 +108,27 @@
     };
   }
 
-  function payload() {
-    state.records.updatedAt = new Date().toISOString();
-    return { pack: state.pack, edits: state.edits, records: state.records, savedAt: state.records.updatedAt, online: state.online || null };
-  }
-  function readPublicStore() {
+  function readStore() {
     var edits = emptyEdits();
     var records = emptyRecords();
     try {
-      var raw = localStorage.getItem('ap3-public');
+      var raw = localStorage.getItem(STORE);
       if (raw) {
         var obj = JSON.parse(raw);
         if (obj && obj.edits) edits = Object.assign(emptyEdits(), obj.edits);
         if (obj && obj.records && obj.records.deviceId) records = obj.records;
       }
     } catch (e) { /* 이 기기 저장이 없으면 빈 기록 */ }
-    edits.dorm = null;
     return { edits: edits, records: records };
   }
-  function writePublicStore() {
-    if (!state.pack || !state.edits || !state.records) return;
-    var edits = Object.assign({}, state.edits, { dorm: null });
-    try { localStorage.setItem('ap3-public', JSON.stringify({ edits: edits, records: state.records })); } catch (e) { /* 용량이 차도 화면은 유지 */ }
-  }
   function persist() {
-    writePublicStore();
-    if (!state.key || !state.env) return Promise.resolve();
-    return APCrypto.encryptWithKey(payload(), state.key, { iter: state.env.iter, salt: state.env.salt }).then(function (env) {
-      state.env = env;
-      return idbSet('vault', { env: env, fails: state.fails || 0, lockedUntil: 0 });
-    });
+    if (!state.edits || !state.records) return Promise.resolve();
+    state.records.updatedAt = new Date().toISOString();
+    try { localStorage.setItem(STORE, JSON.stringify({ edits: state.edits, records: state.records })); }
+    catch (e) { toast('이 기기 저장 공간이 꽉 찼어요.'); }
+    return Promise.resolve();
   }
-
-  function bump() { state.lastActive = Date.now(); }
-  function setLockButton() {
-    var b = document.getElementById('lock-btn');
-    if (!b) return;
-    b.textContent = '잠금';
-    b.classList.add('hidden');
-  }
-  function lockDorm() {
-    return;
-    state.dormOpen = false;
-    if (state.pack && state.pack.entities) delete state.pack.entities.dorm;
-    if (state.edits) state.edits.dorm = null;
-    var lock = document.getElementById('lock');
-    if (lock) lock.classList.add('hidden');
-    setLockButton();
-    if (parseHash().name === 'dorm') location.hash = '#/home';
-    else renderRoute();
-  }
-  function armWatch() {
-    document.addEventListener('pointerdown', bump);
-    document.addEventListener('keydown', bump);
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) state.hiddenAt = Date.now();
-      else if (state.dormOpen && state.hiddenAt && Date.now() - state.hiddenAt >= LOCK_MS) lockDorm();
-      else state.hiddenAt = 0;
-    });
-    setInterval(function () {
-      if (state.dormOpen && Date.now() - state.lastActive >= LOCK_MS) lockDorm();
-    }, 15000);
-  }
+  function bump() { /* 예전 자동 잠금 타이머 자리. 이제 잠그지 않아요. */ }
 
   function parseHash() {
     var h = (location.hash || '#/home').replace(/^#\/?/, '');
@@ -220,7 +152,6 @@
       go: function (hash) { location.hash = hash; },
       unlocked: function () { return !!state.pack; },
       guide: function () { return state.guide || { sections: [] }; },
-      openLock: function () { showUnlock(); },
       esc: esc,
       won: APGrade.won,
       num: APGrade.num,
@@ -231,7 +162,6 @@
       refresh: renderRoute,
       save: persist,
       touch: bump,
-      lock: lockDorm,
       patchRule: function (id, obj) {
         state.edits.rules[id] = Object.assign({}, state.edits.rules[id] || {}, obj);
         return persist();
@@ -348,48 +278,24 @@
         else delete state.records.learning[id];
         return persist();
       },
-      exportSealed: function (secret, mode) {
-        var body = mode === 'pack' ? { kind: 'pack', pack: state.pack, edits: state.edits } : { kind: 'backup', pack: state.pack, edits: state.edits, records: state.records };
-        return APCrypto.encryptJson(body, secret, BACKUP_ITER).then(function (r) {
-          state.records.lastBackupAt = new Date().toISOString();
-          return persist().then(function () { return r.env; });
-        });
+      exportBackup: function () {
+        state.records.lastBackupAt = new Date().toISOString();
+        persist();
+        return { kind: 'hj-backup', savedAt: state.records.lastBackupAt, edits: state.edits, records: state.records };
       },
-      changePin: function (next) {
-        return APCrypto.encryptJson(payload(), next, PIN_ITER).then(function (r) {
-          state.pin = next;
-          state.key = r.key;
-          state.env = r.env;
-          return idbSet('vault', { env: r.env, fails: 0, lockedUntil: 0 });
-        });
+      importBackup: function (obj) {
+        if (!obj || obj.kind !== 'hj-backup' || !obj.edits || !obj.records) return Promise.resolve(false);
+        state.edits = Object.assign(emptyEdits(), obj.edits);
+        state.records = obj.records.deviceId ? obj.records : emptyRecords();
+        return persist().then(function () { return true; });
       },
       resetAll: function () {
-        try { localStorage.removeItem('ap3-public'); } catch (e) { /* 저장이 없어도 지운 것으로 봄 */ }
-        state.pin = null;
-        state.key = null;
-        state.env = null;
-        state.dormOpen = false;
-        if (state.pack && state.pack.entities) delete state.pack.entities.dorm;
+        try { localStorage.removeItem(STORE); } catch (e) { /* 저장이 없어도 지운 것으로 봄 */ }
         state.edits = emptyEdits();
         state.records = emptyRecords();
-        setLockButton();
-        return idbDel('vault').then(function () {
-          toast('이 기기의 고친 내용을 지웠어요.');
-          if (parseHash().name === 'dorm') location.hash = '#/home';
-          else renderRoute();
-        });
-      },
-      importText: importText,
-      replacePack: function (pack, opts) {
-        opts = opts || {};
-        if (pack && pack.entities) delete pack.entities.dorm;
-        state.pack = pack;
-        state.dormOpen = false;
-        if (!opts.keepEdits) state.edits = emptyEdits();
-        else if (state.edits) state.edits.dorm = null;
-        if (!opts.keepRecords) state.records = emptyRecords();
-        setLockButton();
-        return persist();
+        toast('이 기기의 고친 내용을 지웠어요.');
+        renderRoute();
+        return Promise.resolve();
       }
     };
   }
@@ -402,15 +308,6 @@
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
-    if (id === 'dorm' && !state.dormOpen) {
-      fetch(new URL('dorm.json', document.baseURI).href, { cache: 'no-store' }).then(function (res) { return res.json(); }).then(function (d) {
-        if (state.pack && state.pack.entities) state.pack.entities.dorm = d;
-        state.dormOpen = true;
-        renderRoute();
-      }).catch(function () { toast('기숙사 자료를 못 불러왔어요. 다시 눌러 주세요.'); });
-      return;
-    }
-    document.getElementById('lock').classList.add('hidden');
     var el = document.getElementById('view');
     var mod = ShellModules[id];
     el.classList.remove('wide');
@@ -419,30 +316,7 @@
     catch (e) {
       el.innerHTML = '<section class="card"><h2>화면을 열지 못했어요</h2><p class="muted">' + esc(e.message || e) + '</p></section>';
     }
-    if (state.key && state.updateReady) {
-      var bar = document.createElement('div');
-      bar.className = 'card';
-      var note = window.APOnline && APOnline.hasEdits(state.edits) ? '고친 내용은 남겨 둡니다. 겹치면 확인 필요로 표시해요.' : '이 폰의 점수는 그대로예요.';
-      bar.innerHTML = '<button class="btn block" id="take-pack" type="button">새 자료 있음 → 받기</button><p class="muted">' + note + '</p>';
-      el.insertBefore(bar, el.firstChild);
-      bar.querySelector('#take-pack').onclick = function () { takePack(); };
-    }
     window.scrollTo(0, 0);
-  }
-
-  function enterApp() {
-    document.getElementById('lock').classList.add('hidden');
-    document.getElementById('shell').classList.remove('hidden');
-    setLockButton();
-    var v = view();
-    document.getElementById('title').textContent = v.appTitle;
-    document.getElementById('sub').textContent = v.packVersion ? ('묶음 ' + v.packVersion) : '';
-    document.title = v.appTitle;
-    buildTabs();
-    if (!location.hash) location.hash = '#/home';
-    renderRoute();
-    bump();
-    lookForUpdate();
   }
 
   function buildTabs() {
@@ -460,414 +334,8 @@
     });
   }
 
-  function keypad(onDone, opts) {
-    opts = opts || {};
-    var entered = '';
-    var wrap = document.createElement('div');
-    var dots = document.createElement('div');
-    dots.className = 'dots';
-    function paint() {
-      dots.innerHTML = '';
-      for (var i = 0; i < 6; i++) {
-        var s = document.createElement('i');
-        if (i < entered.length) s.className = 'on';
-        dots.appendChild(s);
-      }
-    }
-    paint();
-    var pad = document.createElement('div');
-    pad.className = 'pad';
-    function push(d) {
-      if (entered.length >= 6) return;
-      entered += d;
-      paint();
-      if (entered.length === 6) onDone(entered, reset);
-    }
-    function reset() { entered = ''; paint(); }
-    '123456789'.split('').forEach(function (d) {
-      var b = document.createElement('button');
-      b.type = 'button';
-      b.textContent = d;
-      b.setAttribute('data-k', d);
-      b.onclick = function () { push(d); };
-      pad.appendChild(b);
-    });
-    var blank = document.createElement('button');
-    blank.type = 'button';
-    blank.className = 'ghost';
-    blank.tabIndex = -1;
-    blank.setAttribute('aria-hidden', 'true');
-    var zero = document.createElement('button');
-    zero.type = 'button';
-    zero.textContent = '0';
-    zero.setAttribute('data-k', '0');
-    zero.onclick = function () { push('0'); };
-    var back = document.createElement('button');
-    back.type = 'button';
-    back.className = 'ghost';
-    back.textContent = '지움';
-    back.setAttribute('aria-label', '한 자리 지우기');
-    back.onclick = function () { entered = entered.slice(0, -1); paint(); };
-    pad.appendChild(blank);
-    pad.appendChild(zero);
-    pad.appendChild(back);
-    wrap.appendChild(dots);
-    wrap.appendChild(pad);
-    return wrap;
-  }
-
-  function lockBox(html) {
-    var root = document.getElementById('lock');
-    root.classList.remove('hidden');
-    root.innerHTML = '<div class="panel card">' + html + '</div>';
-    return root.querySelector('.panel');
-  }
-
-  function showImport() {
-    var panel = lockBox(
-      '<p class="kicker">빈 앱</p><h1>행정 연습장</h1>' +
-      '<p>이 화면에는 업무 내용이 없어요. 비밀문구로 자료를 연 다음, 6자리 PIN으로 이 폰에만 잠가 저장해요.</p>' +
-      '<div class="warnbox"><b>PIN을 잊으면 복구할 수 없어요.</b><br>초기화하고 비밀문구로 다시 열어야 해요. 점수는 백업이 있을 때만 되살릴 수 있어요.</div>' +
-      '<p class="muted">홈 화면에 추가하면 앱처럼 열려요. Safari 공유 단추 → 홈 화면에 추가.</p>' +
-      '<button class="btn block" id="open-phrase" type="button">비밀문구로 열기</button>' +
-      '<button class="btn-ghost block" id="pub" type="button">학생 안내만 보기</button>' +
-      '<button class="linkish" id="file-open" type="button">파일로 가져오기</button>' +
-      '<input id="pack-file" type="file" accept="application/json,.json" class="hidden">' +
-      '<p id="import-msg" class="muted"></p>'
-    );
-    panel.querySelector('#open-phrase').onclick = showPhrase;
-    panel.querySelector('#pub').onclick = function () {
-      document.getElementById('lock').classList.add('hidden');
-      location.hash = '#/students';
-    };
-    panel.querySelector('#file-open').onclick = function () {
-      panel.querySelector('#pack-file').click();
-    };
-    panel.querySelector('#pack-file').onchange = function (e) {
-      var file = e.target.files && e.target.files[0];
-      if (!file) return;
-      var reader = new FileReader();
-      reader.onload = function () {
-        importText(String(reader.result || ''), null).then(function (info) {
-          if (!info.ok) { panel.querySelector('#import-msg').textContent = info.message; return; }
-          if (info.needSecret) askSecret(String(reader.result || ''));
-          else askNewPin(info.pack, info.restored, null);
-        }).catch(function () {
-          panel.querySelector('#import-msg').textContent = '파일을 읽지 못했어요.';
-        });
-      };
-      reader.readAsText(file);
-    };
-  }
-
-  function showDormPhrase() {
-    var panel = lockBox(
-      '<p class="kicker">기숙사</p><h1>기숙사 열기</h1>' +
-      '<p>학생 개인정보라 비밀문구로만 열어요. 남은 일정, 현수막, 공부, 업무는 잠금 없이 쓸 수 있어요.</p>' +
-      '<label class="field"><span>비밀문구</span><input id="phrase" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="xxxx-xxxx-xxxx-xxxx"></label>' +
-      '<button class="btn block" id="phrase-go" type="button">열기</button>' +
-      '<p id="import-msg" class="muted"></p>' +
-      '<button class="btn-ghost block" id="back" type="button">돌아가기</button>'
-    );
-    var input = panel.querySelector('#phrase');
-    panel.querySelector('#back').onclick = function () {
-      document.getElementById('lock').classList.add('hidden');
-      if (parseHash().name === 'dorm') location.hash = '#/home';
-      else renderRoute();
-    };
-    function go() {
-      var phrase = input.value.trim();
-      var msg = panel.querySelector('#import-msg');
-      var btn = panel.querySelector('#phrase-go');
-      if (!phrase) { msg.textContent = '비밀문구를 적어 주세요.'; return; }
-      if (!state.pack) { msg.textContent = '공개 자료를 먼저 받지 못했어요.'; return; }
-      btn.disabled = true;
-      msg.textContent = '여는 중이에요. 잠시만 기다려 주세요.';
-      fetch(new URL('pack.enc', document.baseURI).href, { cache: 'no-store' }).then(function (res) {
-        if (!res.ok) throw new Error('missing');
-        return res.json();
-      }).then(function (env) {
-        return APCrypto.decryptOnline(env, phrase).then(function (r) {
-          if (!r.ok) { btn.disabled = false; msg.textContent = '비밀문구가 맞지 않아요.'; return; }
-          var dorm = r.pack && r.pack.entities && r.pack.entities.dorm;
-          if (!dorm) { btn.disabled = false; msg.textContent = '기숙사 자료가 없어요.'; return; }
-          state.pack.entities.dorm = dorm;
-          state.dormOpen = true;
-          if (!state.edits) state.edits = emptyEdits();
-          state.edits.dorm = null;
-          document.getElementById('lock').classList.add('hidden');
-          setLockButton();
-          renderRoute();
-        });
-      }).catch(function () {
-        btn.disabled = false;
-        msg.textContent = '자료 파일을 받지 못했어요.';
-      });
-    }
-    panel.querySelector('#phrase-go').onclick = go;
-    input.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } };
-  }
-
-  function showPhrase() {
-    var panel = lockBox(
-      '<p class="kicker">비밀문구</p><h1>자료 열기</h1>' +
-      '<p>띄어쓰기 없이 적어 주세요.</p>' +
-      '<label class="field"><span>비밀문구</span><input id="phrase" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done" placeholder="xxxx-xxxx-xxxx-xxxx"></label>' +
-      '<button class="btn block" id="phrase-go" type="button">열기</button>' +
-      '<p id="import-msg" class="muted"></p>' +
-      '<button class="linkish" id="back" type="button">뒤로</button>'
-    );
-    var input = panel.querySelector('#phrase');
-    panel.querySelector('#back').onclick = showImport;
-    function go() {
-      var phrase = input.value.trim();
-      var msg = panel.querySelector('#import-msg');
-      var btn = panel.querySelector('#phrase-go');
-      if (!phrase) { msg.textContent = '비밀문구를 적어 주세요.'; return; }
-      btn.disabled = true;
-      msg.textContent = '여는 중이에요. 잠시만 기다려 주세요.';
-      fetch(new URL('pack.enc', document.baseURI).href, { cache: 'no-store' }).then(function (res) {
-        if (!res.ok) throw new Error('missing');
-        return res.json();
-      }).then(function (env) {
-        return APCrypto.decryptOnline(env, phrase).then(function (r) {
-          if (!r.ok) { btn.disabled = false; msg.textContent = '비밀문구가 맞지 않아요.'; return; }
-          if (!isPack(r.pack)) { btn.disabled = false; msg.textContent = '자료 형식이 아니에요.'; return; }
-          askNewPin(r.pack, null, {
-            keyRaw: r.keyRaw, salt: r.salt, iter: r.iter,
-            packVersion: env.packVersion || r.pack.packVersion || '',
-            sealedAt: env.sealedAt || ''
-          });
-        });
-      }).catch(function () {
-        btn.disabled = false;
-        msg.textContent = '자료 파일을 받지 못했어요.';
-      });
-    }
-    panel.querySelector('#phrase-go').onclick = go;
-    input.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } };
-  }
-
-  function askSecret(text) {
-    var panel = lockBox(
-      '<p class="kicker">잠긴 파일</p><h1>암호 입력</h1>' +
-      '<p>이 파일은 PIN이 아니라 8자 이상 암호로 잠겨 있어요.</p>' +
-      '<label class="field"><span>암호</span><input id="pw" type="text" autocomplete="off" autocapitalize="off"></label>' +
-      '<button class="btn block" id="pw-go" type="button">열기</button>' +
-      '<p id="import-msg" class="muted"></p>' +
-      '<button class="btn-ghost block" id="back" type="button">뒤로</button>'
-    );
-    panel.querySelector('#back').onclick = showImport;
-    panel.querySelector('#pw-go').onclick = function () {
-      var pw = panel.querySelector('#pw').value;
-      importText(text, pw).then(function (info) {
-        if (!info.ok) { panel.querySelector('#import-msg').textContent = info.message; return; }
-        askNewPin(info.pack, info.restored, null);
-      });
-    };
-  }
-
   function isPack(o) {
-    return !!(o && o.format === 'admin-practice-pack' && o.entities && Array.isArray(o.entities.tasks) && Array.isArray(o.entities.rules) && Array.isArray(o.entities.questions) && Array.isArray(o.entities.study_days));
-  }
-
-  function importText(text, secret) {
-    var obj;
-    try { obj = JSON.parse(text); }
-    catch (e) { return Promise.resolve({ ok: false, message: 'JSON 파일이 아니에요.' }); }
-    if (obj && obj.sealed) {
-      if (!secret) return Promise.resolve({ ok: false, needSecret: true, message: '암호가 필요해요.' });
-      if (String(secret).length < 8) return Promise.resolve({ ok: false, message: '암호는 8자 이상이에요.' });
-      return APCrypto.decryptJson(obj, secret).then(function (r) {
-        if (!r.ok) return { ok: false, message: '암호가 맞지 않아요.' };
-        var body = r.value || {};
-        var pack = body.pack || (isPack(body) ? body : null);
-        if (!isPack(pack)) return { ok: false, message: '묶음 형식이 아니에요.' };
-        return { ok: true, pack: pack, restored: body.records ? body : null };
-      });
-    }
-    if (!isPack(obj)) return Promise.resolve({ ok: false, message: '데이터 묶음 형식이 아니에요.' });
-    return Promise.resolve({ ok: true, pack: obj, restored: null });
-  }
-
-  function askNewPin(pack, restored, online) {
-    var first = '';
-    var panel = lockBox(
-      '<p class="kicker">PIN</p><h1>6자리 PIN 정하기</h1>' +
-      '<p id="pin-help">같은 번호를 한 번 더 입력해요. 이 PIN은 어디에도 저장하지 않아요.</p>' +
-      '<div class="warnbox">잊으면 복구할 수 없어요.</div><div id="pad"></div>'
-    );
-    panel.querySelector('#pad').appendChild(keypad(function (pin, reset) {
-      if (!first) {
-        first = pin;
-        panel.querySelector('#pin-help').textContent = '한 번 더 눌러 주세요.';
-        reset();
-        return;
-      }
-      if (pin !== first) {
-        first = '';
-        panel.querySelector('#pin-help').textContent = '두 번이 달랐어요. 처음부터 다시 정해요.';
-        reset();
-        return;
-      }
-      var edits = (restored && restored.edits) || emptyEdits();
-      var records = (restored && restored.records) || emptyRecords();
-      state.online = online || null;
-      var body = { pack: pack, edits: edits, records: records, savedAt: new Date().toISOString(), online: state.online };
-      APCrypto.encryptJson(body, pin, PIN_ITER).then(function (r) {
-        state.pin = pin;
-        state.key = r.key;
-        state.env = r.env;
-        state.pack = pack;
-        state.edits = edits;
-        state.records = records;
-        state.fails = 0;
-        return idbSet('vault', { env: r.env, fails: 0, lockedUntil: 0 });
-      }).then(function () {
-        var warn = online
-          ? '이 폰에만 저장했어요. PIN을 잊으면 복구할 수 없어요.'
-          : '원본 파일을 파일 앱에서 지워 주세요. PIN을 잊으면 복구할 수 없어요. 백업은 설정에서, PIN과 다른 8자 이상 암호로 내보내요.';
-        var done = lockBox(
-          '<h1>저장했어요</h1>' +
-          '<div class="warnbox">' + warn + '</div>' +
-          '<button class="btn block" id="go" type="button">시작하기</button>'
-        );
-        done.querySelector('#go').onclick = enterApp;
-      });
-    }));
-  }
-
-  function showUnlock() {
-    idbGet('vault').then(function (vault) {
-      if (!vault || !vault.env) { showImport(); return; }
-      state.fails = vault.fails || 0;
-      state.lockedUntil = vault.lockedUntil || 0;
-      var left = state.lockedUntil - Date.now();
-      var panel = lockBox(
-        '<p class="kicker">잠금</p><h1>PIN 6자리</h1>' +
-        '<p class="muted">5분 동안 쉬거나 화면을 벗어나면 다시 잠겨요.</p>' +
-        '<p id="lock-msg" class="warnbox"' + (left > 0 ? '' : ' hidden') + '>' + (left > 0 ? ('잠시 뒤 다시 시도해요. ' + Math.ceil(left / 1000) + '초') : '') + '</p>' +
-        '<div id="pad"></div>' +
-        '<p class="muted">PIN을 잊었다면 복구할 수 없어요. 아래는 이 기기의 저장만 지워요.</p>' +
-        '<button class="btn-ghost block" id="wipe" type="button">저장 지우고 묶음 다시 가져오기</button>' +
-        '<button class="btn-ghost block" id="pub" type="button">학생 안내만 보기</button>'
-      );
-      panel.querySelector('#pub').onclick = function () {
-        document.getElementById('lock').classList.add('hidden');
-        if (window.MODULE_LOCK && window.MODULE_LOCK[parseHash().name]) location.hash = '#/students';
-      };
-      panel.querySelector('#wipe').onclick = function () {
-        if (confirm('이 기기에 잠긴 내용과 점수를 지울까요? PIN으로는 되돌릴 수 없어요.')) {
-          idbDel('vault').then(showImport);
-        }
-      };
-      if (left > 0) return;
-      panel.querySelector('#pad').appendChild(keypad(function (pin, reset) {
-        APCrypto.decryptJson(vault.env, pin).then(function (r) {
-          if (!r.ok) {
-            state.fails += 1;
-            var wait = waitMs(state.fails);
-            var until = wait ? Date.now() + wait : 0;
-            state.lockedUntil = until;
-            idbSet('vault', { env: vault.env, fails: state.fails, lockedUntil: until }).then(function () {
-              var msg = panel.querySelector('#lock-msg');
-              msg.classList.remove('hidden');
-              msg.textContent = wait ? ('PIN이 아니에요. ' + Math.ceil(wait / 1000) + '초 뒤에 다시 시도해요.') : 'PIN이 아니에요.';
-              reset();
-              if (wait) panel.querySelector('#pad').innerHTML = '';
-            });
-            return;
-          }
-          var body = r.value || {};
-          state.pin = pin;
-          state.key = r.key;
-          state.env = vault.env;
-          state.pack = body.pack;
-          state.edits = body.edits || emptyEdits();
-          state.records = body.records || emptyRecords();
-          state.online = body.online || null;
-          state.fails = 0;
-          idbSet('vault', { env: vault.env, fails: 0, lockedUntil: 0 }).then(enterApp);
-        });
-      }));
-    }).catch(function () {
-      lockBox('<h1>저장소를 열 수 없어요</h1><p>브라우저가 암호화를 지원하는 주소(https 또는 이 컴퓨터의 로컬 주소)에서 열어 주세요.</p>');
-    });
-  }
-
-  function lookForUpdate() {
-    if (!state.key || !state.pack) return;
-    fetch(new URL('pack.enc', document.baseURI).href, { cache: 'no-store' }).then(function (res) {
-      if (!res.ok) return null;
-      return res.json();
-    }).then(function (env) {
-      if (!env || env.format !== 'admin-practice-online') return;
-      state.remoteEnv = env;
-      state.updateReady = window.APOnline ? APOnline.newer(state.pack, state.online, env) : false;
-      if (state.updateReady) renderRoute();
-    }).catch(function () {});
-  }
-  function applyRemote(pack, online) {
-    var merged = APOnline.mergeKeepEdits(state.pack, pack, state.edits);
-    state.pack = pack;
-    state.edits = merged.edits;
-    state.online = online;
-    state.updateReady = false;
-    state.remoteEnv = null;
-    return persist().then(function () {
-      toast(merged.conflicts.length ? '받았어요. 겹친 곳은 확인 필요예요.' : '받았어요.');
-      renderRoute();
-    });
-  }
-  function askPhraseForUpdate(env) {
-    var panel = lockBox(
-      '<p class="kicker">새 자료</p><h1>비밀문구</h1>' +
-      '<p>이 자료는 저장된 열쇠로 열리지 않아요. 비밀문구를 한 번 더 적어 주세요.</p>' +
-      '<label class="field"><span>비밀문구</span><input id="phrase" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="done"></label>' +
-      '<button class="btn block" id="phrase-go" type="button">받기</button>' +
-      '<p id="import-msg" class="muted"></p>' +
-      '<button class="btn-ghost block" id="back" type="button">닫기</button>'
-    );
-    panel.querySelector('#back').onclick = function () {
-      document.getElementById('lock').classList.add('hidden');
-      renderRoute();
-    };
-    panel.querySelector('#phrase-go').onclick = function () {
-      var phrase = panel.querySelector('#phrase').value.trim();
-      var msg = panel.querySelector('#import-msg');
-      var btn = panel.querySelector('#phrase-go');
-      if (!phrase) { msg.textContent = '비밀문구를 적어 주세요.'; return; }
-      btn.disabled = true;
-      msg.textContent = '여는 중이에요. 잠시만 기다려 주세요.';
-      APCrypto.decryptOnline(env, phrase).then(function (r) {
-        if (!r.ok) { btn.disabled = false; msg.textContent = '비밀문구가 맞지 않아요.'; return; }
-        if (!isPack(r.pack)) { btn.disabled = false; msg.textContent = '자료 형식이 아니에요.'; return; }
-        document.getElementById('lock').classList.add('hidden');
-        applyRemote(r.pack, {
-          keyRaw: r.keyRaw, salt: r.salt, iter: r.iter,
-          packVersion: env.packVersion || r.pack.packVersion || '',
-          sealedAt: env.sealedAt || ''
-        });
-      });
-    };
-  }
-  function takePack() {
-    var env = state.remoteEnv;
-    if (!env) return;
-    var online = state.online;
-    var sameKey = online && online.keyRaw && online.salt && online.salt === env.salt;
-    var job = sameKey ? APCrypto.decryptOnlineKey(env, online.keyRaw) : Promise.resolve({ ok: false });
-    job.then(function (r) {
-      if (r.ok && isPack(r.pack)) {
-        applyRemote(r.pack, {
-          keyRaw: online.keyRaw, salt: online.salt, iter: env.iter || online.iter,
-          packVersion: env.packVersion || r.pack.packVersion || '',
-          sealedAt: env.sealedAt || ''
-        });
-        return;
-      }
-      askPhraseForUpdate(env);
-    });
+    return !!(o && o.entities && typeof o.entities === 'object');
   }
 
   function loadModules() {
@@ -879,7 +347,7 @@
       var id = list[i++];
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
-        s.src = new URL('js/modules/' + id + '.js', base).href;
+        s.src = new URL('js/modules/' + id + '.js?v=16', base).href;
         s.onload = function () { res(); };
         s.onerror = function () { rej(new Error(id)); };
         document.body.appendChild(s);
@@ -889,71 +357,67 @@
   }
 
   function paintShell() {
-    document.getElementById('lock').classList.add('hidden');
+    var lock = document.getElementById('lock');
+    if (lock) lock.remove();
     document.getElementById('shell').classList.remove('hidden');
     if (!state.edits) state.edits = emptyEdits();
     if (!state.records) state.records = emptyRecords();
-    state.edits.dorm = state.dormOpen ? state.edits.dorm : null;
-    setLockButton();
     var v = view();
-    document.getElementById('title').textContent = (state.pack && v.appTitle) || '행정 연습장';
-    document.getElementById('sub').textContent = state.pack && v.packVersion ? ('묶음 ' + v.packVersion) : '';
-    document.title = (state.pack && v.appTitle) || '행정 연습장';
+    document.getElementById('title').textContent = '행정 업무 연습장';
+    document.getElementById('sub').textContent = state.pack && v.packVersion ? ('자료 ' + v.packVersion) : '';
+    document.title = '행정 업무 연습장';
     buildTabs();
     if (!location.hash) location.hash = '#/home';
     renderRoute();
-    bump();
   }
-  function acceptPublic(pack) {
-    if (pack && pack.entities) delete pack.entities.dorm;
-    state.pack = pack;
-    state.dormOpen = false;
-    var saved = readPublicStore();
-    state.edits = saved.edits;
-    state.records = saved.records;
-    paintShell();
-  }
-  function loadPublicPack() {
-    return fetch(new URL('public-pack.json', document.baseURI).href, { cache: 'no-store' }).then(function (res) {
-      if (!res.ok) throw new Error('missing');
+  function getJson(file) {
+    return fetch(new URL(file, document.baseURI).href, { cache: 'no-store' }).then(function (res) {
+      if (!res.ok) throw new Error(file);
       return res.json();
-    }).then(function (pack) {
-      if (!isPack(pack)) throw new Error('shape');
+    });
+  }
+  function loadData() {
+    return Promise.all([
+      getJson('public-pack.json').catch(function () { return null; }),
+      getJson('dorm.json').catch(function () { return null; })
+    ]).then(function (r) {
+      var pack = isPack(r[0]) ? r[0] : { appTitle: '행정 업무 연습장', packVersion: '', corrections: [], catalogs: {}, entities: {} };
+      if (r[1]) pack.entities.dorm = r[1];
       return pack;
     });
   }
+  function registerSw() {
+    if (!('serviceWorker' in navigator) || location.protocol === 'file:') return;
+    var reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href, { updateViaCache: 'none' }).then(function (reg) {
+      try { reg.update(); } catch (e) { /* 다음에 다시 */ }
+    }).catch(function () {});
+  }
   function boot() {
-    if (!crypto.subtle) {
-      lockBox('<h1>암호화를 쓸 수 없어요</h1><p>https 주소로 열어 주세요.</p>');
-      return;
-    }
-    loadModules().then(function () {
-      return fetch(new URL('public/guide.json', document.baseURI).href).then(function (r) {
-        if (!r.ok) throw new Error('guide');
-        return r.json();
-      }).catch(function () { return { sections: [], notice: '안내 글을 불러오지 못했어요.' }; });
+    purgeOld().then(loadModules).then(function () {
+      return getJson('public/guide.json').catch(function () { return { sections: [], notice: '안내 글을 불러오지 못했어요.' }; });
     }).then(function (guide) {
       state.guide = guide;
-      armWatch();
-      window.addEventListener('hashchange', function () { bump(); renderRoute(); });
+      window.addEventListener('hashchange', renderRoute);
       document.getElementById('find').onsubmit = function (e) {
         e.preventDefault();
-        bump();
         location.hash = '#/search/' + encodeURIComponent(document.getElementById('find-q').value.trim());
       };
-      document.getElementById('lock-btn').onclick = function () {
-        if (state.dormOpen) lockDorm();
-      };
-      if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-        navigator.serviceWorker.register(new URL('sw.js', document.baseURI).href).catch(function () {});
-      }
-      return loadPublicPack().then(acceptPublic).catch(function () {
-        state.pack = null;
-        state.dormOpen = false;
-        paintShell();
-      });
-    }).catch(function () {
-      lockBox('<h1>화면 파일을 불러오지 못했어요</h1><p>같은 폴더의 파일을 함께 올려 두었는지 확인해 주세요.</p>');
+      registerSw();
+      return loadData();
+    }).then(function (pack) {
+      state.pack = pack;
+      var saved = readStore();
+      state.edits = saved.edits;
+      state.records = saved.records;
+      paintShell();
+    }).catch(function (e) {
+      document.getElementById('view').innerHTML = '<section class="card"><h1>화면 파일을 불러오지 못했어요</h1><p class="muted">새로고침해 주세요. (' + esc(e && e.message || e) + ')</p></section>';
     });
   }
   document.addEventListener('DOMContentLoaded', boot);

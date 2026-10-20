@@ -263,7 +263,7 @@
     var h = '<button class="linkish" id="back" type="button">← 남은 일정</button>';
     h += '<section class="card"><h1>시트 연결</h1>';
     h += '<p>고친 일정은 「' + api.esc(seed.sheetTitle || '업무 현황판') + '」 ' + api.esc(seed.tab || '남은일정') + ' 탭에 올립니다.</p>';
-    h += '<p class="muted">웹앱 주소와 수정 열쇠는 이 기기의 잠긴 저장에만 둡니다. 화면 코드에는 넣지 않아요. 열쇠는 비워 두면 이미 있는 값을 유지해요.</p>';
+    h += '<p class="muted">웹앱 주소와 수정 열쇠는 이 기기 저장에만 둡니다. 화면 코드에는 넣지 않아요. 열쇠는 비워 두면 이미 있는 값을 유지해요.</p>';
     h += field('웹앱 주소', '<input id="f-url" type="url" inputmode="url" autocomplete="off" placeholder="https://script.google.com/macros/s/…/exec" value="' + api.esc(state.scriptUrl || '') + '">');
     h += field('수정 열쇠', '<input id="f-key" class="mask" type="text" autocomplete="off" value="">');
     if (seed.sheetUrl) h += '<p><a class="btn-ghost" id="sheet" href="' + api.esc(seed.sheetUrl) + '" target="_blank" rel="noopener">시트 열기</a></p>';

@@ -89,6 +89,13 @@
     return out.slice(0, 10);
   }
 
+  function tile(href, emoji, title, sub, tone) {
+    return '<button class="tile" type="button" data-go="' + href + '"><span class="tile-ic ' + tone + '">' + emoji + '</span><b>' + title + '</b><span class="tile-sub">' + sub + '</span></button>';
+  }
+  function tileLink(href, img, title, sub) {
+    return '<a class="tile tile-img" href="' + href + '" target="_blank" rel="noopener"><img src="img/' + img + '.jpg" alt="" loading="lazy"><b>' + title + '</b><span class="tile-sub">' + sub + '</span></a>';
+  }
+
   function render(el, api) {
     if (!api.unlocked()) return renderPublic(el, api);
     var pack = api.pack();
@@ -112,8 +119,18 @@
     var backupOld = hasLocal && (!rec.lastBackupAt || (Date.now() - new Date(rec.lastBackupAt).getTime() > 14 * 86400000));
 
     var review = reviewItems(pack);
-    var h = '<section class="card"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1>오늘 볼 일</h1>';
-    h += '<h2>확인 필요</h2>';
+    var schedAll = (pack.entities.schedule && pack.entities.schedule.items) || [];
+    var schedOpen = schedAll.filter(function (it) { return !it.done; }).length;
+    var h = '<section class="hero"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1 class="hero-title">오늘 뭐부터 할까요?</h1></section>';
+    h += '<div class="tiles">' +
+      tile('#/board', '📋', '오늘 할 일', work.length ? ('진행 중 ' + work.length + '건') : '업무 현황표', 'blue') +
+      tile('#/schedule', '🗓️', '남은 일정', schedOpen ? ('남은 일 ' + schedOpen + '개') : '체크리스트', 'green') +
+      tile('#/dorm', '🏠', '기숙사 현황판', '방 배정·도면', 'orange') +
+      tile('#/banner', '🪧', '현수막 만들기', '시안·예전 현수막', 'purple') +
+      tileLink('https://silseupdong-3d.yujin06344.workers.dev', '3d-thumb', '교육원 3D', '실습동 3D 모델 ↗') +
+      tile('#/study', '📚', '공부', '하루 10분', 'teal') +
+      '</div>';
+    h += '<section class="card"><h2>확인 필요</h2>';
     if (!review.length) h += '<p class="muted">표시해 둔 확인 필요가 없어요.</p>';
     review.forEach(function (item) {
       h += '<button class="list-btn" type="button" data-go="' + api.esc(item.href) + '"><span class="badge warn">확인 필요</span> <b>' + api.esc(item.title) + '</b><div class="item-meta">' + api.esc(item.why) + '</div></button>';
@@ -135,8 +152,6 @@
       });
       h += '<button class="btn-ghost small" type="button" data-go="#/schedule">남은 일정 열기</button></section>';
     }
-
-    h += '<section class="card"><h2>현수막</h2><p class="muted">제목, 일시, 장소를 적으면 기본 시안과 예전 현수막이 나와요. 가로는 4m 또는 5m입니다.</p><button class="btn-ghost small" type="button" data-go="#/banner">현수막 만들기</button></section>';
 
     var latest = window.APNews ? APNews.byNewest(pack.entities.news || []).slice(0, 3) : [];
     h += '<section class="card"><h2>최근 소식</h2>';
@@ -214,8 +229,8 @@
   function renderPublic(el, api) {
     var guide = api.guide();
     var news = (guide.sections || []).filter(function (s) { return s.id === 'news'; })[0];
-    var h = '<section class="card"><p class="kicker">한곳</p><h1>오늘 찾을 일</h1>' +
-      '<p>학생 안내는 잠금 없이 볼 수 있어요. 알림은 보내지 않으니 위 검색으로 찾으세요.</p>' +
+    var h = '<section class="card"><p class="kicker">행정 업무 연습장</p><h1>오늘 찾을 일</h1>' +
+      '<p>자료를 불러오지 못했어요. 새로고침해 주세요. 학생 안내는 바로 볼 수 있어요.</p>' +
       '<div class="row"><button class="btn" id="go-stu" type="button">학생 안내</button>' +
       '<button class="btn-ghost" id="go-admin" type="button">행정 업무 열기</button></div></section>';
     h += '<section class="card"><h2>공지</h2>';
