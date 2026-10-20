@@ -17,13 +17,13 @@
     return out;
   }
 
-  async function deriveKey(secret, salt, iterations) {
+  async function deriveKey(secret, salt, iterations, extractable) {
     var base = await crypto.subtle.importKey('raw', te.encode(String(secret)), 'PBKDF2', false, ['deriveKey']);
     return crypto.subtle.deriveKey(
       { name: 'PBKDF2', salt: salt, iterations: iterations, hash: 'SHA-256' },
       base,
       { name: 'AES-GCM', length: 256 },
-      false,
+      !!extractable,
       ['encrypt', 'decrypt']
     );
   }
@@ -64,6 +64,31 @@
     }
   }
 
-  var api = { b64: b64, unb64: unb64, deriveKey: deriveKey, encryptWithKey: encryptWithKey, encryptJson: encryptJson, decryptJson: decryptJson };
+  async function decryptOnline(env, secret) {
+    if (!env || env.format !== 'admin-practice-online' || !env.ct || !env.salt || !env.iv) return { ok: false, error: 'format' };
+    try {
+      var key = await deriveKey(secret, unb64(env.salt), env.iter, true);
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(env.iv) }, key, unb64(env.ct));
+      var raw = new Uint8Array(await crypto.subtle.exportKey('raw', key));
+      return { ok: true, pack: JSON.parse(td.decode(pt)), keyRaw: b64(raw), salt: env.salt, iter: env.iter };
+    } catch (e) {
+      return { ok: false, error: 'auth' };
+    }
+  }
+  async function decryptOnlineKey(env, keyRaw) {
+    if (!env || !env.ct || !env.iv || !keyRaw) return { ok: false, error: 'format' };
+    try {
+      var key = await crypto.subtle.importKey('raw', unb64(keyRaw), { name: 'AES-GCM' }, false, ['decrypt']);
+      var pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(env.iv) }, key, unb64(env.ct));
+      return { ok: true, pack: JSON.parse(td.decode(pt)) };
+    } catch (e) {
+      return { ok: false, error: 'auth' };
+    }
+  }
+
+  var api = {
+    b64: b64, unb64: unb64, deriveKey: deriveKey, encryptWithKey: encryptWithKey, encryptJson: encryptJson, decryptJson: decryptJson,
+    decryptOnline: decryptOnline, decryptOnlineKey: decryptOnlineKey
+  };
   root.APCrypto = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this);

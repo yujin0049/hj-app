@@ -1,4 +1,4 @@
-var CACHE = 'shell-v07';
+var CACHE = 'shell-v08';
 var FILES = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ var FILES = [
   './css/app.css',
   './public/guide.json',
   './js/crypto.js',
+  './js/online.js',
   './js/grade.js',
   './js/search.js',
   './js/news.js',
@@ -40,6 +41,12 @@ self.addEventListener('activate', function (e) {
 self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
+  var path = '';
+  try { path = new URL(req.url).pathname; } catch (err) { path = ''; }
+  if (path.endsWith('/pack.enc') || path.endsWith('pack.enc')) {
+    e.respondWith(fetch(req, { cache: 'no-store' }));
+    return;
+  }
   e.respondWith(caches.match(req).then(function (hit) {
     if (hit) return hit;
     return fetch(req).then(function (res) {

@@ -60,6 +60,10 @@
 
   function reviewItems(pack) {
     var out = [];
+    var conflictHref = { '기숙사': '#/dorm', '컴퓨터': '#/computers', '소식': '#/news', '예산': '#/more/budget', '할 일': '#/more/month', '규칙': '#/more', '업무': '#/board' };
+    (pack.conflicts || []).forEach(function (label) {
+      out.push({ href: conflictHref[label] || '#/home', title: label + ' 수정이 새 자료와 겹쳐요', why: '확인 필요' });
+    });
     (pack.entities.news || []).forEach(function (n) {
       if (n.status === '확인 필요') out.push({ href: '#/news/' + n.id, title: n.title, why: '소식 확인 필요' });
     });
