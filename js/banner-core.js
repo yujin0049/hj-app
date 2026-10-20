@@ -76,17 +76,24 @@
   }
 
   // 로고
+  // 로고 크기: viewBox가 있으면 그 비율, 없으면 width/height(px·mm 등 숫자만, %는 무시). 못 읽으면 null.
   function parseSvgLogo(text) {
-    const m = text.match(/<svg\b[^>]*>/i); if (!m) return null;
+    const m = String(text || '').match(/<svg\b[^>]*>/i); if (!m) return null;
     const tag = m[0];
     const vb = tag.match(/viewBox\s*=\s*["']([^"']+)["']/i);
-    let w, h;
-    if (vb) { const p = vb[1].trim().split(/[\s,]+/).map(Number); w = p[2]; h = p[3]; }
-    else { const ww = tag.match(/\swidth\s*=\s*["']([\d.]+)/i), hh = tag.match(/\sheight\s*=\s*["']([\d.]+)/i); w = ww ? +ww[1] : 100; h = hh ? +hh[1] : 100; }
+    const num = re => { const v = tag.match(re); return v && !/%/.test(v[1]) ? parseFloat(v[1]) : NaN; };
+    let w = NaN, h = NaN;
+    if (vb) { const p = vb[1].trim().split(/[\s,]+/).map(Number); if (p.length === 4) { w = p[2]; h = p[3]; } }
+    if (!(w > 0 && h > 0)) { w = num(/\swidth\s*=\s*["']([^"']+)["']/i); h = num(/\sheight\s*=\s*["']([^"']+)["']/i); }
+    if (!(w > 0 && h > 0 && isFinite(w) && isFinite(h))) return null;
     return { kind: 'svg', content: text, w, h };
   }
+  // 로고는 칸(bx,by,bw,bh) 안에 비율 그대로 「다 보이게(contain)」 넣는다. 칸 안쪽에 안전 여백(PAD)을 둔다.
+  const LOGO_PAD = 0.04;
   function logoMarkup(logo, bx, by, bw, bh, ax, ay) {
-    if (!logo || !logo.w || !logo.h) return '';
+    if (!logo || !(logo.w > 0) || !(logo.h > 0)) return '';
+    const pad = Math.min(bw, bh) * LOGO_PAD;
+    bx += pad; by += pad; bw -= 2 * pad; bh -= 2 * pad;
     const s = Math.min(bw / logo.w, bh / logo.h), w = logo.w * s, h = logo.h * s;
     const x = ax === 'left' ? bx : ax === 'right' ? bx + bw - w : bx + (bw - w) / 2;
     const y = ay === 'top' ? by : ay === 'bottom' ? by + bh - h : by + (bh - h) / 2;

@@ -148,7 +148,7 @@
       }).catch(function () {});
     }
     if (!logo && !logoCleared) {
-      fetch(assetUrl('img/logo-clean.png')).then(function (res) {
+      fetch(assetUrl('img/logo-cnu.png')).then(function (res) {
         if (!res.ok) throw new Error('logo');
         return res.blob();
       }).then(blobUrl).then(function (href) {
