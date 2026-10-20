@@ -3,5 +3,5 @@
   'use strict';
   root.MODULE_LIST = ['home', 'students', 'board', 'study', 'more'];
   root.MODULE_EXTRA = ['practice', 'search', 'news', 'computers', 'dorm', 'schedule', 'banner'];
-  root.MODULE_LOCK = { dorm: 1 };
+  root.MODULE_LOCK = {};
 })(typeof globalThis !== 'undefined' ? globalThis : this);

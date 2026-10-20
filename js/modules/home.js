@@ -169,7 +169,7 @@
       h += '<p class="muted">' + api.esc(dormSeed.deadlineNote || '') + '</p>';
       h += '<button class="btn-ghost small" type="button" data-go="#/dorm">기숙사 도면 열기</button></section>';
     } else {
-      h += '<section class="card"><h2>기숙사 현황판</h2><p class="muted">학생 개인정보라 비밀문구로 열어요.</p><button class="btn-ghost small" type="button" data-go="#/dorm">기숙사 현황판 열기</button></section>';
+      h += '<section class="card"><h2>기숙사 현황판</h2><p class="muted">눌러서 바로 열어요.</p><button class="btn-ghost small" type="button" data-go="#/dorm">기숙사 현황판 열기</button></section>';
     }
 
     h += '<section class="card"><h2>이번 달 할 일</h2>';

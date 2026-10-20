@@ -172,9 +172,10 @@
     var b = document.getElementById('lock-btn');
     if (!b) return;
     b.textContent = '잠금';
-    b.classList.toggle('hidden', !state.dormOpen);
+    b.classList.add('hidden');
   }
   function lockDorm() {
+    return;
     state.dormOpen = false;
     if (state.pack && state.pack.entities) delete state.pack.entities.dorm;
     if (state.edits) state.edits.dorm = null;
@@ -402,7 +403,11 @@
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
     if (id === 'dorm' && !state.dormOpen) {
-      showDormPhrase();
+      fetch(new URL('dorm.json', document.baseURI).href, { cache: 'no-store' }).then(function (res) { return res.json(); }).then(function (d) {
+        if (state.pack && state.pack.entities) state.pack.entities.dorm = d;
+        state.dormOpen = true;
+        renderRoute();
+      }).catch(function () { toast('기숙사 자료를 못 불러왔어요. 다시 눌러 주세요.'); });
       return;
     }
     document.getElementById('lock').classList.add('hidden');
