@@ -142,7 +142,7 @@ async function boot() {
   }
   function flyTo(v, dur = 0.9) { anim.from = { pos: camera.position.clone(), target: controls.target.clone() }; anim.to = v; anim.t = 0; anim.dur = dur; }
   function focusRoom(item) {
-    labels.forEach((l) => { l.el.classList.toggle('hl', l === item); if (l.eq) l.w = 0; }); // 설명이 붙고 빠지면 폭이 바뀜
+    labels.forEach((l) => { l.el.classList.toggle('hl', l === item); if (l.eq) l.w = l.h = 0; }); // 설명이 붙고 빠지면 폭·높이가 바뀜
     document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c._item === item));
     // 설비에 view 가 있으면 그 방향에서 (옥상 물탱크·펌프: 계단탑에 안 가리는 동남쪽 위)
     const dir = item.view ? new THREE.Vector3(...item.view).normalize() : camera.position.clone().sub(controls.target).normalize();
@@ -176,6 +176,7 @@ async function boot() {
     const w = innerWidth, h = innerHeight;
     if (!(w > 0 && h > 0)) { hasSize = false; return; }
     renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    labels.forEach((l) => { l.w = l.h = 0; }); // max-width 90vw → 화면 폭이 바뀌면 이름표 줄바꿈·크기도 바뀜
     if (!hasSize && started2 && (!okVec(camera.position) || !okVec(controls.target))) { const v = viewFor(current); camera.position.copy(v.pos); controls.target.copy(v.target); controls.update(); anim.t = 1; }
     hasSize = true;
   }
@@ -187,30 +188,41 @@ async function boot() {
   setFloor(init, false); const v0 = viewFor(init); camera.position.copy(v0.pos); controls.target.copy(v0.target); controls.update(); started2 = true;
 
   // 이름표 배치: 크기 고정, 겹치면 위·아래로 비켜 보고 그래도 겹치면 숨김, 멀리 있는 것은 흐리게
+  // 설비 표시(eq)는 겹쳐도 숨기지 않음 — 더 멀리(EQ_OFFS)까지 비켜 보고, 빈 자리가 없으면 가장 덜 겹치는 자리에 둠
+  // 가로는 화면 안(양쪽 EDGE px 여유)으로 끌어들여(clamp) 폰 가장자리에서 잘리지 않게
   const tmp = new THREE.Vector3(); const ease = (t) => 1 - Math.pow(1 - t, 3);
   const OFFS = [0, -30, 30, -58, 58];
+  const EQ_OFFS = [...OFFS, -86, 86, -114, 114];
+  const EDGE = 6;
+  const clampX = (x, bw, w) => (bw + EDGE * 2 >= w ? w / 2 : Math.min(Math.max(x, bw / 2 + EDGE), w - bw / 2 - EDGE));
   function updateLabels() {
     const w = innerWidth, h = innerHeight; const placed = [];
     const vis = labels.filter((l) => l.on).map((l) => { tmp.copy(l.pos).project(camera); return { l, x: (tmp.x + 1) / 2 * w, y: (1 - tmp.y) / 2 * h, z: tmp.z, d: camera.position.distanceTo(l.pos) }; })
-      .sort((a, b) => (b.l.el.classList.contains('hl') - a.l.el.classList.contains('hl')) || (!!a.l.eq - !!b.l.eq) || a.d - b.d); // 설비 표시는 맨 나중(겹치면 숨김)
+      .sort((a, b) => (b.l.el.classList.contains('hl') - a.l.el.classList.contains('hl')) || (!!a.l.eq - !!b.l.eq) || a.d - b.d); // 설비 표시는 맨 나중(빈 자리를 이름표에 먼저 줌)
     for (const l of labels) if (!l.on) l.el.classList.add('hide');
     if (!vis.length) return;
     const dmin = vis.reduce((m, v) => Math.min(m, v.d), 1e9), dmax = vis.reduce((m, v) => Math.max(m, v.d), 0);
+    const hits = (r) => placed.reduce((n, p) => n + (r.x0 < p.x1 && r.x1 > p.x0 && r.y0 < p.y1 && r.y1 > p.y0), 0);
     for (const v of vis) {
-      const bw = (v.l.w ||= v.l.el.offsetWidth || 60), bh = 26;
-      const off = v.z > 1 || v.y < 70 || v.y > h - 150 || v.x < -20 || v.x > w + 20;
-      let ok = null;
-      if (!off) for (const dy of OFFS) {
-        const r = { x0: v.x - bw / 2 - 3, x1: v.x + bw / 2 + 3, y0: v.y + dy - bh / 2 - 2, y1: v.y + dy + bh / 2 + 2 };
+      const bw = (v.l.w ||= v.l.el.offsetWidth || 60), bh = (v.l.h ||= v.l.el.offsetHeight || 26);
+      const off = v.z > 1 || v.y < 70 || v.y > h - 150 || v.x < -20 || v.x > w + 20; // 화면 밖은 설비도 숨김
+      const x = clampX(v.x, bw, w);
+      let ok = null, best = null;
+      if (!off) for (const dy of v.l.eq ? EQ_OFFS : OFFS) {
+        const r = { x0: x - bw / 2 - 3, x1: x + bw / 2 + 3, y0: v.y + dy - bh / 2 - 2, y1: v.y + dy + bh / 2 + 2 };
         if (r.y0 < 60 || r.y1 > h - 140) continue;
-        if (!placed.some((p) => r.x0 < p.x1 && r.x1 > p.x0 && r.y0 < p.y1 && r.y1 > p.y0)) { ok = { r, dy }; break; }
+        const n = hits(r);
+        if (!n) { ok = { r, dy }; break; }
+        if (!best || n < best.n) best = { r, dy, n };
       }
+      if (!ok && v.l.eq && !off) ok = best || { r: null, dy: 0 }; // 설비는 겹쳐도 표시
       if (!ok) { v.l.el.classList.add('hide'); continue; }
-      placed.push(ok.r); v.l.el.classList.remove('hide');
+      if (ok.r) placed.push(ok.r);
+      v.l.el.classList.remove('hide');
       const k = dmax - dmin > 1 ? (v.d - dmin) / (dmax - dmin) : 0; // 0 앞 → 1 뒤
       v.l.el.style.opacity = v.l.el.classList.contains('hl') ? 1 : (1 - 0.45 * k).toFixed(2);
       v.l.el.classList.toggle('moved', ok.dy !== 0);
-      v.l.el.style.transform = `translate(${v.x.toFixed(1)}px,${(v.y + ok.dy).toFixed(1)}px) translate(-50%,-50%)`;
+      v.l.el.style.transform = `translate(${x.toFixed(1)}px,${(v.y + ok.dy).toFixed(1)}px) translate(-50%,-50%)`;
     }
   }
   let last = performance.now();

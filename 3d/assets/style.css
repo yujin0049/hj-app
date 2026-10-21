@@ -44,7 +44,7 @@ h1{font-size:40px;line-height:1.2;font-weight:700;letter-spacing:-.02em;margin:1
 .seg-thumb{position:absolute;top:4px;bottom:4px;left:4px;width:calc((100% - 8px)/5);border-radius:12px;background:#fff;box-shadow:0 2px 8px rgba(0,27,55,.10);transition:transform .32s cubic-bezier(.2,.8,.2,1)}
 .note{text-align:center;font-size:11px;color:var(--mute)}
 .labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.lbl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);padding:5px 10px;border-radius:10px;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(0,27,55,.12);font-size:12px;font-weight:600;color:var(--ink);white-space:nowrap;transition:opacity .2s;pointer-events:auto;will-change:transform}
+.lbl{position:absolute;left:0;top:0;transform:translate(-50%,-50%);padding:5px 10px;border-radius:10px;background:rgba(255,255,255,.95);box-shadow:0 2px 8px rgba(0,27,55,.12);font-size:12px;font-weight:600;color:var(--ink);max-width:90vw;white-space:normal;word-break:keep-all;overflow-wrap:anywhere;text-align:center;transition:opacity .2s;pointer-events:auto;will-change:transform}
 .lbl.entry{background:var(--blue);color:#fff}
 .lbl.hl{background:var(--blue);color:#fff;z-index:2}
 .lbl.hide{opacity:0!important;pointer-events:none}

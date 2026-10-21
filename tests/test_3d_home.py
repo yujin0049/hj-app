@@ -140,6 +140,30 @@ class ThreeDHome(unittest.TestCase):
                 self.assertNotIn('-', l['name'].replace('B-737', ''), l['id'])  # 「실 이름-사람」 꼴 없음
                 self.assertNotIn('이름가림', l['name'])
 
+    # 설비 표시(eq)는 겹쳐도 숨기지 않음: 비켜 볼 자리를 더 주고, 빈 자리가 없으면 덜 겹치는 자리에 표시
+    def test_eq_labels_not_hidden_on_overlap(self):
+        app = read('3d', 'assets', 'app.js')
+        self.assertIn('EQ_OFFS', app)
+        self.assertIn('v.l.eq ? EQ_OFFS : OFFS', app)
+        self.assertIn("if (!ok && v.l.eq && !off) ok = best", app)  # 겹침 때문에 hide 되기 전에 eq 는 자리를 받음
+        i_eq, i_hide = app.index('if (!ok && v.l.eq && !off)'), app.index("if (!ok) { v.l.el.classList.add('hide')")
+        self.assertLess(i_eq, i_hide)
+        self.assertNotIn('겹치면 숨김)', app)  # 예전 주석(설비는 겹치면 숨김) 없음
+
+    # 폰(390px)에서 긴 이름표가 화면 밖으로 잘리지 않음: 최대 폭 90vw·줄바꿈, 가로 위치는 화면 안으로 clamp
+    def test_labels_fit_narrow_screen(self):
+        import re as _re
+        css = read('3d', 'assets', 'style.css')
+        lbl = _re.search(r'^\.lbl\{([^}]*)\}', css, _re.M).group(1)
+        for k in ('max-width:90vw', 'white-space:normal', 'word-break:keep-all', 'overflow-wrap:anywhere'):
+            self.assertIn(k, lbl, k)
+        self.assertNotIn('nowrap', lbl)
+        app = read('3d', 'assets', 'app.js')
+        self.assertIn('const clampX', app)
+        self.assertIn('clampX(v.x, bw, w)', app)
+        self.assertIn('translate(${x.toFixed(1)}px', app)  # 화면에 놓는 x 는 clamp 된 값
+        self.assertGreaterEqual(int(_re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 25)
+
 
 if __name__ == '__main__':
     unittest.main()
