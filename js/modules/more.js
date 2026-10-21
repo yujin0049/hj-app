@@ -60,6 +60,7 @@
     if (page === 'plan') return plan(el, api);
     if (page === 'settings') return settings(el, api);
     el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p></section>' +
+      menuBtn('filefind', '파일 찾기', '낱말로 옵시디언·PC 파일 찾기, 내려받은 파일 정리') +
       menuBtn('news', '교육원 소식', '행사, 일정, 공지') +
       menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
       menuBtn('dorm', '기숙사 현황판', '도면, 겨울방학 이동, 기숙사비') +
@@ -81,7 +82,7 @@
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });

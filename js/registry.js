@@ -2,5 +2,5 @@
 (function (root) {
   'use strict';
   root.MODULE_LIST = ['home', 'students', 'board', 'study', 'more'];
-  root.MODULE_EXTRA = ['practice', 'search', 'news', 'computers', 'dorm', 'schedule', 'banner', 'lockers', 'calendar', 'status'];
+  root.MODULE_EXTRA = ['practice', 'search', 'news', 'computers', 'dorm', 'schedule', 'banner', 'lockers', 'calendar', 'status', 'filefind'];
 })(typeof globalThis !== 'undefined' ? globalThis : this);
