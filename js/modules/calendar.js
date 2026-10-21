@@ -35,10 +35,14 @@
     if (!shell || !v) return;
     var el = document.getElementById('hj-stamp');
     if (!el) { el = document.createElement('div'); el.id = 'hj-stamp'; v.parentNode.insertBefore(el, v); }
+    style(); /* 띠 모양(여백·글씨 크기)은 달력을 안 열어도 적용 */
+    /* 봇 작업 현황(#/bots)은 자기 시각(현황판 읽은 시각) 하나만 보여요 → 달력 띠는 숨김 */
+    el.hidden = /^#\/bots(\/|\?|$)/.test(location.hash || '');
+    if (el.hidden) return;
     function paintStamp(meta) {
       var C = root.HJCal, s = C.staleness(meta);
       el.className = s.warn ? 'warn' : '';
-      el.innerHTML = '<span>마지막 갱신 ' + esc(meta && meta.refreshed_at ? meta.refreshed_at : '-') + ' (KST)</span>' +
+      el.innerHTML = '<span>달력 자료 갱신 ' + esc(meta && meta.refreshed_at ? meta.refreshed_at : '-') + ' (KST)</span>' +
         (s.warn ? '<b>· ' + esc(s.why) + '</b>' : '');
     }
     if (stampMeta !== undefined) { paintStamp(stampMeta); return; }
@@ -51,7 +55,7 @@
 
   var CSS = [
     '#hj-stamp{max-width:1120px;margin:0 auto;padding:6px 16px 0;font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}',
-    '#hj-stamp.warn{color:var(--no)}#hj-stamp.warn b{font-weight:700}',
+    '#hj-stamp[hidden]{display:none}#hj-stamp.warn{color:var(--no)}#hj-stamp.warn b{font-weight:700}',
     '.cl-stale{background:var(--nobg);color:var(--no);border-radius:14px;padding:12px 14px;font-weight:600;margin-bottom:12px}',
     '.cl-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.cl-top h2{margin:0;font-size:22px;flex:1}',
     '.cl-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:14px 0 4px}',

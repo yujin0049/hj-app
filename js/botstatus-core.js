@@ -30,8 +30,12 @@
     return { cls: n <= 3 ? 'soon' : 'later', n: n, label: 'D-' + n };
   }
   var RANK = { late: 0, today: 1, soon: 2, later: 3, none: 4, done: 5 };
-  function sortTasks(list, today) {
+  /* 확정 = 현황판 「유진님 몫」 칸 값이 있는 줄(yujin_src '현황판'). 나머지(추정·묶음)는 뒤로 */
+  function sure(t) { return t.yujin_src === '현황판'; }
+  function sortTasks(list, today, opt) {
+    var cf = opt && opt.confirmFirst;
     return list.slice().sort(function (a, b) {
+      if (cf && sure(a) !== sure(b)) return sure(a) ? -1 : 1;
       var da = due(a, today), db = due(b, today);
       if (RANK[da.cls] !== RANK[db.cls]) return RANK[da.cls] - RANK[db.cls];
       var x = a.due || '9999', y = b.due || '9999';
@@ -43,7 +47,7 @@
   function sections(tasks, today) {
     var open = sortTasks(tasks.filter(function (t) { return t.state !== '끝'; }), today);
     return {
-      yujin: open.filter(function (t) { return t.state === '대기(유진님 몫)' || (t.yujin && t.yujin.length); }),
+      yujin: sortTasks(open.filter(function (t) { return t.state === '대기(유진님 몫)' || (t.yujin && t.yujin.length); }), today, { confirmFirst: 1 }),
       soon: open.filter(function (t) { var c = due(t, today).cls; return c === 'late' || c === 'today' || c === 'soon'; }),
       risk: open.filter(function (t) { return t.risk && t.risk.length; })
     };
@@ -66,6 +70,17 @@
     tasks.forEach(function (t) { if (c[t.state] != null) c[t.state] += 1; });
     return c;
   }
+  /* 유진님 몫 카드 숫자: 확정(칸 값) · 추정(봇 짐작 꼬리표 있음) · 묶음(현황판 대기 묶음에만) — 끝난 일 빼고 */
+  function yujinSplit(tasks) {
+    var o = { sure: 0, guess: 0, bundle: 0 };
+    tasks.forEach(function (t) {
+      if (t.state === '끝' || !(t.state === '대기(유진님 몫)' || (t.yujin && t.yujin.length))) return;
+      if (t.yujin_src === '현황판') o.sure += 1; else if (t.yujin_src === '묶음') o.bundle += 1; else o.guess += 1;
+    });
+    return o;
+  }
+  /* 꼬리표 하나가 추정인지(칸 값·묶음 꼬리표는 추정 아님). 예전 자료(yujin_guess 없음)는 줄 단위 출처로 */
+  function isGuessTag(t, g) { return Array.isArray(t.yujin_guess) ? t.yujin_guess.indexOf(g) >= 0 : t.yujin_src === '추정'; }
   function bots(tasks) {
     var o = {};
     tasks.forEach(function (t) { if (t.bot) o[t.bot] = (o[t.bot] || 0) + 1; });
@@ -82,6 +97,6 @@
     return { warn: false, age: age };
   }
   return { STATES: STATES, DOT: DOT, SHORT: SHORT, YU_KINDS: YU_KINDS, todayKST: todayKST, diffDays: diffDays, md: md, due: due,
-    sortTasks: sortTasks, sections: sections, filter: filter, counts: counts, bots: bots,
+    sortTasks: sortTasks, sections: sections, filter: filter, counts: counts, bots: bots, yujinSplit: yujinSplit, isGuessTag: isGuessTag, sure: sure,
     progressText: progressText, verifiedText: verifiedText, stale: stale };
 });

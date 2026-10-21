@@ -59,7 +59,7 @@
     if (page === 'month') return month(el, api);
     if (page === 'plan') return plan(el, api);
     if (page === 'settings') return settings(el, api);
-    el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p></section>' +
+    el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p>' + (api.pack().packVersion ? '<p class="muted" id="pack-ver" style="font-size:.8rem;margin:4px 0 0">공부·규칙 자료판 ' + api.esc(api.pack().packVersion) + ' (public-pack.json)</p>' : '') + '</section>' +
       menuBtn('filefind', '파일 찾기', '낱말로 옵시디언·PC 파일 찾기, 내려받은 파일 정리') +
       menuBtn('news', '교육원 소식', '행사, 일정, 공지') +
       menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
