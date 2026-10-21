@@ -304,7 +304,7 @@
     var route = parseHash();
     var id = route.name;
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' ? 'home' : (id === 'docreg' ? 'study' : id)));
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' ? 'home' : (id === 'docreg' || id === 'who' ? 'study' : id)));
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
