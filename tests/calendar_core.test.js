@@ -18,6 +18,7 @@ test('D-day·D-3·지연·끝남', () => {
   assert.equal(C.dueState('2026-10-08', t, '완료').cls, 'done');
   assert.equal(C.dueState('2026-10-08', t, '취소').cls, 'done');
   assert.equal(C.dueState('', t, '할 일').cls, 'none');
+  assert.equal(C.dueState('2026-10-08', t, '취소(결재 회수 완료)').cls, 'done');
 });
 test('날짜 차이: 달·해 넘김, 윤년', () => {
   assert.equal(C.diffDays('2026-10-31', '2026-11-01'), 1);

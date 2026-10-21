@@ -11,6 +11,11 @@ import hjpii
 
 KST = dt.timezone(dt.timedelta(hours=9))
 DONE = {'완료', '취소', '끝남'}
+
+
+def is_done(st):
+    """「취소(결재 회수 완료)」처럼 꼬리가 붙어도 앞말로 판단"""
+    return bool(re.match(r'^\s*(완료|취소|끝남)', str(st or '')))
 DEFAULT_RAW = '/workspace/hj_audit/calendar/raw_업무.json'
 
 
@@ -86,7 +91,7 @@ def wait_lists(raw):
 
 
 def yujin_tags(x, waits):
-    if x['status'] in DONE:
+    if is_done(x['status']):
         return []
     tags = []
     for _, (label, ids) in waits.items():
@@ -105,7 +110,7 @@ def yujin_tags(x, waits):
     return sorted(set(tags), key=tags.index)
 
 
-def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, mnotes=(), mwho=()):
+def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, mnotes=(), mwho=(), decisions=None):
     texts = [v for x in raw for v in (x['title'], x['who'], x['next'], x['basis'])]
     texts += [x.get('title', '') for x in (master or []) + (ingest_ev or []) + (ingest_td or [])]
     names = hjpii.derive_names(texts) | {w for x in raw for w in hjpii.suspicious(x['who'])} | {w for x in mwho for w in hjpii.suspicious(x)}
@@ -164,8 +169,12 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
             # 할 일의 정본은 현황판: 같은 T번호면 표시는 현황판 것, 다르면 충돌·확인 필요만
             tt = task_t[ref]
             d2 = norm_date(ex.get('date'), year)
-            if d2 and tt['due'] and d2 != tt['due']:
-                add_check(ref, tt['title'], '충돌: 날짜 다름 · 현황판 %s / %s %s' % (tt['due'], ex['source'], d2)); n['conflict'] += 1
+            if d2 and d2 != tt['due']:
+                t2, rm = hjpii.scrub(ex.get('title', ''), names); removed |= rm
+                events.append({'id': 'I%02d' % (i + 1), 't': ref, 'title': t2, 'date': d2, 'kind': '할 일', 'lane': ex.get('lane', 'yujin'),
+                               'status': tt['status'], 'area': tt['area'], 'bot': tt['bot'], 'src': 'ingest', 'source': ex['source'],
+                               'yujin': [], 'check': ''})
+                n['ingest'] += 1
             if ex.get('status') and ex['status'] != tt['status']:
                 add_check(ref, tt['title'], '상태 다름: 현황판 %s / %s %s' % (tt['status'], ex['source'], ex['status']))
             n['merged'] += 1
@@ -196,8 +205,7 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
                                'yujin': e['yujin'], 'check': ''})
                 n['master'] += 1
                 continue
-            if e and e['date'] != date:
-                add_check(ref, e['title'], '충돌: 날짜 다름 · 현황판 %s / 일정총괄 %s (일정총괄이 예전 현황판 기준일 수 있음)' % (e['date'], date)); n['conflict'] += 1
+            # 날짜 정본 = 현황판(결정 261021): 일정총괄이 옮겨 적은 현황판 날짜가 달라도 현황판 것만 씀
             n['merged'] += 1
             continue
         if origin in ('master', 'ingest') and ex.get('mkind') != '계획' and ref and by_t.get(ref) and by_t[ref]['date'] == date and ex.get('lane') == 'yujin':
@@ -254,7 +262,7 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
               'status': ex.get('status') or (task_t[ref]['status'] if ref in task_t else '할 일'),
               'area': ex.get('area') or (task_t[ref]['area'] if ref in task_t else '기타'),
               'bot': task_t[ref]['bot'] if ref in task_t else '', 'src': origin, 'source': src_note,
-              'yujin': [], 'check': ex.get('check', '')}
+              'yujin': [], 'check': ex.get('check', ''), '_mk': ex.get('mkind', '')}
         if ex.get('end'):
             ev['end'] = norm_date(ex['end'], year)
         if ex.get('cond'):
@@ -272,7 +280,60 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
             add_check(ref, title, ev['check'])
         events.append(ev)
         n[origin] += 1
+    # ---- 날짜 정본 = 현황판 (대장 결정 261021_일정날짜_정본결정) ----
+    dec = decisions or {}
+    step_name = {(x['t'], x['date']): x['step'] for x in dec.get('steps', [])}
+    drop = {(x['t'], d) for x in dec.get('drop', []) for d in x.get('dates', [])}
+    n_before = n['conflict'] + sum(1 for c in mnotes if c['why'].startswith('충돌')) + sum(1 for c in checks if c['why'].startswith('충돌'))
+    kept = []
+    n_sub = n_drop = n_dup = 0
+    seen_sub = set()
+    for e in events:
+        tt = task_t.get(e['t'])
+        if tt and e['check'].startswith('충돌'):
+            e['check'] = ''  # 같은 T번호 날짜 차이는 하위 단계로 풂
+        if e['src'].startswith('sheet') or not tt:
+            kept.append(e)
+            continue
+        if (e['t'], e['date']) in drop:
+            n_drop += 1
+            continue
+        # 결정표의 단계명은 캘린더·노션·메모리에서 온 줄에만(볼트 계획 줄은 이미 단계 이름이 있음)
+        ov = step_name.get((e['t'], e['date'])) if e.get('_mk') != '계획' else None
+        nm = ov or step_of(e['title'], e['t'])
+        key = (e['t'], e['date'], nm)
+        if key in seen_sub:
+            n_dup += 1
+            continue
+        seen_sub.add(key)
+        e['step'] = nm
+        e['title'] = '%s 하위: %s' % (e['t'], nm)
+        e['sub'] = True
+        if e['check'].startswith('충돌'):
+            e['check'] = ''
+        n_sub += 1
+        kept.append(e)
+    events[:] = kept
+    for e in events:
+        e.pop('_mk', None)
+    # 현황표의 하위 단계 = 달력의 하위 단계와 똑같이
+    for t in tasks:
+        t.pop('steps', None)
+        sub = sorted((e for e in events if e.get('sub') and e['t'] == t['t']), key=lambda e: e['date'])
+        if sub:
+            t['steps'] = [dict({'date': e['date'], 'step': e['step'], 'title': e['step'], 'lane': e['lane'], 'kind': e['kind'],
+                                'source': e.get('source', '')}, **({'cond': e['cond']} if e.get('cond') else {})) for e in sub]
+    checks[:] = [c for c in checks if not (c['why'].startswith('충돌') and c['t'] in task_t)]
+    for x in dec.get('canonical', []):
+        tt = task_t.get(x['t'])
+        if tt and tt['due'] != x['date']:
+            add_check(x['t'], tt['title'], '현황판 값 맞추기: 대장 결정 정본 %s, 현황판 아직 %s (현황판이 바뀌면 자동 반영)' % (x['date'], tt['due'] or '없음'))
+    for x in dec.get('pending', []):
+        if x['t'] in task_t:
+            add_check(x['t'], task_t[x['t']]['title'], '확인 필요: ' + x['why'])
     for c in mnotes:
+        if c['why'].startswith('충돌') and c['t'] in task_t:
+            continue  # 같은 T번호 날짜 차이 = 하위 단계(결정), 충돌 아님
         why, rm = hjpii.scrub(c['why'], names)
         removed |= rm
         tt = task_t.get(c['t'], {})
@@ -293,13 +354,14 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
     n_sheet = sum(1 for e in events if e['src'].startswith('sheet'))
     cal = {'version': 1, 'source': '인수인계봇 현황판 시트 「업무」 탭 + ' + ('00 홈/일정총괄.json + ' if master else '') + 'data/calendar_extra.json',
            'counts': {'sheet': n_sheet, 'master': n['master'], 'extra': n['extra'], 'ingest': n['ingest'], 'merged': n['merged'],
-                      'skipped_extra': n['skipped'], 'conflict': n['conflict'], 'total': len(events)},
-           'groups': GROUPS,
+                      'skipped_extra': n['skipped'], 'conflict': sum(1 for c in checks if c['why'].startswith('충돌')),
+                      'conflict_before_rule': n_before, 'sub_steps': n_sub, 'dropped': n_drop, 'total': len(events)},
+           'groups': GROUPS, 'rule': '날짜 정본 = 현황판. 같은 T번호의 다른 날짜는 「T번호 하위: 단계명」(대장 결정 261021)',
            'lanes': {'yujin': '유진님 할 일', 'prof': '교수님 일정', 'ref': '참고(유진님 일 아님)'},
            'prof_note': extra.get('prof_note', ''), 'events': events, 'checks': checks}
     st = {'version': 1, 'source': '인수인계봇 현황판 시트 「업무」 탭',
           'counts': {'tasks': len(tasks), 'yujin': sum(1 for t in tasks if t['yujin']),
-                     'active': sum(1 for t in tasks if t['status'] not in DONE)},
+                     'active': sum(1 for t in tasks if not is_done(t['status']))},
           'groups': GROUPS, 'tasks': tasks, 'others': others}
     return cal, st, removed, names
 
@@ -389,6 +451,20 @@ def load_master(path, year):
             continue
         out.append(row)
     return out, sorted(unknown), notes, who
+
+
+def step_of(title, t=''):
+    """원래 제목 → 짧은 단계 이름: [태그]·시간·T번호·「 — 」 뒤 설명을 뺌."""
+    x = str(title or '')
+    x = re.sub(r'\[[^\]]{1,20}\]\s*', '', x)
+    x = re.sub(r'\d{1,2}:\d{2}\s*[~-]\s*\d{1,2}:\d{2}', '', x)
+    if t:
+        x = re.sub(r'\b' + re.escape(t) + r'\b\s*', '', x)
+    x = re.sub(r'^.*?하위:\s*', '', x)
+    parts = re.split(r'\s+—\s+', x)
+    x = parts[0] + (' (%s)' % parts[1].strip() if len(parts) > 1 and 0 < len(parts[1].strip()) <= 8 else '')
+    x = re.sub(r'\s{2,}', ' ', x).strip(' ·:-')
+    return (x[:40] + '…') if len(x) > 41 else (x or '단계')
 
 
 GROUPS = ['OJNT', '특강', '강사료', '실습재료', '행사', '사물함', '공문', '기타']
@@ -488,6 +564,7 @@ def main(argv=None):
     ap.add_argument('--out', default=os.path.join(root, 'data'))
     ap.add_argument('--today', default=dt.datetime.now(KST).date().isoformat())
     ap.add_argument('--log', default='/workspace/hj_audit/calendar/지운낱말.txt')
+    ap.add_argument('--decisions', default=os.path.join(root, 'data', 'calendar_decisions.json'))
     ap.add_argument('--master', default=MASTER_DEFAULT, help='일정총괄.json (없으면 건너뜀)')
     ap.add_argument('--ingest', default=INGEST_DIR, help='통합일정.json·통합할일.json 폴더 (없으면 건너뜀)')
     ap.add_argument('--unknown-log', default='/workspace/hj_audit/calendar/일정총괄_모르는칸.txt')
@@ -507,7 +584,8 @@ def main(argv=None):
         if iunk and a.unknown_log:
             with open(a.unknown_log, 'a', encoding='utf-8') as f:
                 f.write('# 통합일정/통합할일 에서 쓰지 않은 칸 이름\n' + '\n'.join(iunk) + '\n')
-    cal, st, removed, names = build(raw, extra, a.today, year, master, iev, itd, mnotes, mwho)
+    decisions = json.load(open(a.decisions, encoding='utf-8')) if a.decisions and os.path.exists(a.decisions) else None
+    cal, st, removed, names = build(raw, extra, a.today, year, master, iev, itd, mnotes, mwho, decisions)
     cal['master_read'] = master is not None
     cal['ingest_read'] = {'통합일정': iev is not None, '통합할일': itd is not None}
     bad = check_outputs({'calendar.json': cal, 'status.json': st}, names)
@@ -528,8 +606,8 @@ def main(argv=None):
             f.write('\n'.join(sorted(removed)) + '\n')
         os.chmod(a.log, 0o600)
     c = cal['counts']
-    print('calendar.json 일정 %d (현황판 %d · 일정총괄 %d · 대장 고정 %d · 통합 %d · 합침 %d · 일정총괄에 밀린 고정 %d · 충돌 %d) · 확인 필요 %d · status.json 업무 %d (유진님 %d) · 지운 낱말 %d개'
-          % (c['total'], c['sheet'], c['master'], c['extra'], c['ingest'], c['merged'], c['skipped_extra'], c['conflict'], len(cal['checks']), st['counts']['tasks'], st['counts']['yujin'], len(removed)))
+    print('calendar.json 일정 %d (현황판 %d · 일정총괄 %d · 대장 고정 %d · 통합 %d · 합침 %d · 일정총괄에 밀린 고정 %d) · 하위 단계 %d · 없앰 %d · 충돌 %d (규칙 전 %d) · 확인 필요 %d · status.json 업무 %d (유진님 %d) · 지운 낱말 %d개'
+          % (c['total'], c['sheet'], c['master'], c['extra'], c['ingest'], c['merged'], c['skipped_extra'], c['sub_steps'], c['dropped'], c['conflict'], c['conflict_before_rule'], len(cal['checks']), st['counts']['tasks'], st['counts']['yujin'], len(removed)))
     return 0
 
 

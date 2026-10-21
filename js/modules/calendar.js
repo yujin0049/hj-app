@@ -78,6 +78,9 @@
     '.cl-ev.l-yujin{background:#E8F3FF;color:#1B64DA}.cl-ev.l-prof{background:#F3EEFF;color:#6D28D9}.cl-ev.l-ref{background:#F2F4F6;color:#6B7684}',
     '.cl-ev.s-late{box-shadow:inset 3px 0 0 var(--no)}.cl-ev.s-soon,.cl-ev.s-today{box-shadow:inset 3px 0 0 var(--warn)}.cl-ev.s-done{opacity:.5;text-decoration:line-through}',
     '.cl-more{font-size:11px;color:var(--muted);margin-top:2px}',
+    '.cl-ev.main{font-size:12px;font-weight:700;padding:2px 5px}.cl-ev.sub{background:none !important;color:var(--muted);font-size:10px;padding:0 3px;box-shadow:none}',
+    '.cl-list .row.sub{padding:5px 0 5px 14px;border-top:1px dashed var(--line)}.cl-list .row.sub .tx b{font-size:12px;font-weight:500;color:var(--ink-2)}',
+    '.cl-list .row.sub .bar{opacity:.4;width:2px}.dd.sub{font-size:11px;font-weight:600;background:none;color:var(--muted)}',
     '.cl-dots{display:none}',
     '.cl-week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px}',
     '.cl-wcol{background:var(--soft);border-radius:14px;padding:8px;min-height:120px}.cl-wcol.today{background:#E8F3FF}',
@@ -109,12 +112,26 @@
     return '<option value="">' + all + '</option>' + list.map(function (v) { return '<option' + (v === cur ? ' selected' : '') + '>' + esc(v) + '</option>'; }).join('');
   }
   function uniq(arr) { var o = {}; arr.forEach(function (v) { if (v) o[v] = 1; }); return Object.keys(o).sort(); }
+  /* 현황판 날짜(정본)는 크게, 같은 T번호의 하위 단계는 작게 (대장 결정 261021) */
   function evChip(C, e, today) {
-    var s = e.kind === '수업' || e.kind === '참고' || e.kind === '반복' ? { cls: '' } : C.dueState(e.date, today, e.status);
-    return '<span class="cl-ev l-' + e.lane + ' s-' + s.cls + '" title="' + esc((e.t ? e.t + ' ' : '') + e.title) + '">' + esc(e.title) + '</span>';
+    if (e.sub) return '<span class="cl-ev sub l-' + e.lane + '" title="' + esc(e.title) + '">└ ' + esc(e.step || e.title) + '</span>';
+    var main = isMain(e);
+    var s = !main || e.kind === '수업' || e.kind === '참고' || e.kind === '반복' ? { cls: '' } : C.dueState(e.date, today, e.status);
+    return '<span class="cl-ev l-' + e.lane + ' s-' + s.cls + (main ? ' main' : '') + '" title="' + esc((e.t ? e.t + ' ' : '') + e.title) + '">' +
+      (main && e.t ? '<b>' + esc(e.t) + '</b> ' : '') + esc(e.title) + '</span>';
   }
+  function rank(e) { return e.sub ? 2 : (/^sheet/.test(e.src || '') ? 0 : 1); }
+  function mainFirst(a, b) { return rank(a) - rank(b); }
+  function isMain(e) { return /^sheet/.test(e.src || '') && !e.sub; }
   function row(C, e, today) {
+    if (e.sub) {
+      var n0 = C.diffDays(today, e.date);
+      return '<div class="row sub" data-ev="' + esc(e.id) + '" data-sub="1"><span class="bar ln-' + e.lane + '"></span><div class="tx"><b>' + esc(e.title) + '</b><small>' +
+        esc(C.md(e.date)) + ' · 하위 단계 · 정본 마감은 현황판 ' + esc(e.t) + (e.cond ? ' · 조건: ' + esc(e.cond) : '') + '</small></div><span class="dd sub">' +
+        (n0 === 0 ? '오늘' : n0 > 0 ? 'D-' + n0 : (-n0) + '일 전') + '</span></div>';
+    }
     var s = C.dueState(e.date, today, e.status);
+    if (!isMain(e) && s.cls !== 'done') { var n1 = C.diffDays(today, e.date); s = { cls: '', n: n1, label: n1 === 0 ? '오늘' : n1 > 0 ? 'D-' + n1 : (-n1) + '일 전' }; }
     var lane = { yujin: '유진님 할 일', prof: '교수님 일정', ref: '참고' }[e.lane];
     return '<div class="row" data-ev="' + esc(e.id) + '"><span class="bar ln-' + e.lane + '"></span><div class="tx"><b>' + esc(e.title) +
       (e.check ? '<span class="tag chk">' + (/^충돌/.test(e.check) ? '충돌' : '확인 필요') + '</span>' : '') +
@@ -128,7 +145,8 @@
     if (!view.cur) view.cur = today;
     if (!view.sel) view.sel = today;
     var all = D.cal.events, evs = filtered(C);
-    var active = all.filter(function (e) { return !C.isDone(e.status) && e.lane === 'yujin' && e.kind !== '참고'; });
+    /* 지연·D-3 숫자는 현황판 마감(정본)만 셈 */
+    var active = all.filter(function (e) { return isMain(e) && !C.isDone(e.status) && e.lane === 'yujin' && e.kind !== '참고'; });
     var late = active.filter(function (e) { return C.dueState(e.date, today, e.status).cls === 'late'; }).length;
     var soon = active.filter(function (e) { var c = C.dueState(e.date, today, e.status).cls; return c === 'soon' || c === 'today'; }).length;
     var yu = (D.st.tasks || []).filter(function (t) { return (t.yujin || []).length; }).length;
@@ -136,6 +154,7 @@
     var p = view.cur.split('-'), y = +p[0], m = +p[1];
     var byDay = {};
     evs.forEach(function (e) { (byDay[e.date] = byDay[e.date] || []).push(e); });
+    Object.keys(byDay).forEach(function (k) { byDay[k].sort(mainFirst); });
     var html = '<section class="card">' +
       (st.warn ? '<div class="cl-stale" id="cl-stale">⚠ 자료가 최신이 아닐 수 있어요 — ' + esc(st.why) + '</div>' : '') +
       '<div class="cl-top"><h2>계획 달력</h2><div class="cl-seg" id="cl-mode"><button data-m="month" class="' + (view.mode === 'month' ? 'on' : '') + '">월</button><button data-m="week" class="' + (view.mode === 'week' ? 'on' : '') + '">주</button></div></div>' +
@@ -177,14 +196,14 @@
     /* 다가오는 일정: 지연(유진님) + 오늘부터 30일, 레인 따로 */
     var up = evs.filter(function (e) {
       var n = C.diffDays(today, e.date);
-      return (n >= 0 && n <= 30) || (n < 0 && e.lane === 'yujin' && e.kind !== '참고' && !C.isDone(e.status));
-    });
+      return (n >= 0 && n <= 30) || (n < 0 && isMain(e) && e.lane === 'yujin' && e.kind !== '참고' && !C.isDone(e.status));
+    }).sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : mainFirst(a, b); });
     function col(lane, title, id) {
       var l = up.filter(function (e) { return e.lane === lane; });
       return '<div><h3>' + title + ' <small class="muted">' + l.length + '</small></h3><div class="cl-list" id="' + id + '">' +
         (l.length ? l.map(function (e) { return row(C, e, today); }).join('') : '<p class="muted">' + (view.lanes[lane] ? '30일 안에 없어요.' : '꺼 둔 레인이에요.') + '</p>') + '</div></div>';
     }
-    html += '<section class="card"><h2 style="font-size:20px;margin:0 0 6px">다가오는 일정</h2><p class="cl-note">지연된 유진님 일 + 오늘부터 30일. 색: 빨강 지연 · 주황 D-3 이내.</p><div class="cl-cols">' +
+    html += '<section class="card"><h2 style="font-size:20px;margin:0 0 6px">다가오는 일정</h2><p class="cl-note">지연된 유진님 일 + 오늘부터 30일. 색: 빨강 지연 · 주황 D-3 이내. 굵은 줄 = 현황판 마감(정본), 작은 「└」 줄 = 같은 T번호의 하위 단계.</p><div class="cl-cols">' +
       col('yujin', '유진님 할 일', 'up-yujin') + col('prof', '교수님 일정', 'up-prof') + '</div>' +
       (view.lanes.ref ? col('ref', '참고 (유진님 일 아님)', 'up-ref') : '') +
       (D.cal.prof_note ? '<p class="cl-note" id="prof-note">교수님 일정: ' + esc(D.cal.prof_note) + '</p>' : '') + '</section>';

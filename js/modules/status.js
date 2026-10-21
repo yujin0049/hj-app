@@ -66,8 +66,8 @@
   function steps(C, t) {
     if (!t.steps || !t.steps.length) return '';
     var nm = { yujin: '유진님', prof: '교수님', ref: '참고' };
-    return '<details class="st-steps"><summary>일정 ' + t.steps.length + '개 (달력과 같음)</summary><ul>' + t.steps.map(function (s) {
-      return '<li class="l-' + s.lane + '">' + esc(C.md(s.date)) + ' · ' + esc(nm[s.lane] || '') + ' · ' + esc(s.title) + (s.cond ? ' <small>(' + esc(s.cond) + ')</small>' : '') + '</li>';
+    return '<details class="st-steps"><summary>하위 단계 ' + t.steps.length + '개 (달력과 같음 · 날짜 정본은 위 마감)</summary><ul>' + t.steps.map(function (s) {
+      return '<li class="l-' + s.lane + '">' + esc(C.md(s.date)) + ' · ' + esc(nm[s.lane] || '') + ' · ' + esc(t.t + ' 하위: ' + (s.step || s.title)) + (s.cond ? ' <small>(' + esc(s.cond) + ')</small>' : '') + '</li>';
     }).join('') + '</ul></details>';
   }
   function trow(C, t, today) {

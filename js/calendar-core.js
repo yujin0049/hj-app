@@ -25,7 +25,7 @@
     for (var i = 0; i < 42; i++) out.push(addDays(start, i));
     return out;
   }
-  function isDone(st) { return !!DONE[String(st || '').trim()]; }
+  function isDone(st) { var m = String(st || '').trim().match(/^(완료|취소|끝남)/); return !!(m && DONE[m[1]]); }
   /* 마감 상태: done(끝남) · late(지연, 마감 지남) · today(오늘) · soon(D-3 이내) · later */
   function dueState(date, today, status) {
     if (!date) return { cls: 'none', n: null, label: '마감 없음' };

@@ -31,7 +31,7 @@ class Base(unittest.TestCase):
         args = ['--raw', raw or os.path.join(FX, 'raw_업무.json'), '--extra', extra or os.path.join(FX, 'extra.json'),
                 '--out', self.out, '--today', '2026-10-21', '--log', self.log,
                 '--master', os.path.join(FX, '일정총괄.json') if master else '/없음',
-                '--ingest', os.path.join(FX, 'ingest') if ingest else '/없음', '--unknown-log', os.path.join(self.out, 'unk.txt')]
+                '--ingest', os.path.join(FX, 'ingest') if ingest else '/없음', '--unknown-log', os.path.join(self.out, 'unk.txt'), '--decisions', '/없음']
         rc, msg = run(make_calendar.main, args)
         cal = st = None
         if rc == 0:
@@ -71,8 +71,12 @@ class Parsing(Base):
         # 합침: T001 마감 = extra 마감 같은 날 → 한 개
         self.assertEqual(sum(1 for e in cal['events'] if e['t'] == 'T001' and e['lane'] == 'yujin'), 1)
         self.assertEqual(sum(1 for e in cal['events'] if e['lane'] == 'prof'), 1)
-        # 날짜 다름 → 충돌
-        self.assertTrue(any(c['t'] == 'T008' and c['why'].startswith('충돌') for c in cal['checks']))
+        # 같은 T번호 다른 날짜 → 충돌 아니고 하위 단계 (대장 결정 261021)
+        self.assertFalse(any(c['why'].startswith('충돌') for c in cal['checks']))
+        sub = [e for e in cal['events'] if e['t'] == 'T008' and e.get('sub')]
+        self.assertEqual([(e['date'], e['title']) for e in sub], [('2026-10-27', 'T008 하위: 시트와 다른 날 마감')])
+        main = [e for e in cal['events'] if e['t'] == 'T008' and not e.get('sub')]
+        self.assertEqual([e['date'] for e in main], ['2026-10-26'])  # 현황판 날짜가 정본
 
     def test_names_removed(self):
         rc, msg, cal, st = self.make()
@@ -109,10 +113,12 @@ class Master(Base):
         m = [e for e in cal['events'] if e['src'] == 'master' and e['date'] == '2026-11-03'][0]
         self.assertEqual(m['cond'], '결재 뒤')
         self.assertEqual([e for e in cal['events'] if e['title'] == '총괄 참고 일정'][0]['lane'], 'ref')
-        # 현황판 줄 날짜가 시트와 다름 → 충돌, 대장 conflicts 도 들어옴
+        # 일정총괄의 「현황판」 줄 날짜가 달라도 현황판이 정본, 같은 T번호의 대장 충돌 표시는 충돌로 안 셈
         whys = [c['why'] for c in cal['checks'] if c['t'] == 'T008']
-        self.assertTrue(any('일정총괄 2026-10-29' in w for w in whys))
-        self.assertTrue(any('출처끼리 날짜 다름' in w for w in whys))
+        self.assertFalse(any(w.startswith('충돌') for w in whys))
+        self.assertFalse(any(e['t'] == 'T008' and e['date'] == '2026-10-29' for e in cal['events']))
+        self.assertGreaterEqual(cal['counts']['conflict_before_rule'], 1)
+        self.assertEqual(cal['counts']['conflict'], 0)
         # 현황표에도 같은 일정(steps)
         t2 = [t for t in st['tasks'] if t['t'] == 'T002'][0]
         self.assertTrue(any(s['date'] == '2026-11-03' for s in t2['steps']))
@@ -125,13 +131,58 @@ class Ingest(Base):
         self.assertEqual(cal['ingest_read'], {'통합일정': True, '통합할일': True})
         ev = [e for e in cal['events'] if e['src'] == 'ingest']
         self.assertTrue(any(e['lane'] == 'prof' and e['date'] == '2026-11-04' for e in ev))
-        # 같은 T번호 할 일은 현황판이 정본 → 날짜 다르면 충돌만
-        self.assertTrue(any(c['t'] == 'T002' and '충돌' in c['why'] and '2026-11-09' in c['why'] for c in cal['checks']))
+        # 같은 T번호 할 일은 현황판이 정본 → 다른 날짜는 하위 단계
+        self.assertTrue(any(e['t'] == 'T002' and e.get('sub') and e['date'] == '2026-11-09' for e in cal['events']))
+        self.assertFalse(any(c['t'] == 'T002' and c['why'].startswith('충돌') for c in cal['checks']))
         self.assertTrue(any(c['t'] == 'T002' and '상태 다름' in c['why'] for c in cal['checks']))
         # 시트에 없는 할 일 → others
         self.assertIn('노션 할 일', [o['title'] for o in st['others']])
         self.assertIn('날짜 없는 노션 일', [o['title'] for o in st['others']])
-        self.assertTrue(cal['counts']['conflict'] >= 2)
+        self.assertEqual(cal['counts']['conflict'], 0)
+
+
+class SubStepRule(Base):
+    """대장 결정 261021_일정날짜_정본결정: 날짜 정본 = 현황판, 같은 T번호 다른 날짜 = 「T번호 하위: 단계명」, 결정표대로 이름·없앰·정본 확인"""
+    def test_rule(self):
+        dec = {'canonical': [{'t': 'T001', 'date': '2026-10-31'}, {'t': 'T002', 'date': '2026-11-02'}],
+               'steps': [{'t': 'T002', 'date': '2026-11-09', 'step': '서류 마감'}],
+               'drop': [{'t': 'T001', 'dates': ['2026-10-30']}],
+               'pending': [{'t': 'T004', 'why': '원문 확인 후 확정'}]}
+        p = os.path.join(self.out, 'dec.json'); json.dump(dec, open(p, 'w', encoding='utf-8'), ensure_ascii=False)
+        args = ['--raw', os.path.join(FX, 'raw_업무.json'), '--extra', os.path.join(FX, 'extra.json'), '--out', self.out, '--today', '2026-10-21',
+                '--log', self.log, '--master', os.path.join(FX, '일정총괄.json'), '--ingest', os.path.join(FX, 'ingest'),
+                '--unknown-log', os.path.join(self.out, 'u.txt'), '--decisions', p]
+        rc, msg = run(make_calendar.main, args)
+        self.assertEqual(rc, 0, msg)
+        cal = json.load(open(os.path.join(self.out, 'calendar.json'), encoding='utf-8'))
+        st = json.load(open(os.path.join(self.out, 'status.json'), encoding='utf-8'))
+        ev = cal['events']
+        # 결정표 단계명
+        self.assertIn(('2026-11-09', 'T002 하위: 서류 마감'), [(e['date'], e['title']) for e in ev if e.get('sub')])
+        # 없앰: T001 의 10.30. 하위(가짜 강의 1회차)는 빠지고, 현황판 마감(정본)은 남음
+        self.assertFalse(any(e['t'] == 'T001' and e.get('sub') and e['date'] == '2026-10-30' for e in ev))
+        self.assertTrue(any(e['t'] == 'T001' and not e.get('sub') and e['date'] == '2026-10-30' for e in ev))
+        self.assertGreaterEqual(cal['counts']['dropped'], 1)
+        # 정본 날짜와 현황판 값이 다르면 「현황판 값 맞추기」(충돌 아님), 같으면 아무 말 없음
+        whys = {c['t']: c['why'] for c in cal['checks']}
+        self.assertIn('현황판 값 맞추기', whys.get('T001', ''))
+        self.assertNotIn('현황판 값 맞추기', whys.get('T002', ''))
+        self.assertIn('원문 확인 후 확정', whys.get('T004', ''))
+        # 하위 단계는 모두 「T번호 하위: 」 로 시작, 현황판 정본은 T번호당 하나
+        self.assertTrue(all(e['title'].startswith(e['t'] + ' 하위: ') for e in ev if e.get('sub')))
+        mains = [e['t'] for e in ev if e['src'].startswith('sheet')]
+        self.assertEqual(len(mains), len(set(mains)))
+        self.assertEqual(cal['counts']['conflict'], 0)
+        self.assertEqual(cal['counts']['sub_steps'], sum(1 for e in ev if e.get('sub')))
+        # 현황표에도 같은 하위 단계(이름)
+        t2 = [t for t in st['tasks'] if t['t'] == 'T002'][0]
+        self.assertIn('서류 마감', [x['step'] for x in t2.get('steps', [])])
+
+    def test_step_name(self):
+        so = make_calendar.step_of
+        self.assertEqual(so('[할 일] 10월 강사료 상신 09:00~09:30', 'T007'), '10월 강사료 상신')
+        self.assertEqual(so('2차 작업형 공개문제 출력·배부 — 출력'), '2차 작업형 공개문제 출력·배부 (출력)')
+        self.assertEqual(so('운영계획 결재 — 빠른안 마지노선(1과제분만 빠른배송)'), '운영계획 결재')
 
 
 class PII(Base):
