@@ -1,0 +1,8 @@
+{"entities": {"regulations": [
+ {"id": "a1", "name": "위임전결 규정", "articles": "제5조", "source": "못 찾음"},
+ {"id": "a2", "name": "RISE 사업비 집행 및 관리 지침", "articles": "제3조", "source": "있음(r031)"},
+ {"id": "a3", "name": "생활관 규정", "articles": "", "source": "인용만(노션)"},
+ {"id": "a4", "name": "강사료 지급 규정(제49호)", "articles": "", "source": "인용만"},
+ {"id": "a5", "name": "OJNT 운영 지침(산업인력공단)", "articles": "", "source": "못 찾음"},
+ {"id": "a6", "name": "항공안전법", "articles": "제48조", "source": "인용만"}
+]}}

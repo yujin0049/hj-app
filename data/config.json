@@ -1,0 +1,5 @@
+{
+ "obsidianVault": "",
+ "obsidianVaultRootInBox": "봇공유",
+ "_설명": "obsidianVault 가 비어 있으면 「옵시디언에서 열기」 버튼을 숨기고 발췌+볼트 경로만 보여 줘요. 유진님 컴퓨터·휴대폰 옵시디언에 볼트가 등록되면 그 볼트 이름을 넣어요. obsidianVaultRootInBox: 박스 /home/box/vault 아래에서 그 볼트의 맨 위 폴더(경로 앞에서 떼어 냄)."
+}
