@@ -37,7 +37,8 @@ class ThreeDHome(unittest.TestCase):
         self.assertIn("'3d'", read('js', 'registry.js'))
         self.assertIn('3d/index.html', read('js', 'modules', '3d.js'))
         self.assertNotIn('workers.dev', read('js', 'modules', '3d.js').split('SITE =')[0])
-        self.assertIn('hj-v18', read('sw.js'))
+        import re as _re
+        self.assertGreaterEqual(int(_re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 18)  # 3D 넣은 v18 이상
         self.assertIn('data-3dver="new"', home)
         self.assertIn('data-3dver="old"', home)
         self.assertIn('3d/v01/index.html', home)

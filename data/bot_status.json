@@ -1,0 +1,1347 @@
+{
+ "version": 1,
+ "source": "인수인계봇 현황판 시트 「업무」 탭",
+ "columns": {
+  "progress": false,
+  "verified": false
+ },
+ "counts": {
+  "진행": 35,
+  "대기(유진님 몫)": 39,
+  "막힘": 4,
+  "끝": 15,
+  "all": 93,
+  "open": 78
+ },
+ "waits": [
+  "대기: KORUS",
+  "대기: PC"
+ ],
+ "tasks": [
+  {
+   "t": "T001",
+   "title": "중간고사 시험 전산 입력(시험일시·고사장·시험관리교수)",
+   "bot": "인수인계봇",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 08:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T002",
+   "title": "사천 에어쇼 견학 지출품의(식사·간식·버스·보험·현수막, 1,242,000원)",
+   "bot": "",
+   "state": "끝",
+   "raw": "취소(결재 회수 완료)",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-21",
+   "updated": "2026-10-21 10:03",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T003",
+   "title": "사천 견학 여행자보험 가입(110,000원)",
+   "bot": "",
+   "state": "끝",
+   "raw": "취소(결재 회수 완료)",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-22",
+   "updated": "2026-10-21 10:03",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T004",
+   "title": "사천 에어쇼 현장견학 당일 운영·검수(10.23.(금) 08:30~14:40)",
+   "bot": "",
+   "state": "끝",
+   "raw": "취소(결재 회수 완료)",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 10:03",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T005",
+   "title": "앞뜰식당 예약 인원 맞추기(예약 15인 → 16명)",
+   "bot": "",
+   "state": "끝",
+   "raw": "취소(결재 회수 완료)",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-22",
+   "updated": "2026-10-21 10:03",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T006",
+   "title": "사천 견학 지출결의(영수증·세금계산서)",
+   "bot": "",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-19 17:52",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T007",
+   "title": "10월분 초과강사료 「지급 및 지출 의뢰」 공문 상신(89h·3,540,000원)",
+   "bot": "공문서 봇",
+   "state": "대기(유진님 몫)",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-27",
+   "updated": "2026-10-21 10:27",
+   "yujin": [
+    "대기: PC",
+    "결재"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T008",
+   "title": "10월분 강의확인서 확정(월 마감 10.26.)",
+   "bot": "지출단계 리마인더",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-26",
+   "updated": "2026-10-21 08:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T009",
+   "title": "[717] 9월분 강사료 지급명령·실지급 확인(3,580,000원)",
+   "bot": "",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-12",
+   "updated": "2026-10-20 14:32",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T010",
+   "title": "조교 지급(4개월 113만 원) 상세 내역 받기",
+   "bot": "엑셀봇",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 08:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T011",
+   "title": "기숙사 입소자 챙기기·호실 배치표 재맞춤",
+   "bot": "엑셀봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-05",
+   "updated": "2026-10-21 17:50",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T012",
+   "title": "기숙사비 확정(200,000원×14명×4개월=11,200,000원, 원계획 7,200,000원보다 4,000,000원 많음)",
+   "bot": "지출단계 리마인더",
+   "state": "대기(유진님 몫)",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-05",
+   "updated": "2026-10-21 17:50",
+   "yujin": [
+    "KORUS 입력",
+    "유진님 직접"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T013",
+   "title": "싱가포르(OJNT) 운영비(예산) 입금 확인",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-20",
+   "updated": "2026-10-21 14:24",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T014",
+   "title": "싱가포르 강사료 월별 지급(10월분 추정 6,180,000원)",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:24",
+   "yujin": [
+    "KORUS 입력"
+   ],
+   "risk": [
+    "증빙"
+   ]
+  },
+  {
+   "t": "T015",
+   "title": "싱가포르 미결: 단가·어학 6h 날짜·12/12·12/19 토요일 강사",
+   "bot": "",
+   "state": "막힘",
+   "raw": "보류",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-20 20:03",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T016",
+   "title": "싱가포르 과정 결과보고(과정 종료 2027.2.4.)",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2027-02-04",
+   "updated": "2026-10-17 18:35",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T017",
+   "title": "[자격취득반] 운영계획 결재·개강 전 제출 서류·세금 경로·성범죄 경력조회 확인",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-30",
+   "updated": "2026-10-21 10:09",
+   "yujin": [
+    "결재",
+    "확인·판단",
+    "유진님 직접",
+    "제출"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T018",
+   "title": "항공산업기사 특강(교수님, 10.30.~11.27. 매주 금 5회·40h) – 2차 작업형 공개문제 미리 배부 + 1·2·4과제 지급재료 준비 · 출석부",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-30",
+   "updated": "2026-10-21 17:50",
+   "yujin": [
+    "결재"
+   ],
+   "risk": [
+    "증빙"
+   ]
+  },
+  {
+   "t": "T019",
+   "title": "산업기사 특강 정산(강의확인·결의·지급)",
+   "bot": "춘식이",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-30",
+   "updated": "2026-10-21 17:50",
+   "yujin": [
+    "결재"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T020",
+   "title": "[719] 실습재료 15,180,000원(용호기공) 품의 불필요(원인행위만)",
+   "bot": "지출단계 리마인더",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 17:50",
+   "yujin": [
+    "대기: PC",
+    "KORUS 입력",
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T021",
+   "title": "실습재료 납품 검수·지출결의(기말 12.14. 전)",
+   "bot": "지출단계 리마인더",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-12-14",
+   "updated": "2026-10-21 17:50",
+   "yujin": [
+    "KORUS 입력"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T022",
+   "title": "DNA+ 실험실습재료 제반사항 기안 상신",
+   "bot": "",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-08",
+   "updated": "2026-10-21 10:03",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T023",
+   "title": "국토부 항공안전정책과-2618 개선권고 조치결과: 제출 끝, 국토부 협의 회의",
+   "bot": "",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-20 17:10",
+   "yujin": [],
+   "risk": [
+    "개선권고·지적"
+   ]
+  },
+  {
+   "t": "T024",
+   "title": "정비사 1차(11.2.~11.25.) 강사료 4주 묶음 지급의뢰·예산 포함 여부",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-23",
+   "updated": "2026-10-21 10:03",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T025",
+   "title": "정비사 과정 강사료 지급 서류 미리 받기(선생님)",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2027-02-26",
+   "updated": "2026-10-17 18:35",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T026",
+   "title": "정비사 2차(2027.2.1.~2.19., 112h) 종강 후 지급의뢰",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2027-02-26",
+   "updated": "2026-10-17 18:35",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T027",
+   "title": "11월분 초과강사료 계산·지급의뢰(10.27.~11.23. 묶음)",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-23",
+   "updated": "2026-10-19 10:21",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T028",
+   "title": "12월분 초과강사료 계산·지급의뢰(11.24.~12.19. 묶음)",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-12-18",
+   "updated": "2026-10-21 10:03",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T029",
+   "title": "항공정비사 종합평가(12월) 일정·대상 받기",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-06",
+   "updated": "2026-10-17 18:35",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T030",
+   "title": "B-737 NG 과정 자료 받기·11월 훈련계획",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-30",
+   "updated": "2026-10-17 18:35",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T031",
+   "title": "교관 자질향상 교육 시기·시간 확인",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-23",
+   "updated": "2026-10-21 10:03",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T032",
+   "title": "출석인정서 공문을 교수님들께 내야 하는지 문의",
+   "bot": "",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-08",
+   "updated": "2026-10-20 14:36",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T033",
+   "title": "1차 강의평가(10.15.~10.24.) 교육원 비대면 과목 해당 여부·학생 안내",
+   "bot": "규정봇",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-24",
+   "updated": "2026-10-21 08:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T034",
+   "title": "추가시험 마감(정규 학과 기준, 교육원 과목 제외)",
+   "bot": "",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-07",
+   "updated": "2026-10-20 17:40",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T035",
+   "title": "결과보고 마감(수료자 있을 때만, 과정 종료 후 10일)",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-12-29",
+   "updated": "2026-10-21 10:03",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T036",
+   "title": "매주 목요일 일일·주간 성과보고",
+   "bot": "인수인계봇",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-22",
+   "updated": "2026-10-21 08:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T037",
+   "title": "폴더 정리 실행 승인",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-17 18:35",
+   "yujin": [
+    "유진님 직접"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T038",
+   "title": "싱가포르(OJNT) 사무용품 구입 지출품의(일반수용비 100만 원 이내, 법인카드)",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-20",
+   "updated": "2026-10-20 19:50",
+   "yujin": [
+    "KORUS 입력",
+    "결재",
+    "결제"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T039",
+   "title": "업무용 컴퓨터 Windows 버전 현황 제출(Windows 10 ESU 갱신용)",
+   "bot": "엑셀봇",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-21",
+   "updated": "2026-10-21 09:04",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T040",
+   "title": "사천 에어쇼 견학 서명부·체크리스트 작성",
+   "bot": "",
+   "state": "끝",
+   "raw": "취소",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-19 17:54",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T041",
+   "title": "사천 견학 참가자 명단 전화번호 보완",
+   "bot": "",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-22",
+   "updated": "2026-10-19 17:52",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T042",
+   "title": "교육원 엔진 실습실 사물함 열쇠 관리·회계장부(키 1개 10,000원)",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-20 19:53",
+   "yujin": [
+    "확인·판단",
+    "유진님 직접"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T043",
+   "title": "근로장학시스템 담당자 가입(승인 대기)",
+   "bot": "",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-12-31",
+   "updated": "2026-10-21 10:14",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T044",
+   "title": "국토부 정기검사 결과 알림(교육원 565호) 「진행」 상태 정리",
+   "bot": "",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-20 19:58",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T045",
+   "title": "초경량비행장치사용사업 변경(교육원 593·608호) 결과 확인",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-20 17:12",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T046",
+   "title": "글로컬 2856 「사업비 변경에 따른 프로그램 수요조사서 제출 요청」 회신 여부",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-20 17:17",
+   "yujin": [
+    "확인·판단",
+    "제출"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T047",
+   "title": "국토부 전문교육기관 훈련운영기준·교육규정 표준화 회의 참석 여부(교육원-772)",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:50",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T048",
+   "title": "개인정보 공문 스캔해서 보내기(대상 확인 필요)",
+   "bot": "",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 02:50",
+   "yujin": [
+    "대기: PC",
+    "제출"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T051",
+   "title": "OJNT 입사신청서 제출",
+   "bot": "엑셀봇",
+   "state": "대기(유진님 몫)",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-21",
+   "updated": "2026-10-21 14:37",
+   "yujin": [
+    "제출"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T052",
+   "title": "OJNT 호실 배정",
+   "bot": "엑셀봇",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-05",
+   "updated": "2026-10-21 14:33",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T053",
+   "title": "사물함 관리(5101호·2층 휴게실, 150개+)",
+   "bot": "엑셀봇",
+   "state": "막힘",
+   "raw": "대기",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 17:50",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T054",
+   "title": "총무과-13457(10.20.) 위임전결·사무분장 규정 개정안 의견조회",
+   "bot": "규정봇",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-28",
+   "updated": "2026-10-21 09:03",
+   "yujin": [
+    "유진님 직접"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T055",
+   "title": "시설과-5224(10.20., 교육원 접수 815, 10.21.) 2026년 하반기 제3종시설물 정기안전점검 일정 변경 안내",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-27",
+   "updated": "2026-10-21 14:37",
+   "yujin": [
+    "유진님 직접"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T056",
+   "title": "3D 인터랙션·디자인",
+   "bot": "춘식이",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:23",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T057",
+   "title": "행정 업무 연습장(사물함 판·배너·확인 필요 탭)",
+   "bot": "춘식이",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:37",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T058",
+   "title": "Cloudflare 배포",
+   "bot": "춘식이",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T059",
+   "title": "PC 파일 색인",
+   "bot": "춘식이",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T060",
+   "title": "Aside 연결·첫 시험",
+   "bot": "춘식이2",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T061",
+   "title": "옵시디언 싱크·요약 노트",
+   "bot": "춘식이2",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:23",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T062",
+   "title": "연결·설정 점검",
+   "bot": "춘식이2",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T063",
+   "title": "PC 작업 창구(다른 봇이 넘기는 설치·설정·파일 정리)",
+   "bot": "춘식이2",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T064",
+   "title": "잡일·스크립트 보조",
+   "bot": "춘식이2",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 09:27",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T065",
+   "title": "OJNT 실거주 확인서 제출(부총장 도장, 생활관 안내대로)",
+   "bot": "엑셀봇",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-30",
+   "updated": "2026-10-21 14:33",
+   "yujin": [
+    "제출"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T066",
+   "title": "국토교통부 관련 회의 (11.3.(화)~11.4.(수), 참석 원장님·교수님)",
+   "bot": "대장",
+   "state": "진행",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-03",
+   "updated": "2026-10-21 13:52",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T067",
+   "title": "11.26.(목) 13:00 공군 제3훈련비행단 현장견학(1학년 16명+인솔 5명, 글로컬 예산)",
+   "bot": "대장",
+   "state": "대기(유진님 몫)",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-26",
+   "updated": "2026-10-21 13:18",
+   "yujin": [
+    "결재"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T068",
+   "title": "글로컬 프로그램 수요조사서 제출 여부(교육원-814, 사업비 882,000천원 증액)",
+   "bot": "대장",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:31",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T069",
+   "title": "사천 에어쇼 관람객 등록 취소(10.23. 견학 취소)",
+   "bot": "대장",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 12:42",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T070",
+   "title": "혁신지구(항공) 운영 제반사항 제공 — 지출 단계·기한 확인(1827)",
+   "bot": "지출단계 리마인더",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 14:35",
+   "yujin": [
+    "결재",
+    "확인·판단",
+    "KORUS 입력"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T071",
+   "title": "혁신지구 세부 운영 계획서(1801)에서 교육원 몫·일정 뽑기",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:10",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T072",
+   "title": "과정평가형 지원수당 9·10월분 지급 확인, 11·12월분 일정(1796·1794)",
+   "bot": "지출단계 리마인더",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 14:35",
+   "yujin": [
+    "결재",
+    "확인·판단",
+    "KORUS 입력"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T073",
+   "title": "과정평가형 제4회 외부평가 날짜·대상 받기(1772)",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:10",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T074",
+   "title": "해외 직무연수 학생선발 — 교육원 학생 해당 여부(1743·1740)",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:10",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T075",
+   "title": "해외 어학연수 접수 — 교육원 학생 안내 대상인지(1714)",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:10",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T076",
+   "title": "2027 국립대학회계 예산편성·집행 지침 개정 의견 낼지(1738)",
+   "bot": "규정봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:10",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T077",
+   "title": "우주항공·방산 인프라·인력양성 과제 수요조사 — 교육원 과제 낼지(1725)",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:10",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T078",
+   "title": "제목 비공개 공문(1852, 교무과-9044, 10.21.) 원문 확인",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:10",
+   "yujin": [
+    "확인·판단"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T079",
+   "title": "방식 정리: F:\\자료를 업무별로 옵시디언에 (제1원칙)",
+   "bot": "춘식이2",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-21",
+   "updated": "2026-10-21 16:50",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T080",
+   "title": "통합정보시스템 기능 분석 보고서 제출(대장 01:53 지시)",
+   "bot": "인수인계봇",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:33",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T081",
+   "title": "국토부 문서 1431·1285·627·772 본문 PC에 받기(11.3.~4. 국토부 회의 준비)",
+   "bot": "춘식이",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-28",
+   "updated": "2026-10-21 14:52",
+   "yujin": [
+    "유진님 직접"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T082",
+   "title": "파일 찾기(연습장 링크·다운로드 자동/수동 분류)",
+   "bot": "춘식이",
+   "state": "진행",
+   "raw": "진행 중",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:52",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T083",
+   "title": "Aside와 봇 지침 차이 설명",
+   "bot": "춘식이",
+   "state": "끝",
+   "raw": "완료",
+   "progress": null,
+   "verified": null,
+   "due": "",
+   "updated": "2026-10-21 14:52",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T084",
+   "title": "싱가폴 현장견학 국외출장 묶음(2027.1.17.(일)~1.21.(목), 출장자 원장님·유진님(교수 동행 보류), 글로컬)",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2027-01-15",
+   "updated": "2026-10-21 17:00",
+   "yujin": [
+    "결재"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T085",
+   "title": "싱가폴 현장견학: 목적·방문처·동행자·글로컬 세부 과목 자료 받기",
+   "bot": "인수인계봇",
+   "state": "막힘",
+   "raw": "대기",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-13",
+   "updated": "2026-10-21 17:00",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T086",
+   "title": "싱가폴 현장견학: 국외출장 계획서 기안·결재(공무국외여행 허가)",
+   "bot": "공문서 봇",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-12-17",
+   "updated": "2026-10-21 17:00",
+   "yujin": [
+    "결재"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T087",
+   "title": "항공·숙박은 여행사 진행, 유진님은 국외여비 지출품의 기안",
+   "bot": "지출단계 리마인더",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-12-24",
+   "updated": "2026-10-21 17:00",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T088",
+   "title": "싱가폴 현장견학: 출장결과보고·국외여비 정산",
+   "bot": "지출단계 리마인더",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2027-01-28",
+   "updated": "2026-10-21 16:57",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T089",
+   "title": "매주 월요일 사무국에 근로장학생 보내 서류 있나 확인(10:00, 반복)",
+   "bot": "인수인계봇",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-26",
+   "updated": "2026-10-21 16:50",
+   "yujin": [],
+   "risk": []
+  },
+  {
+   "t": "T090",
+   "title": "근로장학생: A4 봉투 50매 준비(10.26. 10:15)",
+   "bot": "인수인계봇",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-26",
+   "updated": "2026-10-21 17:08",
+   "yujin": [
+    "결재"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T091",
+   "title": "항공안전법 시행규칙 개정안(전문교육기관 지정·갱신·검사 절차) 의견제출 여부(국토교통부공고 제2026-1272호, 마감 10.23.)",
+   "bot": "규정봇",
+   "state": "대기(유진님 몫)",
+   "raw": "확인 필요",
+   "progress": null,
+   "verified": null,
+   "due": "2026-10-23",
+   "updated": "2026-10-21 17:18",
+   "yujin": [
+    "확인·판단",
+    "제출"
+   ],
+   "risk": []
+  },
+  {
+   "t": "T092",
+   "title": "전문교육기관 교육생 명단 제출(매 과정 시작·수료 10일 내, 항공교육훈련통합관리시스템, 11.13. 시행)",
+   "bot": "규정봇",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2026-11-13",
+   "updated": "2026-10-21 17:18",
+   "yujin": [
+    "제출"
+   ],
+   "risk": [
+    "기한 놓치면 불이익"
+   ]
+  },
+  {
+   "t": "T093",
+   "title": "ICAO USOAP 한국 감사(12.2.~12.15.) — 국토부 요청 자료 대응 대비(참고)",
+   "bot": "규정봇",
+   "state": "막힘",
+   "raw": "대기",
+   "progress": null,
+   "verified": null,
+   "due": "2026-12-02",
+   "updated": "2026-10-21 17:18",
+   "yujin": [],
+   "risk": [
+    "감사·검사",
+    "개선권고·지적"
+   ]
+  },
+  {
+   "t": "T094",
+   "title": "2027년 국토부 정기검사(매년 1회, 올해 4.28.~4.29.)",
+   "bot": "규정봇",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2027-04-28",
+   "updated": "2026-10-21 17:18",
+   "yujin": [],
+   "risk": [
+    "감사·검사",
+    "개선권고·지적"
+   ]
+  },
+  {
+   "t": "T095",
+   "title": "전문교육기관 지정 갱신 신청(유효기간 5년, 2026.11.13. 기산, 만료 전 신청)",
+   "bot": "규정봇",
+   "state": "진행",
+   "raw": "할 일",
+   "progress": null,
+   "verified": null,
+   "due": "2031-11-12",
+   "updated": "2026-10-21 17:18",
+   "yujin": [],
+   "risk": [
+    "기한 놓치면 불이익",
+    "만료·기한"
+   ]
+  }
+ ],
+ "read_at": "2026-10-21 20:19",
+ "built_at": "2026-10-21 20:23",
+ "built_iso": "2026-10-21T20:23+09:00",
+ "refresh": "30분마다(평일 08:00~20:00) 현황판 다시 읽기 → 이 파일 갱신"
+}
