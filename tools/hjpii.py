@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""개인정보 거르기 공용 모듈 (make_calendar.py · make_ojnt_progress.py · pii_check.py 가 같이 씀).
+"""개인정보 거르기 공용 모듈 (make_calendar.py · make_ojnt_progress.py · cal_pii_check.py 가 같이 씀).
 - 전화·주민번호·이메일·계좌 모양 글자 찾기
 - 사람 이름 찾기: ① 「OOO 교수님/선생님/주무관…」 앞 이름 ② 성씨로 시작하는 3글자 낱말 중 ALLOW(보통 낱말)에 없는 것
 - 이름 목록은 원자료에서 그때그때 만들고 어디에도 저장하지 않음."""

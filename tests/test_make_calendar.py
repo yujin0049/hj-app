@@ -1,8 +1,8 @@
-"""make_calendar · make_ojnt_progress · pii_check 시험 (가짜 fixture만 씀). 실행: python3 -m unittest tests/test_make_calendar.py"""
+"""make_calendar · make_ojnt_progress · cal_pii_check 시험 (가짜 fixture만 씀). 실행: python3 -m unittest tests/test_make_calendar.py"""
 import json, os, shutil, sys, tempfile, unittest, io, contextlib
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(HERE, '..', 'tools'))
-import make_calendar, make_ojnt_progress, pii_check, hjpii  # noqa: E402
+import make_calendar, make_ojnt_progress, cal_pii_check, hjpii  # noqa: E402
 FX = os.path.join(HERE, 'fixtures', 'calendar')
 # 가짜 번호는 파일에 그대로 적지 않고 시험할 때 조립(커밋 전 개인정보 검사 pii_guard 통과용)
 J = '-'.join
@@ -202,7 +202,7 @@ class PII(Base):
         self.assertIn('이메일', f('a.b@example.com'))
         self.assertIn('사람 이름', f('담당 홍길동', {'홍길동'}))
 
-    def test_pii_check_all_outputs(self):
+    def test_cal_pii_check_all_outputs(self):
         rc, msg, cal, st = self.make()
         self.assertEqual(rc, 0, msg)
         oj_raw = os.path.join(self.out, 'raw_ojnt.json')
@@ -222,12 +222,12 @@ class PII(Base):
         blob = json.dumps(oj, ensure_ascii=False)
         for bad in ('가나다', '라마바', J(['0' + '10', '0000'])):
             self.assertNotIn(bad, blob)
-        rc3, m3 = run(pii_check.main, ['--data', self.out, '--raw', os.path.join(FX, 'raw_업무.json'), oj_raw])
+        rc3, m3 = run(cal_pii_check.main, ['--data', self.out, '--raw', os.path.join(FX, 'raw_업무.json'), oj_raw])
         self.assertEqual(rc3, 0, m3)
         # 일부러 이름을 넣으면 검사 실패(2)
         cal['events'][0]['title'] = '가나다 확인'
         json.dump(cal, open(os.path.join(self.out, 'calendar.json'), 'w', encoding='utf-8'), ensure_ascii=False)
-        rc4, m4 = run(pii_check.main, ['--data', self.out, '--raw', os.path.join(FX, 'raw_업무.json'), oj_raw])
+        rc4, m4 = run(cal_pii_check.main, ['--data', self.out, '--raw', os.path.join(FX, 'raw_업무.json'), oj_raw])
         self.assertEqual(rc4, 2, m4)
 
 

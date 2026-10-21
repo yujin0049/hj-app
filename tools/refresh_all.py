@@ -3,13 +3,13 @@
 사용: refresh_all.py [--raw-dir /workspace/hj_audit/calendar] [--worker hj-pv-calendar] [--no-worker]
 - 시트 읽기는 부르는 쪽(봇)이 커넥터로 해서 raw_업무.json · raw_ojnt.json 으로 저장해 둔다(이 스크립트는 인터넷 안 씀).
 - data/meta.json 에 「마지막 갱신」(KST)과 성공 여부를 남긴다. 실패하면 예전 data 는 그대로 두고 meta 에 실패만 적어 화면에 경고 띠가 뜬다.
-- 개인정보 검사(pii_check) 실패 = 종료 코드 2, 워커 파일 안 만듦(배포하면 안 됨).
+- 개인정보 검사(cal_pii_check) 실패 = 종료 코드 2, 워커 파일 안 만듦(배포하면 안 됨).
 - 배포는 이 스크립트가 하지 않는다: 만든 /workspace/hj_audit/preview/<워커>.js 를 Cloudflare 커넥터 execute 로 보낸다."""
 import argparse, datetime as dt, json, os, shutil, subprocess, sys, tempfile
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, HERE)
-import make_calendar, make_ojnt_progress, pii_check
+import make_calendar, make_ojnt_progress, cal_pii_check
 
 KST = dt.timezone(dt.timedelta(hours=9))
 BUILD = '/workspace/hj_audit/preview/build_preview.py'
@@ -53,7 +53,7 @@ def main(argv=None):
         if rc == 2:
             return finish(meta_p, old, now, steps, False, 2)
         ok = ok and rc == 0
-    rc = pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
+    rc = cal_pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
     if rc:
         steps['개인정보 검사'] = {'ok': False, 'why': '실패'}
         return finish(meta_p, old, now, steps, False, 2)
@@ -71,7 +71,7 @@ def main(argv=None):
     ch = subprocess.run(['git', '-C', ROOT, 'diff', '--name-only', 'main', '--', '.'], capture_output=True, text=True).stdout.split()
     ch += subprocess.run(['git', '-C', ROOT, 'ls-files', '--others', '--exclude-standard'], capture_output=True, text=True).stdout.split()
     enforce = sorted({'/' + c for c in ch} | {'/data/' + f for f in os.listdir(data)})
-    rc = pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json', '--worker', worker, '--enforce'] + enforce)
+    rc = cal_pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json', '--worker', worker, '--enforce'] + enforce)
     if rc:
         os.replace(worker, worker + '.막힘')
         print('워커 파일 개인정보 검사 실패 → %s.막힘 (배포 금지)' % worker)
