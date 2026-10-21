@@ -376,15 +376,55 @@
       return res.json();
     });
   }
-  /* 원문 대조로 고친 카드 칸 덮어쓰기 (data/card_overrides.json, 키 = 묶음:id) */
+  /* 점 경로로 안쪽 칸 찾기 (예 "blocks.5", "rows.1.1"). 없으면 null */
+  function walk(o, keys) {
+    for (var i = 0; i < keys.length; i++) {
+      if (o == null || typeof o !== 'object' || !(keys[i] in o)) return null;
+      o = o[keys[i]];
+    }
+    return o;
+  }
+  /* 원문 대조로 고친 카드 칸 덮어쓰기 (data/card_overrides.json, 키 = 묶음:id)
+     목록이 아닌 묶음(manual 등)은 묶음:경로. 칸 이름에 점이 있으면 이미 있는 안쪽 칸만 바꿈.
+     파이썬판: tools/link_sources.py apply_overrides (시험 tests/test_practical_std.py) */
   function applyOverrides(pack, ov) {
     if (!ov) return;
     Object.keys(ov).forEach(function (key) {
-      if (key.charAt(0) === '_') return;
-      var k = key.split(':'), list = pack.entities[k[0]] || [];
-      list.forEach(function (c) {
-        if (String(c.id) === k[1]) Object.keys(ov[key]).forEach(function (f) { c[f] = ov[key][f]; });
+      var at = key.indexOf(':');
+      if (key.charAt(0) === '_' || at < 0) return;
+      var id = key.slice(at + 1), ent = pack.entities[key.slice(0, at)], targets = [];
+      if (Array.isArray(ent)) targets = ent.filter(function (c) { return c && String(c.id) === id; });
+      else if (ent && typeof ent === 'object') {
+        var t = walk(ent, id.split('.'));
+        if (t && typeof t === 'object') targets = [t];
+      }
+      targets.forEach(function (c) {
+        Object.keys(ov[key]).forEach(function (f) {
+          if (f.indexOf('.') < 0) { c[f] = ov[key][f]; return; }
+          var ks = f.split('.'), last = ks.pop(), o = walk(c, ks);
+          if (o && typeof o === 'object' && last in o) o[last] = ov[key][f];
+        });
       });
+    });
+    if (ov._practical_standard) state.regNote = ov._practical_standard.note;
+  }
+  /* 「규정 원문 경계는 …」 메모부터 그 글 끝까지 작은 글씨로 (화면 글자만, 자료는 그대로) */
+  var NO_NOTE = { TEXTAREA: 1, OPTION: 1, SCRIPT: 1, STYLE: 1, TITLE: 1 };
+  function styleNotes(el) {
+    var note = state.regNote;
+    if (!el || !note) return;
+    var w = document.createTreeWalker(el, NodeFilter.SHOW_TEXT), n, hits = [];
+    while ((n = w.nextNode())) {
+      var p = n.parentNode;
+      if (n.nodeValue.indexOf(note) < 0 || !p || NO_NOTE[p.nodeName] || (p.classList && p.classList.contains('reg-note'))) continue;
+      hits.push(n);
+    }
+    hits.forEach(function (t) {
+      var rest = t.splitText(t.nodeValue.indexOf(note));
+      var s = document.createElement('small');
+      s.className = 'reg-note';
+      s.textContent = rest.nodeValue;
+      rest.parentNode.replaceChild(s, rest);
     });
   }
   function loadData() {
@@ -422,6 +462,8 @@
         location.hash = '#/search/' + encodeURIComponent(document.getElementById('find-q').value.trim());
       };
       registerSw();
+      var vw = document.getElementById('view');
+      if (window.MutationObserver) new MutationObserver(function () { styleNotes(vw); }).observe(vw, { childList: true, subtree: true });
       return loadData();
     }).then(function (pack) {
       state.pack = pack;

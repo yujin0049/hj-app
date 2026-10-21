@@ -19,7 +19,7 @@ import argparse, datetime, hashlib, json, os, re, subprocess, sys, tempfile
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-PII_DIR = '/home/box/vault/봇공유/99 봇/스크립트'
+PII_DIR = os.environ.get('HJ_PII_DIR') or '/home/box/vault/봇공유/99 봇/스크립트'   # 다른 PC: 환경변수 HJ_PII_DIR
 LINK, CAND = 0.80, 0.45
 COLLECTIONS = ('regulations',)
 # 봇 메모·운영 노트는 원문이 아니다 → 건너뜀
@@ -122,7 +122,7 @@ def scan_vault(vault):
             if m2 and '없음' not in m2.group(1):
                 titles.append(m2.group(1).strip())
             ft = fm.get('전환본')
-            if isinstance(ft, str) and ft.startswith('/') and os.path.isfile(ft):
+            if isinstance(ft, str) and os.path.isabs(ft) and os.path.isfile(ft):
                 for ln in [x for x in clean_lines(read_text(ft, 6000))][:4]:
                     if 4 <= len(ln) <= 60:
                         titles.append(ln)
@@ -202,7 +202,7 @@ def full_text_for(doc):
     """볼트 요약 노트가 가리키는 전환본(전문)이 박스에 있으면 그걸, 없으면 노트 본문."""
     for k in ('전환본', '원문_전환본', 'fulltext'):
         p = doc['fm'].get(k)
-        if isinstance(p, str) and p.startswith('/') and os.path.isfile(p):
+        if isinstance(p, str) and os.path.isabs(p) and os.path.isfile(p):
             return read_text(p), p
     return doc['body'], doc['path']
 
@@ -315,19 +315,53 @@ def build(pack, vault, today):
     return out
 
 
-def apply_overrides(pack, path):
-    """app.js 와 같은 규칙: data/card_overrides.json 의 칸으로 카드를 덮어씀."""
-    if not os.path.isfile(path):
-        return pack
-    ov = json.load(open(path, encoding='utf-8'))
+def _walk(o, keys):
+    """app.js walk 와 같음: 점 경로로 안쪽 칸. 없으면 None"""
+    for k in keys:
+        if isinstance(o, list) and k.isdigit() and int(k) < len(o):
+            o = o[int(k)]
+        elif isinstance(o, dict) and k in o:
+            o = o[k]
+        else:
+            return None
+    return o
+
+
+def apply_override_obj(pack, ov):
+    """app.js applyOverrides 와 같은 규칙. 키 = 묶음:id (목록 아닌 묶음은 묶음:경로), 칸 이름의 점 = 안쪽 칸(있을 때만)."""
+    ent_all = pack.get('entities', {})
     for key, fields in ov.items():
         if key.startswith('_') or ':' not in key:
             continue
         col, cid = key.split(':', 1)
-        for c in pack.get('entities', {}).get(col, []):
-            if str(c.get('id')) == cid:
-                c.update(fields)
+        ent = ent_all.get(col)
+        if isinstance(ent, list):
+            targets = [c for c in ent if isinstance(c, dict) and str(c.get('id')) == cid]
+        elif isinstance(ent, dict):
+            t = _walk(ent, cid.split('.'))
+            targets = [t] if isinstance(t, (dict, list)) else []
+        else:
+            targets = []
+        for c in targets:
+            for f, v in fields.items():
+                if '.' not in f:
+                    c[f] = v
+                    continue
+                ks = f.split('.')
+                o, last = _walk(c, ks[:-1]), ks[-1]
+                if isinstance(o, list) and last.isdigit() and int(last) < len(o):
+                    o[int(last)] = v
+                elif isinstance(o, dict) and last in o:
+                    o[last] = v
     return pack
+
+
+def apply_overrides(pack, path):
+    """data/card_overrides.json 의 칸으로 카드를 덮어씀(앱과 같게)."""
+    if not os.path.isfile(path):
+        return pack
+    with open(path, encoding='utf-8') as f:
+        return apply_override_obj(pack, json.load(f))
 
 
 def pii_gate(path):
@@ -335,7 +369,9 @@ def pii_gate(path):
     if not os.path.isfile(script):
         print('개인정보 검사 스크립트 없음 → 쓰지 않음', file=sys.stderr)
         return 2
-    r = subprocess.run([sys.executable, script, path, '--target', 'github'], capture_output=True, text=True)
+    env = dict(os.environ, PYTHONIOENCODING='utf-8')   # 윈도우(cp949)에서도 출력이 깨지지 않게
+    r = subprocess.run([sys.executable, script, path, '--target', 'github'], capture_output=True,
+                       text=True, encoding='utf-8', errors='replace', env=env)
     print(r.stdout.strip())
     return r.returncode
 

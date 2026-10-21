@@ -1,5 +1,6 @@
 """tools/link_sources.py 시험 (가짜 볼트). 실행: python3 -m unittest tests/test_link_sources.py -v"""
-import json, os, shutil, subprocess, sys, tempfile, unittest
+import json, os, re, shutil, subprocess, sys, tempfile, unittest
+NODE = shutil.which('node')
 HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 sys.path.insert(0, os.path.join(ROOT, 'tools'))
@@ -10,6 +11,11 @@ FAKE_PHONE = '0' + '10-12' + '34-56' + '78'   # 저장소에 번호 모양을 �
 TMP = tempfile.mkdtemp()
 VAULT = os.path.join(TMP, 'vault')
 shutil.copytree(os.path.join(FIX, 'vault'), VAULT)
+_R031 = os.path.join(VAULT, '봇공유', '50 자료색인', 'regs', 'r031_RISE지침_문서_v01.md')
+with open(_R031, encoding='utf-8') as f:   # 전환본 경로를 이 PC의 fixtures/full 로 (경로가 PC마다 다름)
+    _t = re.sub(r'^전환본: .*$', lambda m: '전환본: "%s"' % os.path.join(FIX, 'full', 'r031.md').replace('\\', '/'), f.read(), flags=re.M)
+with open(_R031, 'w', encoding='utf-8') as f:
+    f.write(_t)
 with open(os.path.join(VAULT, '봇공유', '20 규정·지침', '위임전결규정.md'), 'a', encoding='utf-8') as f:
     f.write('담당 연락처 ' + FAKE_PHONE + ' (연습용 가짜 번호)\n')
 
@@ -81,6 +87,7 @@ class T(unittest.TestCase):
         self.assertEqual(L.contain('위임전결규정', '국립창원대학교위임전결규정'), 1.0)
         self.assertLess(L.kind_penalty('경남항공교육원운영규정', '항공기술교육원교육규정'), 0.5)
 
+    @unittest.skipUnless(NODE, 'node 없음')
     def test_js_obsidian_url(self):
         js = os.path.join(ROOT, 'js', 'source-link.js')
         code = ("require(%r); var S=globalThis.SourceLink;"
@@ -93,39 +100,17 @@ class T(unittest.TestCase):
         self.assertEqual(b, 'obsidian://open?vault=%EB%B4%87%EA%B3%B5%EC%9C%A0&file=20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EC%9C%84%EC%9E%84%EC%A0%84%EA%B2%B0%EA%B7%9C%EC%A0%95')
 
 
-if __name__ == '__main__':
-    unittest.main()
-
-
 class T위임전결카드(unittest.TestCase):
-    """공부 > 위임전결 규정 카드가 원문(별표1·2)과 맞는지. 「1,000만원 이상 부총장」은 규정에 없다(규정봇 261021)."""
-    WRONG = __import__('re').compile(r'1\s?,?\s?000\s?만\s?원|1천\s?만\s?원|천만\s?원')
+    """공부 > 위임전결 규정 카드의 원문 연결. 실무 기준(1,000만원) 문구 시험은 tests/test_practical_std.py"""
 
     @classmethod
     def setUpClass(cls):
-        pack = json.load(open(os.path.join(ROOT, 'public-pack.json'), encoding='utf-8'))
-        L.apply_overrides(pack, os.path.join(ROOT, 'data', 'card_overrides.json'))   # 앱이 보는 것과 같게
-        cls.card = [r for r in pack['entities']['regulations'] if r['id'] == 'g8'][0]
-        src = os.path.join(ROOT, 'data', 'sources.json')
-        cls.rec = json.load(open(src, encoding='utf-8'))['cards'].get('regulations:g8', {})
-
-    def test_no_1000man_in_card(self):
-        txt = json.dumps(self.card, ensure_ascii=False)
-        self.assertIsNone(self.WRONG.search(txt), '위임전결 카드에 1,000만원 기준이 다시 들어감(규정 경계는 3,000만원)')
-
-    def test_no_1000man_in_linked_source(self):
-        self.assertIsNone(self.WRONG.search(json.dumps(self.rec, ensure_ascii=False)))
-
-    def test_card_matches_original(self):
-        c = self.card
-        self.assertIn('3,000만원 미만', c['summary'])
-        self.assertIn('3,000만원 이상 1억원 미만', c['summary'])
-        self.assertIn('남해캠퍼스부총장', c['summary'])
-        for k in ('제3조', '제4조', '제5조', '제9조', '별표1', '별표2'):
-            self.assertIn(k, c['articles'])
+        with open(os.path.join(ROOT, 'data', 'sources.json'), encoding='utf-8') as f:
+            cls.rec = json.load(f)['cards'].get('regulations:g8', {})
 
     def test_repo_sources_have_no_excerpt_text(self):
-        src = json.load(open(os.path.join(ROOT, 'data', 'sources.json'), encoding='utf-8'))
+        with open(os.path.join(ROOT, 'data', 'sources.json'), encoding='utf-8') as f:
+            src = json.load(f)
         for k, r in src['cards'].items():
             self.assertEqual((r.get('excerpt') or {}).get('text', ''), '', k)
             self.assertNotIn('heading', r, k)
@@ -140,3 +125,7 @@ class T위임전결카드(unittest.TestCase):
         self.assertEqual(self.rec.get('status'), '연결')
         self.assertEqual(self.rec.get('path'), '봇공유/20 규정·지침/국립창원대_위임전결규정.md')
         self.assertEqual(self.rec['excerpt']['articles_missing'], [])
+
+
+if __name__ == '__main__':
+    unittest.main()
