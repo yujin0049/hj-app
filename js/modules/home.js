@@ -153,6 +153,8 @@
     var schedAll = (pack.entities.schedule && pack.entities.schedule.items) || [];
     var schedOpen = schedAll.filter(function (it) { return !it.done; }).length;
     var h = '<section class="hero"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1 class="hero-title">오늘 뭐부터 할까요?</h1></section>';
+    // 봇 작업 현황(#/bots): 홈 맨 위에서 바로 들어가요. 숫자는 data/bot_status.json 을 읽은 뒤 채워요(유진님 10.21. 20:15 지시).
+    h += '<button class="bs-entry" type="button" data-go="#/bots" id="home-bots"><span class="tile-ic purple">🤖</span><span class="bs-entry-tx"><b>봇 작업 현황</b><span class="tile-sub" id="home-bots-sub">지금 도는 일을 한 줄씩</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += card3d();
     h += '<div class="tiles">' +
       tile('#/board', '📋', '오늘 할 일', work.length ? ('진행 중 ' + work.length + '건') : '업무 현황표', 'blue') +
@@ -255,6 +257,10 @@
     });
     el.querySelectorAll('[data-go]').forEach(function (b) {
       b.onclick = function () { api.go(b.getAttribute('data-go')); };
+    });
+    if (window.HJBotsPeek) window.HJBotsPeek().then(function (sec) {
+      var sub = document.getElementById('home-bots-sub');
+      if (sec && sub) sub.textContent = '유진님 몫 ' + sec.yujin.length + ' · 마감 임박 ' + sec.soon.length + ' · 감사 위험 ' + sec.risk.length;
     });
   }
 

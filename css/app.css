@@ -459,3 +459,9 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
 .v3d > .v3d-ver { align-self: center; margin: 8px 0; }
 .v3d-stage iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; background: #fff; }
 @media (max-width: 420px) { .v3d-btn span { display: none; } }
+
+/* 홈 맨 위 「봇 작업 현황」 줄 (js/modules/home.js, #/bots) */
+.bs-entry { display: flex; align-items: center; gap: 12px; width: 100%; margin: 10px 0 4px; padding: 14px 16px; border: 0; border-radius: 20px; background: #fff; text-align: left; cursor: pointer; color: var(--ink); }
+.bs-entry-tx { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.bs-entry-tx b { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+.bs-entry-go { color: var(--muted); font-size: 1.6rem; line-height: 1; }
