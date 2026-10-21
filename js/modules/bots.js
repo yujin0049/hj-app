@@ -31,7 +31,7 @@
     '.bs-due small{display:block;font-weight:500;color:var(--muted);font-size:.72rem}',
     '.bs-due.late{color:#F04452}.bs-due.today,.bs-due.soon{color:#E67700}.bs-due.later{color:var(--ink-2)}.bs-due.none,.bs-due.done{color:var(--muted)}',
     '.bs-tag{display:inline-block;font-size:.7rem;font-weight:700;border-radius:6px;padding:1px 6px;margin:4px 4px 0 0;background:#FFEFC7;color:#9A5B00}',
-    '.bs-tag.r{background:#FDE2E4;color:#C62536}',
+    '.bs-tag.r{background:#FDE2E4;color:#C62536}.bs-tag.g{background:transparent;box-shadow:inset 0 0 0 1px #F5C26B;color:#9A5B00;font-weight:600}',
     '.bs-bar{height:4px;border-radius:2px;background:var(--soft);margin-top:6px;overflow:hidden}.bs-bar i{display:block;height:100%;background:var(--navy)}',
     '.bs-more{display:block;width:100%;border:0;background:none;color:var(--navy);font-weight:600;font-size:.86rem;padding:10px 0;cursor:pointer}',
     '.bs-flt{display:flex;gap:8px;margin:4px 0 8px}.bs-flt select,.bs-flt input{flex:1;min-width:0;border:0;background:var(--soft);border-radius:12px;padding:9px 10px;font-size:.86rem}',
@@ -53,7 +53,8 @@
   function row(B, esc, t, today, opt) {
     var d = B.due(t, today);
     var tags = '';
-    if (opt && opt.yu) tags += (t.yujin || []).map(function (g) { return '<span class="bs-tag">' + esc(g) + '</span>'; }).join('');
+    var guess = t.yujin_src === '추정';
+    if (opt && opt.yu) tags += (t.yujin || []).map(function (g) { return '<span class="bs-tag' + (guess ? ' g' : '') + '"' + (guess ? ' title="현황판 「유진님 몫」 칸이 비어 있어 봇이 추정"' : '') + '>' + esc(g) + (guess ? ' · 추정' : '') + '</span>'; }).join('');
     if (opt && opt.risk) tags += (t.risk || []).map(function (g) { return '<span class="bs-tag r">' + esc(g) + '</span>'; }).join('');
     var pr = B.progressText(t.progress), vf = B.verifiedText(t.verified);
     var bar = (t.progress === null || t.progress === undefined) ? '' : '<div class="bs-bar"><i style="width:' + Math.max(0, Math.min(100, +t.progress)) + '%"></i></div>';
@@ -89,7 +90,7 @@
       '<div class="bs-head"><h1>봇 작업 현황</h1><p id="bs-stamp">현황판 ' + esc(data.read_at || '?') + ' 읽음 · 화면 자료 ' + esc(data.built_at || '?') + ' (한국 시간)</p></div>' +
       (st.warn ? '<div class="bs-stale" id="bs-stale">⚠ ' + esc(st.why) + '. 보이는 내용이 현황판과 다를 수 있어요.</div>' : '') +
       '<div class="bs-kpi" id="bs-kpi">' + kpi + '</div>' +
-      section(B, esc, 'bs-yu', 'yu', '유진님이 해야 할 것', '로그인 · 결제 · 결재 · KORUS 입력 · 제출 · 확인·판단. 마감 가까운 것부터.', sec.yujin, today, { yu: 1 }, 5) +
+      section(B, esc, 'bs-yu', 'yu', '유진님이 해야 할 것', '로그인 · 결제 · 결재 · KORUS 입력 · 제출 · 확인·판단. 진한 꼬리표는 현황판 「유진님 몫」 칸 값, 테두리만 있는 「추정」은 칸이 비어 봇이 짐작한 것. 마감 가까운 것부터.', sec.yujin, today, { yu: 1 }, 5) +
       section(B, esc, 'bs-soon', '', '마감 임박', '마감 3일 이내(D-3)와 이미 지난 것.', sec.soon, today, {}, 5) +
       section(B, esc, 'bs-risk', 'risk', '감사 위험', '감사·검사, 개선권고, 만료, 놓치면 불이익이 있는 일.', sec.risk, today, { risk: 1 }, 5) +
       '<section class="bs-sec" id="bs-all"><h2>' + esc(view.state ? B.SHORT[view.state] : '지금 도는 일') + ' <small id="bs-count">' + list.length + '개</small></h2>' +
