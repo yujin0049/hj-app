@@ -78,6 +78,40 @@ class ThreeDHome(unittest.TestCase):
             for fid in ('1F', '2F', '3F'):
                 self.assertTrue({l['id'] for l in L[fid]} <= ids, (b, fid))
 
+    # 2026-10-21 시설 사진 5장으로 넣은 저폴리 모형 (building.json geo 칸)
+    PHOTO_1021_IDS = {'rf-ac-1', 'rf-water-tank', 'rf-booster-pump-1', 'rf-stair-tower', '3f-extinguisher', 'site-weld-ventilator'}
+
+    def _geo_equipment(self):
+        g = json.loads(read('3d', 'assets', 'building.json'))['geo']
+        items = list(g['roof']['equipment']) + [g['roof']['penthouse']]
+        for F in g['floors'].values():
+            items += F.get('equipment', [])
+        return {e['id']: e for e in items if e.get('id')}
+
+    def test_photo_1021_models_in_data(self):
+        E = self._geo_equipment()
+        self.assertTrue(self.PHOTO_1021_IDS <= set(E), self.PHOTO_1021_IDS - set(E))
+        self.assertGreaterEqual(len([i for i in E if i.startswith('rf-ac-')]), 3)  # 사진: 최소 3대
+        self.assertEqual(E['3f-extinguisher']['n'], 2)
+        self.assertEqual(E['site-weld-ventilator']['n'], 3)
+        self.assertEqual(len([i for i in E if i.startswith('rf-pressure-tank-')]), 2)
+        for i in self.PHOTO_1021_IDS:
+            if i != 'rf-booster-pump-1':  # 펌프는 「물탱크·가압펌프」 이름표 하나로 같이 씀
+                self.assertTrue(E[i].get('label'), i)
+            self.assertIn('사진 10.21. 기준, 위치·치수는 대략', E[i].get('note', ''), i)
+        for i in ('rf-ac-1', '3f-extinguisher', 'site-weld-ventilator'):  # 사진만으로 위치 불확실
+            self.assertIn('위치 추정', E[i]['label'], i)
+
+    def test_photo_1021_rendered_without_photo_files(self):
+        scene = read('3d', 'assets', 'scene.js')
+        for k in ("e.k === 'ext'", "e.k === 'vent'", 'P.label_p'):
+            self.assertIn(k, scene)
+        self.assertIn('e.floor', read('3d', 'assets', 'app.js'))
+        for dp, _, fs in os.walk(os.path.join(ROOT, '3d')):
+            self.assertFalse([f for f in fs if f.lower().endswith(('.jpg', '.jpeg', '.heic'))], dp)  # 사진 원본 복사 안 함
+        import re as _re
+        self.assertGreaterEqual(int(_re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 23)  # 사진 모형 넣은 v23 이상
+
     def test_no_person_names_in_labels(self):
         L = self._labels()
         for arr in L.values():

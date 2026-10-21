@@ -119,6 +119,8 @@ export function buildScene(THREE, data) {
     frame: new THREE.MeshStandardMaterial({ color: 0x5c6672, roughness: 0.5, metalness: 0.35 }),
     leaf: new THREE.MeshStandardMaterial({ color: 0x8592a1, roughness: 0.55, metalness: 0.2 }),
     hangarDoor: new THREE.MeshStandardMaterial({ color: 0x9aa7b5, roughness: 0.45, metalness: 0.4 }),
+    ext: new THREE.MeshStandardMaterial({ color: 0xd3262c, roughness: 0.35 }),         // 소화기 빨강 (사진 261021_소화기_2개.jpg)
+    vent: new THREE.MeshStandardMaterial({ color: 0x2f56b0, roughness: 0.45, metalness: 0.3 }), // 파란 벤틸레이터·골강판 (사진 261021_용접실습동_지붕_벤틸레이터.jpg)
     stair: new THREE.MeshStandardMaterial({ color: 0xd3d7dc, roughness: 0.9 }),
     col: new THREE.MeshStandardMaterial({ color: 0x8e9aa7, roughness: 0.5, metalness: 0.45 }),
     metal: new THREE.MeshStandardMaterial({ color: 0xc6d0dc, roughness: 0.42, metalness: 0.45, side: THREE.DoubleSide }),
@@ -147,6 +149,32 @@ export function buildScene(THREE, data) {
     const m = new THREE.Mesh(g, mat); m.receiveShadow = true; m.castShadow = true;
     m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 30), M.edge)); return m;
   };
+
+  // 설비 작은 표시: { id, text, note, floor, pos } — note 는 누르면 보이는 설명
+  const eqLabels = [];
+  const eqLabel = (e, floor, pos) => { if (e.label) eqLabels.push({ id: e.id || '', text: e.label, note: e.note || '', floor, pos }); };
+  const cylAt = (r0, r1, h, seg, mat, x, z, y) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r0, r1, h, seg), mat); m.position.set(x, z + h / 2, -y); m.castShadow = true; return m; };
+  // 소화기 n개 (평면 y 방향으로 gap 간격): 몸통 원기둥 + 검은 머리, stand 에 든 번호는 빨간 받침대 위
+  function extinguishers(e) {
+    const g = new THREE.Group();
+    for (let i = 0; i < e.n; i++) {
+      const y = e.c[1] + (i - (e.n - 1) / 2) * e.gap; const onStand = (e.stand || []).includes(i); const z = e.z0 + (onStand ? 0.12 : 0);
+      if (onStand) { const b = new Batch(); b.prism([[e.c[0] - 0.13, y - 0.13], [e.c[0] + 0.13, y - 0.13], [e.c[0] + 0.13, y + 0.13], [e.c[0] - 0.13, y + 0.13]], e.z0, z); g.add(mesh(b, M.ext)); }
+      g.add(cylAt(e.r, e.r, e.h - 0.08, 12, M.ext, e.c[0], z, y), cylAt(e.r * 0.45, e.r * 0.45, 0.08, 8, M.pump, e.c[0], z + e.h - 0.08, y));
+    }
+    return g;
+  }
+  // 회전형 벤틸레이터 n개 (평면 y 방향 한 줄): 네모 후레싱(4각뿔대) + 목 + 원통 몸통 + 원뿔 갓, patch 가 있으면 골강판 지붕 조각
+  function ventilators(e) {
+    const g = new THREE.Group(), r = e.r;
+    if (e.patch) { const [w, d] = e.patch; const b = new Batch(); b.prism([[e.c[0] - w / 2, e.c[1] - d / 2], [e.c[0] + w / 2, e.c[1] - d / 2], [e.c[0] + w / 2, e.c[1] + d / 2], [e.c[0] - w / 2, e.c[1] + d / 2]], e.z0 - 0.12, e.z0); g.add(mesh(b, M.vent, true, true)); }
+    for (let i = 0; i < e.n; i++) {
+      const y = e.c[1] + (i - (e.n - 1) / 2) * e.gap, x = e.c[0];
+      const fl = cylAt(r * 0.95, r * 1.9, 0.2, 4, M.vent, x, e.z0, y); fl.rotation.y = Math.PI / 4;
+      g.add(fl, cylAt(r * 0.75, r * 0.75, 0.15, 16, M.vent, x, e.z0 + 0.2, y), cylAt(r, r, 0.35, 16, M.vent, x, e.z0 + 0.35, y), cylAt(0.01, r * 1.04, e.h - 0.7, 16, M.vent, x, e.z0 + 0.7, y));
+    }
+    return g;
+  }
 
   const floors = {}; const order = Object.keys(G.floors);
   const CUT = 1.55; // 단면 보기: 바닥 위 1.55m 에서 자름 (창 아래쪽이 보임)
@@ -185,6 +213,7 @@ export function buildScene(THREE, data) {
       F.columns.forEach((c, i) => { o.position.set(c[0], (fid === '1F' ? 0 : F.z) + (fid === '1F' && c[1] > -2.2 ? G.levels.eave : h) / 2, -c[1]); o.scale.set(c[2], fid === '1F' && c[1] > -2.2 ? G.levels.eave : h, c[3]); o.updateMatrix(); im.setMatrixAt(i, o.matrix); });
       im.castShadow = true; im.receiveShadow = true; base.add(im);
     }
+    for (const e of F.equipment || []) if (e.k === 'ext') { base.add(extinguishers(e)); eqLabel(e, fid, [e.c[0], e.z0 + e.h + 0.6, -e.c[1]]); }
     const g = new THREE.Group(); g.add(base, full, cut, tall); cut.visible = false;
     floors[fid] = { g, full, cut, tall, slab, f: { id: fid, z: F.z, top: F.top } };
   }
@@ -200,9 +229,9 @@ export function buildScene(THREE, data) {
     addAll(roofG, [mesh(b, M.ph, true, true), mesh(cb, M.core), mesh(gb, M.glass, false), mesh(fb, M.frame), mesh(lb, M.leaf)]);
     const [x0, y0, x1, y1] = P.rect; const t = 0.3, i = t;
     phRoof = extrude([[x0 + i, y0 + i], [x1 - i, y0 + i], [x1 - i, y1 - i], [x0 + i, y1 - i]], [], P.z1, 0.2, M.roof); roofG.add(phRoof);
+    if (P.label_p) eqLabel(P, 'RF', [P.label_p[0], P.z1 + 0.6, -P.label_p[1]]); // 계단탑(옥상 출입) — 3층 계단 쪽 문 위
   }
-  // 옥상 설비 (사진·옥상 평면): 실외기·물탱크·펌프·압력탱크 — 큼직한 것만 상자·원기둥으로
-  const eqLabels = [];
+  // 옥상 설비 (사진·옥상 평면): 실외기·물탱크·펌프·압력탱크 — 큼직한 것만 상자·원기둥으로. vent = 도면 밖 건물(용접실습동) 벤틸레이터, 따로 둔 모형
   {
     const box = new Batch(), unit = new Batch(), steel = new Batch(), tankB = new Batch(), pad = new Batch(), fans = [], cyls = [];
     const rect = (c, w, d) => [[c[0] - w / 2, c[1] - d / 2], [c[0] + w / 2, c[1] - d / 2], [c[0] + w / 2, c[1] + d / 2], [c[0] - w / 2, c[1] + d / 2]];
@@ -215,8 +244,9 @@ export function buildScene(THREE, data) {
         pad.prism(rect(e.c, e.w + 0.2, e.d + 0.2), e.z0 - e.pad, e.z0);
         tankB.prism(rect(e.c, e.w, e.d), e.z0, e.z0 + e.h);
       } else if (e.k === 'pump') box.prism(rect(e.c, e.w, e.d), e.z0, e.z0 + e.h);
+      else if (e.k === 'vent') roofG.add(ventilators(e));
       else if (e.shape === 'cyl') cyls.push(e);
-      if (e.label) eqLabels.push({ text: e.label, pos: [e.c[0], e.z0 + (e.h || 0.5) + 0.6, -e.c[1]] });
+      eqLabel(e, 'RF', [e.c[0], e.z0 + (e.h || 0.5) + 0.6, -e.c[1]]);
     }
     addAll(roofG, [mesh(steel, M.frame), mesh(unit, M.unit, true, true), mesh(tankB, M.tank, true, true), mesh(pad, M.core), mesh(box, M.pump, true, true)]);
     for (const [x, y, z, r] of fans) { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.08, 20), M.frame); m.position.set(x, z + 0.04, -y); m.castShadow = true; roofG.add(m); }

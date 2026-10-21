@@ -105,10 +105,12 @@ async function boot() {
   function buildLabels() {
     labelsEl.innerHTML = ''; labels = [];
     for (const [fid, arr] of Object.entries(cfg.labels)) for (const l of arr) addLabel(l, fid);
-    // 옥상 설비 작은 표시 (building.json geo 칸 — 편집 이름표와 별개, 지붕 보기에서만)
+    // 설비 작은 표시 (building.json geo 칸 — 편집 이름표와 별개, 그 층·지붕 보기에서만). note 가 있으면 누르면 이름표처럼 다가가고 설명이 붙음
     for (const e of B.eqLabels) {
-      const el = document.createElement('div'); el.className = 'lbl eq'; el.textContent = e.text; labelsEl.appendChild(el);
-      labels.push({ el, pos: new THREE.Vector3(...e.pos), floor: 'RF', name: e.text, kind: 'eq', eq: true, w: 0 });
+      const el = document.createElement('div'); el.className = 'lbl eq' + (e.note ? ' tap' : ''); el.textContent = e.text; labelsEl.appendChild(el);
+      const item = { el, pos: new THREE.Vector3(...e.pos), floor: e.floor || 'RF', name: e.text, kind: 'eq', eq: true, id: e.id, w: 0 };
+      if (e.note) { el.dataset.note = e.note; el.title = e.note; el.addEventListener('click', () => focusRoom(item)); }
+      labels.push(item);
     }
   }
   buildLabels();
@@ -140,7 +142,7 @@ async function boot() {
   }
   function flyTo(v, dur = 0.9) { anim.from = { pos: camera.position.clone(), target: controls.target.clone() }; anim.to = v; anim.t = 0; anim.dur = dur; }
   function focusRoom(item) {
-    labels.forEach((l) => l.el.classList.toggle('hl', l === item));
+    labels.forEach((l) => { l.el.classList.toggle('hl', l === item); if (l.eq) l.w = 0; }); // 설명이 붙고 빠지면 폭이 바뀜
     document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c._item === item));
     const dir = camera.position.clone().sub(controls.target).normalize();
     flyTo({ target: item.pos.clone().setY(item.pos.y - 1), pos: item.pos.clone().add(dir.multiplyScalar(26)) }, 0.8);

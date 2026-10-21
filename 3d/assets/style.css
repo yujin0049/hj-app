@@ -48,7 +48,9 @@ h1{font-size:40px;line-height:1.2;font-weight:700;letter-spacing:-.02em;margin:1
 .lbl.entry{background:var(--blue);color:#fff}
 .lbl.hl{background:var(--blue);color:#fff;z-index:2}
 .lbl.hide{opacity:0!important;pointer-events:none}
-.lbl.eq{padding:3px 7px;border-radius:7px;font-size:10px;font-weight:500;color:var(--sub);background:rgba(255,255,255,.8);box-shadow:none;pointer-events:none}.loading{position:absolute;inset:0;display:grid;place-items:center;background:#fff;transition:opacity .4s}
+.lbl.eq{padding:3px 7px;border-radius:7px;font-size:10px;font-weight:500;color:var(--sub);background:rgba(255,255,255,.8);box-shadow:none;pointer-events:none}
+.lbl.eq.tap:not(.hide){pointer-events:auto;cursor:pointer}.lbl.eq.hl{background:var(--blue);color:#fff;z-index:2}.lbl.eq.hl[data-note]::after{content:' · ' attr(data-note)}
+.loading{position:absolute;inset:0;display:grid;place-items:center;background:#fff;transition:opacity .4s}
 .loading.done{opacity:0;pointer-events:none}
 .spinner{width:36px;height:36px;border-radius:50%;border:3px solid var(--blue-weak);border-top-color:var(--blue);animation:sp 0.9s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
