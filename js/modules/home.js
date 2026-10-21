@@ -155,6 +155,8 @@
     var h = '<section class="hero"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1 class="hero-title">오늘 뭐부터 할까요?</h1></section>';
     // 봇 작업 현황(#/bots): 홈 맨 위에서 바로 들어가요. 숫자는 data/bot_status.json 을 읽은 뒤 채워요(유진님 10.21. 20:15 지시).
     h += '<button class="bs-entry" type="button" data-go="#/bots" id="home-bots"><span class="tile-ic purple">🤖</span><span class="bs-entry-tx"><b>봇 작업 현황</b><span class="tile-sub" id="home-bots-sub">지금 도는 일을 한 줄씩</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    // 문서등록대장 학습(#/docreg): 문제 풀며 문서등록대장 익히기(유진님 10.21. 20:47 지시). 진도는 자료를 읽은 뒤 채워요.
+    h += '<button class="bs-entry" type="button" data-go="#/docreg" id="home-docreg"><span class="tile-ic teal">📑</span><span class="bs-entry-tx"><b>문서등록대장 학습</b><span class="tile-sub" id="home-docreg-sub">분류별 문제로 문서 익히기</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += card3d();
     h += '<div class="tiles">' +
       tile('#/board', '📋', '오늘 할 일', work.length ? ('진행 중 ' + work.length + '건') : '업무 현황표', 'blue') +
@@ -257,6 +259,11 @@
     });
     el.querySelectorAll('[data-go]').forEach(function (b) {
       b.onclick = function () { api.go(b.getAttribute('data-go')); };
+    });
+    if (window.HJDocregPeek) window.HJDocregPeek().then(function (s) {
+      var sub = document.getElementById('home-docreg-sub');
+      if (!s || !sub) return;
+      sub.textContent = s.done ? ('푼 문제 ' + s.done + ' / ' + s.total + ' · 틀린 문제 ' + s.wrong) : ('문제 ' + s.total + '개 · 내 업무 분류부터');
     });
     if (window.HJBotsPeek) window.HJBotsPeek().then(function (sec) {
       var sub = document.getElementById('home-bots-sub');
