@@ -96,6 +96,14 @@
     return '<a class="tile tile-img" href="' + href + '" target="_blank" rel="noopener"><img src="img/' + img + '.jpg" alt="" loading="lazy"><b>' + title + '</b><span class="tile-sub">' + sub + '</span></a>';
   }
 
+  // 홈 3D 카드: 같은 저장소 3d/ 의 v02 모델(일반 실 이름만). 층 버튼은 카드 안에서 바로, 화면을 누르면 #/3d 전체 화면.
+  function card3d() {
+    return '<section class="card home3d"><div class="home3d-head"><h2>교육원 전경 3D</h2>' +
+      '<button class="btn-ghost small" type="button" data-go="#/3d">전체 화면</button></div>' +
+      '<div class="home3d-stage"><iframe title="교육원 전경 3D 미리보기" src="3d/index.html?embed=1&amp;v=17" loading="lazy"></iframe></div>' +
+      '<p class="muted small">층 버튼을 눌러 보세요. 화면을 누르면 크게 돌려 볼 수 있어요. ' +
+      '<a href="https://silseupdong-3d.yujin06344.workers.dev/" target="_blank" rel="noopener">호실 이름이 들어간 편집본은 3D 사이트(PIN) ↗</a></p></section>';
+  }
   function render(el, api) {
     if (!api.unlocked()) return renderPublic(el, api);
     var pack = api.pack();
@@ -122,12 +130,13 @@
     var schedAll = (pack.entities.schedule && pack.entities.schedule.items) || [];
     var schedOpen = schedAll.filter(function (it) { return !it.done; }).length;
     var h = '<section class="hero"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1 class="hero-title">오늘 뭐부터 할까요?</h1></section>';
+    h += card3d();
     h += '<div class="tiles">' +
       tile('#/board', '📋', '오늘 할 일', work.length ? ('진행 중 ' + work.length + '건') : '업무 현황표', 'blue') +
       tile('#/schedule', '🗓️', '남은 일정', schedOpen ? ('남은 일 ' + schedOpen + '개') : '체크리스트', 'green') +
       tile('#/dorm', '🏠', '기숙사 현황판', '방 배정·도면', 'orange') +
       tile('#/banner', '🪧', '현수막 만들기', '시안·예전 현수막', 'purple') +
-      tileLink('https://silseupdong-3d.yujin06344.workers.dev', '3d-thumb', '교육원 3D', '실습동 3D 모델 ↗') +
+      tile('#/3d', '🏫', '교육원 전경 3D', '앱 안에서 크게 보기', 'blue') +
       tile('#/study', '📚', '공부', '하루 10분', 'teal') +
       '</div>';
     h += '<section class="card"><h2>확인 필요</h2>';
@@ -233,6 +242,7 @@
       '<p>자료를 불러오지 못했어요. 새로고침해 주세요. 학생 안내는 바로 볼 수 있어요.</p>' +
       '<div class="row"><button class="btn" id="go-stu" type="button">학생 안내</button>' +
       '<button class="btn-ghost" id="go-admin" type="button">행정 업무 열기</button></div></section>';
+    h += card3d();
     h += '<section class="card"><h2>공지</h2>';
     if (!news) h += '<p class="muted">공지가 없어요.</p>';
     else h += '<button class="list-btn" type="button" id="go-news"><b>' + api.esc(news.title) + '</b><div class="item-meta">' + api.esc(guide.notice || '') + '</div></button>';
@@ -242,6 +252,7 @@
     el.querySelector('#go-admin').onclick = function () { api.go('#/board'); };
     var newsBtn = el.querySelector('#go-news');
     if (newsBtn) newsBtn.onclick = function () { api.go('#/students/news'); };
+    el.querySelectorAll('[data-go]').forEach(function (b) { b.onclick = function () { api.go(b.getAttribute('data-go')); }; });
   }
 
   ShellModules.home = { id: 'home', tab: '홈', icon: icon, render: render };

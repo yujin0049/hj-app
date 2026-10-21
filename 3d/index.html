@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex,nofollow">
+<title>경남항공교육원 전경 3D</title>
+<link rel="stylesheet" href="assets/style.css">
+<script type="importmap">{"imports":{"three":"./assets/vendor/three.module.min.js"}}</script>
+</head>
+<body>
+<section id="landing" class="landing" hidden>
+  <div class="landing-inner">
+    <div class="eyebrow">국립창원대학교 남해캠퍼스</div>
+    <h1>경남항공교육원<br>전경 3D</h1>
+    <p class="lead">준공도면으로 만든 3D 건물 안내예요.<br>층을 고르고 손가락으로 돌려 보세요.</p>
+        <ul class="facts">
+      <li><b>3개 층</b><span>+ 옥상</span></li>
+      <li><b>격납고</b><span>기체종합창고</span></li>
+      <li><b>47.5m</b><span>건물 길이</span></li>
+    </ul>
+  </div>
+  <div class="cta-wrap"><button id="enter" class="cta">3D로 둘러보기</button></div>
+</section>
+
+<main id="viewer" class="viewer">
+  <canvas id="c"></canvas>
+  <div id="labels" class="labels"></div>
+  <header class="topbar">
+    <button id="back" class="icon-btn" aria-label="처음으로"><svg viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="title"><b>경남항공교육원 전경 3D</b><span id="floorName">전체</span></div>
+    <button id="reset" class="icon-btn" aria-label="시점 초기화"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6M4 4v4h4" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+  </header>
+  <div id="hint" class="hint">한 손가락 회전 · 두 손가락 확대/이동</div>
+  <footer class="bottom">
+    <div id="rooms" class="rooms"></div>
+    <nav id="seg" class="seg" role="tablist">
+      <button data-f="1F">1F</button><button data-f="2F">2F</button><button data-f="3F">3F</button><button data-f="RF">지붕</button><button data-f="ALL" class="on">전체</button>
+      <i class="seg-thumb"></i>
+    </nav>
+    <div class="note">2020.04 준공도면 기준 단순화 모델 · 실제와 다를 수 있어요</div>
+  </footer>
+  <div id="loading" class="loading"><div class="spinner"></div></div>
+</main>
+<script type="module" src="assets/app.js"></script>
+</body>
+</html>
