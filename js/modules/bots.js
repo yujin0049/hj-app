@@ -11,7 +11,8 @@
     '.bs-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 4px}',
     '.bs-kpi button{border:0;background:var(--card);border-radius:16px;padding:10px 4px;text-align:center;cursor:pointer}',
     '.bs-kpi button.on{box-shadow:inset 0 0 0 2px var(--navy)}',
-    '.bs-kpi b{display:block;font-size:1.25rem;font-weight:800;letter-spacing:-.02em}.bs-kpi span{font-size:.74rem;color:var(--ink-2);white-space:nowrap}',
+    '.bs-kpi b{display:block;font-size:1.25rem;font-weight:800;letter-spacing:-.02em}.bs-kpi span{font-size:.7rem;color:var(--ink-2);white-space:nowrap}',
+    '.bs-kpi .bs-kpi-sub{display:block;font-size:.66rem;color:var(--muted);margin:-2px 0 1px;white-space:nowrap}',
     '.bs-dot{display:inline-block;width:9px;height:9px;border-radius:50%;flex:0 0 9px;margin-top:7px}',
     '.bs-kpi .bs-dot{margin:0 4px 1px 0;vertical-align:middle}',
     '.d-run{background:#3182F6}.d-yu{background:#FF9F00}.d-stop{background:#F04452}.d-done{background:#03B26C}',
@@ -50,11 +51,15 @@
       .then(function (j) { data = j; return j; })
       .catch(function () { failed = true; tried = false; return null; });
   }
+  /* '2026-10-21 20:30' → '10.21.(수) 20:30' */
+  function fmtAt(s) { var m = /^(\d{4}-\d\d-\d\d) (\d\d:\d\d)/.exec(s || ''); return m ? root.HJBots.md(m[1]) + ' ' + m[2] : (s || '?'); }
   function row(B, esc, t, today, opt) {
     var d = B.due(t, today);
     var tags = '';
-    var guess = t.yujin_src === '추정';
-    if (opt && opt.yu) tags += (t.yujin || []).map(function (g) { return '<span class="bs-tag' + (guess ? ' g' : '') + '"' + (guess ? ' title="현황판 「유진님 몫」 칸이 비어 있어 봇이 추정"' : '') + '>' + esc(g) + (guess ? ' · 추정' : '') + '</span>'; }).join('');
+    if (opt && opt.yu) tags += (t.yujin || []).map(function (g) {
+      var guess = B.isGuessTag(t, g);
+      return '<span class="bs-tag' + (guess ? ' g' : '') + '"' + (guess ? ' title="현황판 「유진님 몫」 칸이 비어 있어 봇이 추정"' : '') + '>' + esc(g) + (guess ? ' · 추정' : '') + '</span>';
+    }).join('');
     if (opt && opt.risk) tags += (t.risk || []).map(function (g) { return '<span class="bs-tag r">' + esc(g) + '</span>'; }).join('');
     var pr = B.progressText(t.progress), vf = B.verifiedText(t.verified);
     var bar = (t.progress === null || t.progress === undefined) ? '' : '<div class="bs-bar"><i style="width:' + Math.max(0, Math.min(100, +t.progress)) + '%"></i></div>';
@@ -79,18 +84,23 @@
     var B = root.HJBots, esc = api.esc, today = B.todayKST();
     var tasks = data.tasks || [];
     var c = B.counts(tasks), sec = B.sections(tasks, today), st = B.stale(data);
-    var list = B.sortTasks(B.filter(tasks, view), today);
+    var list = B.sortTasks(B.filter(tasks, view), today, { confirmFirst: view.state === '대기(유진님 몫)' });
+    var ys = B.yujinSplit(tasks);
+    var ysSmall = '+추정 ' + ys.guess + (ys.bundle ? ' · 묶음 ' + ys.bundle : '');
     var kpi = B.STATES.map(function (s) {
-      return '<button type="button" data-st="' + esc(s) + '" class="' + (view.state === s ? 'on' : '') + '"><b>' + c[s] + '</b><span><i class="bs-dot d-' + B.DOT[s] + '"></i>' + esc(B.SHORT[s]) + '</span></button>';
+      var yu = s === '대기(유진님 몫)';
+      return '<button type="button" data-st="' + esc(s) + '" class="' + (view.state === s ? 'on' : '') + '"' + (yu ? ' id="bs-kpi-yu"' : '') + '><b>' + (yu ? ys.sure : c[s]) + '</b>' +
+        (yu ? '<small class="bs-kpi-sub" id="bs-kpi-yu-sub">' + esc(ysSmall) + '</small>' : '') +
+        '<span><i class="bs-dot d-' + B.DOT[s] + '"></i>' + esc(yu ? '유진님 몫 확정' : B.SHORT[s]) + '</span></button>';
     }).join('');
     var botOpts = '<option value="">봇 전체</option>' + B.bots(tasks).map(function (b) { return '<option' + (b === view.bot ? ' selected' : '') + '>' + esc(b) + '</option>'; }).join('') +
       '<option value="(미기재)"' + (view.bot === '(미기재)' ? ' selected' : '') + '>담당 봇 미기재</option>';
     var cols = data.columns || {};
     el.innerHTML =
-      '<div class="bs-head"><h1>봇 작업 현황</h1><p id="bs-stamp">현황판 ' + esc(data.read_at || '?') + ' 읽음 · 화면 자료 ' + esc(data.built_at || '?') + ' (한국 시간)</p></div>' +
+      '<div class="bs-head"><h1>봇 작업 현황</h1><p id="bs-stamp">현황판 ' + esc(fmtAt(data.read_at)) + ' 읽음 (한국 시간)</p></div>' +
       (st.warn ? '<div class="bs-stale" id="bs-stale">⚠ ' + esc(st.why) + '. 보이는 내용이 현황판과 다를 수 있어요.</div>' : '') +
       '<div class="bs-kpi" id="bs-kpi">' + kpi + '</div>' +
-      section(B, esc, 'bs-yu', 'yu', '유진님이 해야 할 것', '로그인 · 결제 · 결재 · KORUS 입력 · 제출 · 확인·판단. 진한 꼬리표는 현황판 「유진님 몫」 칸 값, 테두리만 있는 「추정」은 칸이 비어 봇이 짐작한 것. 마감 가까운 것부터.', sec.yujin, today, { yu: 1 }, 5) +
+      section(B, esc, 'bs-yu', 'yu', '유진님이 해야 할 것', '확정 ' + ys.sure + '개(현황판 「유진님 몫」 칸 값, 진한 꼬리표)를 먼저, 그다음 ' + ysSmall.slice(1) + '개(테두리 꼬리표 「추정」 = 칸이 비어 봇이 짐작). 각 묶음 안은 마감 가까운 것부터.', sec.yujin, today, { yu: 1 }, 5) +
       section(B, esc, 'bs-soon', '', '마감 임박', '마감 3일 이내(D-3)와 이미 지난 것.', sec.soon, today, {}, 5) +
       section(B, esc, 'bs-risk', 'risk', '감사 위험', '감사·검사, 개선권고, 만료, 놓치면 불이익이 있는 일.', sec.risk, today, { risk: 1 }, 5) +
       '<section class="bs-sec" id="bs-all"><h2>' + esc(view.state ? B.SHORT[view.state] : '지금 도는 일') + ' <small id="bs-count">' + list.length + '개</small></h2>' +

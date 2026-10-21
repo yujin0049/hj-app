@@ -42,6 +42,20 @@ test('거르기: 기본은 끝 빼기, 상태·봇·낱말', () => {
   assert.deepEqual(B.filter(l, { bot: '(미기재)' }).map((x) => x.t), ['T4']);
   assert.deepEqual(B.filter(l, { q: '감사' }).map((x) => x.t), ['T3']);
 });
+test('유진님 몫: 확정 먼저 정렬·카드 숫자·묶음 꼬리표는 추정 아님', () => {
+  const l = [T({ t: 'G', state: '대기(유진님 몫)', yujin: ['결재'], yujin_src: '추정', yujin_guess: ['결재'], due: '2026-10-22' }),
+    T({ t: 'S', state: '대기(유진님 몫)', yujin: ['제출'], yujin_src: '현황판', yujin_guess: [], due: '2026-11-30' }),
+    T({ t: 'P', state: '대기(유진님 몫)', yujin: ['대기: PC', '결재'], yujin_src: '추정', yujin_guess: ['결재'], due: '2026-10-23' }),
+    T({ t: 'B', state: '대기(유진님 몫)', yujin: ['대기: PC'], yujin_src: '묶음', yujin_guess: [] }),
+    T({ t: 'D', state: '끝', yujin: ['제출'], yujin_src: '현황판' })];
+  assert.deepEqual(B.sections(l, today).yujin.map((x) => x.t), ['S', 'G', 'P', 'B']);
+  assert.deepEqual(B.yujinSplit(l), { sure: 1, guess: 2, bundle: 1 });
+  assert.equal(B.isGuessTag(l[2], '대기: PC'), false);
+  assert.equal(B.isGuessTag(l[2], '결재'), true);
+  assert.equal(B.isGuessTag(T({ yujin_src: '추정' }), '결재'), true); // 예전 자료(yujin_guess 없음)
+  assert.deepEqual(B.sortTasks(l.slice(0, 2), today, { confirmFirst: 1 }).map((x) => x.t), ['S', 'G']);
+  assert.deepEqual(B.sortTasks(l.slice(0, 2), today).map((x) => x.t), ['G', 'S']);
+});
 test('진행률·검증 빈칸은 미기재', () => {
   assert.equal(B.progressText(null), '미기재');
   assert.equal(B.progressText(40), '40%');
@@ -58,10 +72,12 @@ test('오래된 자료 경고(3시간)', () => {
 test('실제 data/bot_status.json 모양: 4가지 상태만, 사람 칸 없음', () => {
   const d = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'bot_status.json'), 'utf8'));
   assert.ok(d.tasks.length > 0);
-  const keys = new Set(['t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'risk']);
+  const keys = new Set(['t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'yujin_guess', 'risk']);
   for (const t of d.tasks) {
     assert.ok(B.STATES.includes(t.state), t.t + ' ' + t.state);
-    assert.ok(['현황판', '추정', ''].includes(t.yujin_src), t.t + ' yujin_src');
+    assert.ok(['현황판', '추정', '묶음', ''].includes(t.yujin_src), t.t + ' yujin_src');
+    for (const g of t.yujin_guess) assert.ok(t.yujin.includes(g));
+    if (t.yujin_src !== '추정') assert.equal(t.yujin_guess.length, 0);
     if (!t.yujin.length) assert.equal(t.yujin_src, '');
     assert.match(t.t, /^T\d{2,4}$/);
     for (const k of Object.keys(t)) assert.ok(keys.has(k), '모르는 칸 ' + k);

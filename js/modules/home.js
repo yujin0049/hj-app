@@ -260,7 +260,9 @@
     });
     if (window.HJBotsPeek) window.HJBotsPeek().then(function (sec) {
       var sub = document.getElementById('home-bots-sub');
-      if (sec && sub) sub.textContent = '유진님 몫 ' + sec.yujin.length + ' · 마감 임박 ' + sec.soon.length + ' · 감사 위험 ' + sec.risk.length;
+      if (!sec || !sub) return;
+      var sure = sec.yujin.filter(function (t) { return t.yujin_src === '현황판'; }).length;
+      sub.textContent = '유진님 몫 확정 ' + sure + ' · 마감 임박 ' + sec.soon.length + ' · 감사 위험 ' + sec.risk.length;
     });
   }
 

@@ -23,7 +23,7 @@ class DataFile(unittest.TestCase):
         self.assertIn('현황판', self.d['source'])
         for k in ('read_at', 'built_at', 'built_iso', 'columns', 'counts', 'tasks'):
             self.assertIn(k, self.d)
-        allowed = {'t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'risk'}
+        allowed = {'t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'yujin_guess', 'risk'}
         for t in self.d['tasks']:
             self.assertLessEqual(set(t), allowed)
             self.assertIn(t['state'], ('진행', '대기(유진님 몫)', '막힘', '끝'))
@@ -104,6 +104,27 @@ class Build(unittest.TestCase):
         self.assertEqual(by['T102']['yujin_src'], '')
         self.assertEqual(self.m.check(obj, names, self.hjpii), [])
 
+    def test_bundle_tag_not_guess(self):
+        # 칸 값이 없는 줄: 「대기: KORUS」 묶음에서 온 꼬리표는 추정 아님, 짐작한 꼬리표만 yujin_guess
+        rows = self.rows()
+        rows[7][1] = '실습재료 지출결의 상신'  # T107: 묶음(KORUS) + 업무 이름 「상신」 → 결재 추정
+        rows[7][5] = '나 → 재무과'
+        rows.append(['T110', '묶음만', '기타', '할 일', '해당없음', '인수인계봇', '', '', '', '대기', '2026-10-21 09:00', '인수인계봇', '인수인계봇'])
+        rows[6][9] = 'T107, T110'
+        obj, _, _ = self.m.build(rows, '2026-10-21', self.hjpii, self.mc)
+        by = {t['t']: t for t in obj['tasks']}
+        self.assertEqual(by['T107']['yujin_src'], '추정')
+        self.assertIn('KORUS 입력', by['T107']['yujin'])
+        self.assertNotIn('KORUS 입력', by['T107']['yujin_guess'])
+        self.assertIn('결재', by['T107']['yujin_guess'])
+        self.assertEqual(by['T110']['yujin_src'], '묶음')
+        self.assertEqual(by['T110']['yujin_guess'], [])
+
+    def test_pii_gate_before_write(self):
+        src = open(SCRIPT, encoding='utf-8').read()
+        self.assertIn('PII_CHECK', src)
+        self.assertLess(src.index('subprocess.run([sys.executable, PII_CHECK, "--target", "github", tmp]'), src.index('os.replace(tmp, out)'))
+
     def test_guess_marked_and_sign_rule(self):
         obj, _, _ = self.m.build(self.rows(), '2026-10-21', self.hjpii, self.mc)
         by = {t['t']: t for t in obj['tasks']}
@@ -142,8 +163,19 @@ class Wiring(unittest.TestCase):
         self.assertIn("'bots'", read('js', 'registry.js'))
         self.assertIn('ShellModules.bots', read('js', 'modules', 'bots.js'))
         self.assertIn('js/botstatus-core.js', read('index.html'))
-        self.assertGreaterEqual(int(re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 19)
+        self.assertGreaterEqual(int(re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 20)
         self.assertNotIn('?v=18', read('index.html'))
+
+    def test_one_clock_on_bots(self):
+        # #/bots 는 현황판 읽은 시각 하나만: 달력 띠는 #/bots 에서 숨김, 다른 화면은 그대로. 머리말 「자료 날짜」는 뺌(더보기로)
+        cal = read('js', 'modules', 'calendar.js')
+        self.assertIn("el.hidden = /^#\\/bots(\\/|\\?|$)/.test(location.hash || '');", cal)
+        self.assertIn('달력 자료 갱신', cal)
+        bots = read('js', 'modules', 'bots.js')
+        self.assertIn('현황판 \' + esc(fmtAt(data.read_at)) + \' 읽음', bots)
+        self.assertNotIn('화면 자료', bots)
+        self.assertNotIn("('자료 ' + v.packVersion)", read('js', 'app.js'))
+        self.assertIn('공부·규칙 자료판', read('js', 'modules', 'more.js'))
 
 
 if __name__ == '__main__':

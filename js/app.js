@@ -347,7 +347,7 @@
       var id = list[i++];
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
-        s.src = new URL('js/modules/' + id + '.js?v=19', base).href;
+        s.src = new URL('js/modules/' + id + '.js?v=20', base).href;
         s.onload = function () { res(); };
         s.onerror = function () { rej(new Error(id)); };
         document.body.appendChild(s);
@@ -364,7 +364,9 @@
     if (!state.records) state.records = emptyRecords();
     var v = view();
     document.getElementById('title').textContent = '행정 업무 연습장';
-    document.getElementById('sub').textContent = state.pack && v.packVersion ? ('자료 ' + v.packVersion) : '';
+    /* 예전엔 여기 「자료 2026-10-19」(public-pack.json packVersion = 공부·규칙 자료판 만든 날)를 띄웠는데, 오늘 날짜·갱신 시각처럼 읽혀 헷갈려서 뺌.
+       그 날짜는 더보기 첫 카드에 「공부·규칙 자료판 YYYY-MM-DD」로 보여요. 화면별 갱신 시각은 각 화면이 직접(달력 띠·봇 작업 현황). */
+    document.getElementById('sub').textContent = '';
     document.title = '행정 업무 연습장';
     buildTabs();
     if (!location.hash) location.hash = '#/home';
