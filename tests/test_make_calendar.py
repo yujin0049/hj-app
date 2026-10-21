@@ -262,3 +262,23 @@ class Range(Base):
         by = {e['title']: e for e in ev}
         self.assertEqual(by['가짜 기관교육 (11.3.(화)~11.4.(수))'].get('end'), '2026-11-04')
         self.assertEqual(by['가짜 워크숍'].get('end'), '2026-11-12')
+
+    def test_sheet_title_range(self):
+        import csv
+        rows = make_calendar.read_table(os.path.join(FX, 'raw_업무.json'))
+        head = rows[0]
+        p = os.path.join(self.out, 'raw.csv')
+        def mk(**kv):
+            r = [''] * len(head)
+            for k, v in kv.items():
+                r[head.index(k)] = v
+            return r
+        with open(p, 'w', encoding='utf-8', newline='') as f:
+            w = csv.writer(f); w.writerows(rows)
+            w.writerow(mk(ID='T901', 업무명='가짜 기관교육 (11.3.(화)~11.4.(수))', 상태='할 일', 마감일='2026-11-03'))
+            w.writerow(mk(ID='T902', 업무명='가짜 미정 일', 상태='할 일', 마감일='미정'))
+        rc, msg, cal, st = self.make(raw=p)
+        self.assertEqual(rc, 0, msg)
+        e = [x for x in cal['events'] if x['t'] == 'T901' and x['src'].startswith('sheet')]
+        self.assertEqual(e[0].get('end'), '2026-11-04')
+        self.assertFalse([x for x in cal['events'] if x['t'] == 'T902'])

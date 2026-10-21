@@ -156,6 +156,9 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
             events.append({'id': x['t'], 't': x['t'], 'title': title, 'date': due, 'kind': '마감', 'lane': 'yujin',
                            'status': x['status'], 'area': x['area'], 'bot': x['bot'] or '', 'src': 'sheet',
                            'yujin': task['yujin'], 'check': task.get('check', '')})
+            end = end_from_title(title, due)  # 현황판엔 끝 날짜 칸이 없어 업무명 속 「11.3.(화)~11.4.(수)」로 읽음
+            if end:
+                events[-1]['end'] = end
     by_t = {e['t']: e for e in events}
     task_t = {t['t']: t for t in tasks}
     n = {'extra': 0, 'master': 0, 'ingest': 0, 'merged': 0, 'skipped': 0, 'conflict': 0}
