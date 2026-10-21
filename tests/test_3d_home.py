@@ -96,11 +96,32 @@ class ThreeDHome(unittest.TestCase):
         self.assertEqual(E['site-weld-ventilator']['n'], 3)
         self.assertEqual(len([i for i in E if i.startswith('rf-pressure-tank-')]), 2)
         for i in self.PHOTO_1021_IDS:
-            if i != 'rf-booster-pump-1':  # 펌프는 「물탱크·가압펌프」 이름표 하나로 같이 씀
-                self.assertTrue(E[i].get('label'), i)
+            self.assertTrue(E[i].get('label'), i)
             self.assertIn('사진 10.21. 기준, 위치·치수는 대략', E[i].get('note', ''), i)
         for i in ('rf-ac-1', '3f-extinguisher', 'site-weld-ventilator'):  # 사진만으로 위치 불확실
             self.assertIn('위치 추정', E[i]['label'], i)
+
+    # 옥상 물탱크·가압펌프·압력탱크: 이름표 3개 따로, 각각 누르면 설명(note), 계단탑(옥탑) 밖에 있음
+    def test_roof_tank_pump_ptank_labels_split(self):
+        E = self._geo_equipment()
+        want = {'rf-water-tank': '물탱크', 'rf-booster-pump-1': '가압펌프', 'rf-pressure-tank-1': '압력탱크'}
+        for i, name in want.items():
+            self.assertEqual(E[i]['label'], name, i)
+            self.assertIn('사진 10.21. 기준, 위치·치수는 대략', E[i].get('note', ''), i)
+        labels = [e['label'] for e in E.values() if e.get('label')]
+        self.assertNotIn('물탱크·가압펌프', labels)
+        for name in want.values():
+            self.assertEqual(labels.count(name), 1, name)
+        x0, y0, x1, y1 = json.loads(read('3d', 'assets', 'building.json'))['geo']['roof']['penthouse']['rect']
+        for i, e in E.items():
+            if i.startswith(('rf-water-tank', 'rf-booster-pump-', 'rf-pressure-tank-')):
+                hw, hd = (e.get('l', 0) / 2, e['r']) if e.get('shape') == 'cyl' else (e['w'] / 2 + 0.1, e['d'] / 2 + 0.1)
+                out = e['c'][0] + hw < x0 or e['c'][0] - hw > x1 or e['c'][1] + hd < y0 or e['c'][1] - hd > y1
+                self.assertTrue(out, i)  # 계단탑과 겹치지 않음
+        self.assertIn('e.label_p', read('3d', 'assets', 'scene.js'))
+        self.assertIn('item.view', read('3d', 'assets', 'app.js'))
+        import re as _re
+        self.assertGreaterEqual(int(_re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 24)
 
     def test_photo_1021_rendered_without_photo_files(self):
         scene = read('3d', 'assets', 'scene.js')

@@ -150,9 +150,9 @@ export function buildScene(THREE, data) {
     m.add(new THREE.LineSegments(new THREE.EdgesGeometry(g, 30), M.edge)); return m;
   };
 
-  // 설비 작은 표시: { id, text, note, floor, pos } — note 는 누르면 보이는 설명
+  // 설비 작은 표시: { id, text, note, floor, pos, view } — note 는 누르면 보이는 설명, view 는 누를 때 카메라 방향(없으면 지금 방향)
   const eqLabels = [];
-  const eqLabel = (e, floor, pos) => { if (e.label) eqLabels.push({ id: e.id || '', text: e.label, note: e.note || '', floor, pos }); };
+  const eqLabel = (e, floor, pos) => { if (e.label) eqLabels.push({ id: e.id || '', text: e.label, note: e.note || '', floor, pos, view: e.view || null }); };
   const cylAt = (r0, r1, h, seg, mat, x, z, y) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(r0, r1, h, seg), mat); m.position.set(x, z + h / 2, -y); m.castShadow = true; return m; };
   // 소화기 n개 (평면 y 방향으로 gap 간격): 몸통 원기둥 + 검은 머리, stand 에 든 번호는 빨간 받침대 위
   function extinguishers(e) {
@@ -231,7 +231,7 @@ export function buildScene(THREE, data) {
     phRoof = extrude([[x0 + i, y0 + i], [x1 - i, y0 + i], [x1 - i, y1 - i], [x0 + i, y1 - i]], [], P.z1, 0.2, M.roof); roofG.add(phRoof);
     if (P.label_p) eqLabel(P, 'RF', [P.label_p[0], P.z1 + 0.6, -P.label_p[1]]); // 계단탑(옥상 출입) — 3층 계단 쪽 문 위
   }
-  // 옥상 설비 (사진·옥상 평면): 실외기·물탱크·펌프·압력탱크 — 큼직한 것만 상자·원기둥으로. vent = 도면 밖 건물(용접실습동) 벤틸레이터, 따로 둔 모형
+  // 옥상 설비 (사진·옥상 평면): 실외기·물탱크·펌프·압력탱크 — 큼직한 것만 상자·원기둥으로. 물탱크·펌프·압력탱크는 계단탑 동쪽(사진 10.21. 기준 대략). vent = 도면 밖 건물(용접실습동) 벤틸레이터, 따로 둔 모형
   {
     const box = new Batch(), unit = new Batch(), steel = new Batch(), tankB = new Batch(), pad = new Batch(), fans = [], cyls = [];
     const rect = (c, w, d) => [[c[0] - w / 2, c[1] - d / 2], [c[0] + w / 2, c[1] - d / 2], [c[0] + w / 2, c[1] + d / 2], [c[0] - w / 2, c[1] + d / 2]];
@@ -246,7 +246,8 @@ export function buildScene(THREE, data) {
       } else if (e.k === 'pump') box.prism(rect(e.c, e.w, e.d), e.z0, e.z0 + e.h);
       else if (e.k === 'vent') roofG.add(ventilators(e));
       else if (e.shape === 'cyl') cyls.push(e);
-      eqLabel(e, 'RF', [e.c[0], e.z0 + (e.h || 0.5) + 0.6, -e.c[1]]);
+      const lp = e.label_p || e.c; // 2대 묶음(가압펌프·압력탱크)은 label_p = 가운데
+      eqLabel(e, 'RF', [lp[0], e.z0 + (e.h || (e.r ? e.r * 2 : 0.5)) + 0.6, -lp[1]]);
     }
     addAll(roofG, [mesh(steel, M.frame), mesh(unit, M.unit, true, true), mesh(tankB, M.tank, true, true), mesh(pad, M.core), mesh(box, M.pump, true, true)]);
     for (const [x, y, z, r] of fans) { const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, 0.08, 20), M.frame); m.position.set(x, z + 0.04, -y); m.castShadow = true; roofG.add(m); }
@@ -290,7 +291,6 @@ export function buildScene(THREE, data) {
       F.slab.material = fid === id ? M.slabOn : M.slab;
     });
     roofG.visible = id === 'ALL' || id === 'RF';
-    if (phRoof) phRoof.visible = id !== 'RF'; // 지붕 보기: 옥탑 지붕을 걷어 물탱크실 안이 보이게
     clip.constant = id === 'ALL' || id === 'RF' ? 1e4 : (floors[id] ? floors[id].f.z + CUT : 1e4);
   }
   return { floors, roofG, show, M, eqLabels, levels: G.levels, labelZ: (fid) => (fid === 'RF' ? G.roof.slab.z : G.floors[fid].z), CUT };

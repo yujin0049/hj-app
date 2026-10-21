@@ -108,7 +108,7 @@ async function boot() {
     // 설비 작은 표시 (building.json geo 칸 — 편집 이름표와 별개, 그 층·지붕 보기에서만). note 가 있으면 누르면 이름표처럼 다가가고 설명이 붙음
     for (const e of B.eqLabels) {
       const el = document.createElement('div'); el.className = 'lbl eq' + (e.note ? ' tap' : ''); el.textContent = e.text; labelsEl.appendChild(el);
-      const item = { el, pos: new THREE.Vector3(...e.pos), floor: e.floor || 'RF', name: e.text, kind: 'eq', eq: true, id: e.id, w: 0 };
+      const item = { el, pos: new THREE.Vector3(...e.pos), floor: e.floor || 'RF', name: e.text, kind: 'eq', eq: true, id: e.id, w: 0, view: e.view };
       if (e.note) { el.dataset.note = e.note; el.title = e.note; el.addEventListener('click', () => focusRoom(item)); }
       labels.push(item);
     }
@@ -144,7 +144,8 @@ async function boot() {
   function focusRoom(item) {
     labels.forEach((l) => { l.el.classList.toggle('hl', l === item); if (l.eq) l.w = 0; }); // 설명이 붙고 빠지면 폭이 바뀜
     document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c._item === item));
-    const dir = camera.position.clone().sub(controls.target).normalize();
+    // 설비에 view 가 있으면 그 방향에서 (옥상 물탱크·펌프: 계단탑에 안 가리는 동남쪽 위)
+    const dir = item.view ? new THREE.Vector3(...item.view).normalize() : camera.position.clone().sub(controls.target).normalize();
     flyTo({ target: item.pos.clone().setY(item.pos.y - 1), pos: item.pos.clone().add(dir.multiplyScalar(26)) }, 0.8);
   }
 
