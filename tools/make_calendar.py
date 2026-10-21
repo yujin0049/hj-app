@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hjpii
 
 KST = dt.timezone(dt.timedelta(hours=9))
-DONE = {'완료', '취소'}
+DONE = {'완료', '취소', '끝남'}
 DEFAULT_RAW = '/workspace/hj_audit/calendar/raw_업무.json'
 
 
@@ -136,6 +136,13 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
         if x.get('mkind') == '현황판' and x.get('ref'):
             master_rep[x['ref']] = master_rep.get(x['ref'], 0) + 1
 
+    def lane_of(x):
+        return x.get('lane', 'yujin')
+    ingest_title_n = {}
+    for x in (ingest_ev or []) + (ingest_td or []):
+        k = re.sub(r'[\s·()]', '', x.get('title', ''))
+        ingest_title_n[k] = ingest_title_n.get(k, 0) + 1
+
     def toks(x):
         return {w for w in re.findall(r'[A-Za-z]{3,}|[가-힣]{3,}', x)}
     checks = []
@@ -207,11 +214,15 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
             n['skipped'] += 1  # 일정총괄이 먼저
             continue
         if origin == 'ingest':
-            same = [e for e in events if key_title(e['title']) == key_title(title) or (ref and e['t'] == ref and e['kind'] == ex.get('kind'))]
-            if any(e['date'] == date for e in same) or (ref and by_t.get(ref) and by_t[ref]['date'] == date):
+            kt = key_title(title)
+            # 같은 날: 같은 제목이거나 같은 T번호·같은 레인이면 같은 일 → 합침
+            if any(e['date'] == date and (key_title(e['title']) == kt or (ref and e['t'] == ref and e['lane'] == lane_of(ex))) for e in events) \
+                    or (ref and by_t.get(ref) and by_t[ref]['date'] == date):
                 n['merged'] += 1
                 continue
-            clash = [e for e in same if e['date'] != date]
+            # 다른 날: 제목이 같은 한 번짜리 일만 충돌(반복 일정·여러 번 나오는 제목은 충돌 아님)
+            same = [e for e in events if key_title(e['title']) == kt and e['kind'] != '반복']
+            clash = [e for e in same if e['date'] != date] if (not ex.get('_rep') and ingest_title_n.get(kt, 0) == 1 and len(same) == 1) else []
             if clash:
                 msg = '충돌: 날짜 다름 · %s %s / %s %s' % (clash[0].get('source') or clash[0]['src'], clash[0]['date'], ex['source'], date)
                 for e in clash:
@@ -442,9 +453,13 @@ def load_ingest(folder):
             _, area = _pick(it, ('업무 분야', '업무분야', 'area', '분야', '분류'))
             _, status = _pick(it, F_STATUS)
             _, src = _pick(it, ('source', '출처'))
+            if todo and it.get('from_sheet'):
+                continue  # 현황판에서 온 할 일은 현황판이 정본(중복)
+            _, ik = _pick(it, ('kind', '종류'))
             row = {'_origin': 'ingest', '_todo': todo, 'title': str(title or ''), 'date': date, 'ref': m.group(0) if m else '',
                    'lane': LANE_WORD.get(str(lane or '').strip(), 'yujin'), 'area': str(area or ''),
-                   'kind': '할 일' if todo else ('참고' if LANE_WORD.get(str(lane or '').strip()) == 'ref' else '일정'),
+                   'kind': '할 일' if todo else ('참고' if LANE_WORD.get(str(lane or '').strip()) == 'ref' else (str(ik) if ik in ('마감', '일정', '할 일', '수업') else '일정')),
+                   '_rep': str(status or '') == '반복',
                    'source': '통합' + ('할일' if todo else '일정') + (' · ' + str(src) if src else '')}
             if end and str(end)[:10] != date:
                 row['end'] = str(end)[:10]

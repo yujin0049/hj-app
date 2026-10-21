@@ -53,7 +53,7 @@ def main(argv=None):
         if rc == 2:
             return finish(meta_p, old, now, steps, False, 2)
         ok = ok and rc == 0
-    rc = pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT])
+    rc = pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
     if rc:
         steps['개인정보 검사'] = {'ok': False, 'why': '실패'}
         return finish(meta_p, old, now, steps, False, 2)
@@ -71,7 +71,7 @@ def main(argv=None):
     ch = subprocess.run(['git', '-C', ROOT, 'diff', '--name-only', 'main', '--', '.'], capture_output=True, text=True).stdout.split()
     ch += subprocess.run(['git', '-C', ROOT, 'ls-files', '--others', '--exclude-standard'], capture_output=True, text=True).stdout.split()
     enforce = sorted({'/' + c for c in ch} | {'/data/' + f for f in os.listdir(data)})
-    rc = pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, '--worker', worker, '--enforce'] + enforce)
+    rc = pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json', '--worker', worker, '--enforce'] + enforce)
     if rc:
         os.replace(worker, worker + '.막힘')
         print('워커 파일 개인정보 검사 실패 → %s.막힘 (배포 금지)' % worker)

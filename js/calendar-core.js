@@ -5,7 +5,7 @@
   else root.HJCal = api;
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
-  var DONE = { '완료': 1, '취소': 1 };
+  var DONE = { '완료': 1, '취소': 1, '끝남': 1 };
   var DAY = 86400000;
   function pad(n) { return String(n).padStart(2, '0'); }
   /* 지금 시각(ms) → 한국 날짜. 기기 시간대와 관계없이 UTC+9 */

@@ -19,6 +19,11 @@ def names_from_raws(paths):
     for p in paths:
         if not os.path.exists(p):
             continue
+        if '/ingest' in p or p.endswith(('통합일정.json', '통합할일.json')):
+            import make_calendar
+            ev, td, _ = make_calendar.load_ingest(os.path.dirname(p))
+            names |= hjpii.derive_names([x.get('title', '') for x in (ev or []) + (td or [])])
+            continue
         if p.endswith('일정총괄.json'):
             import make_calendar
             items, _, notes, who = make_calendar.load_master(p, 2026)
@@ -61,7 +66,7 @@ def main(argv=None):
                     help='워커 안에서 실패로 칠 파일(/경로). 안 주면 전부. 나머지(main 에 이미 있는 그대로의 파일)는 경고만')
     ap.add_argument('--target', default='github', choices=['github', 'drive', 'vault', 'app'],
                     help='공개 저장소라 github(엄격)만 의미 있음. vault/app 을 주면 거절(종료 코드 3)')
-    ap.add_argument('--raw', nargs='*', default=['/workspace/hj_audit/calendar/raw_업무.json', '/workspace/hj_audit/calendar/raw_ojnt.json', '/home/box/vault/봇공유/00 홈/일정총괄.json'])
+    ap.add_argument('--raw', nargs='*', default=['/workspace/hj_audit/calendar/raw_업무.json', '/workspace/hj_audit/calendar/raw_ojnt.json', '/home/box/vault/봇공유/00 홈/일정총괄.json', '/workspace/hj_audit/ingest/통합일정.json'])
     a = ap.parse_args(argv)
     if a.target in ('vault', 'app'):
         print('hj-app 은 공개 GitHub 라 vault/app 규칙을 쓸 수 없어요. --target github 로 돌려요.', file=sys.stderr)
