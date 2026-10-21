@@ -14,7 +14,7 @@ with open(os.path.join(VAULT, '봇공유', '20 규정·지침', '위임전결규
     f.write('담당 연락처 ' + FAKE_PHONE + ' (연습용 가짜 번호)\n')
 
 
-def run(extra=()):
+def run(extra=('--keep-excerpt',)):
     out = tempfile.mktemp(suffix='.json')
     rc = L.main(['--vault', VAULT, '--pack', os.path.join(FIX, 'pack.json'),
                  '--out', out, '--today', '2026-10-21 10:00'] + list(extra))
@@ -123,6 +123,18 @@ class T위임전결카드(unittest.TestCase):
         self.assertIn('남해캠퍼스부총장', c['summary'])
         for k in ('제3조', '제4조', '제5조', '제9조', '별표1', '별표2'):
             self.assertIn(k, c['articles'])
+
+    def test_repo_sources_have_no_excerpt_text(self):
+        src = json.load(open(os.path.join(ROOT, 'data', 'sources.json'), encoding='utf-8'))
+        for k, r in src['cards'].items():
+            self.assertEqual((r.get('excerpt') or {}).get('text', ''), '', k)
+            self.assertNotIn('heading', r, k)
+
+    def test_keep_excerpt_refused_inside_repo(self):
+        rc = L.main(['--vault', VAULT, '--pack', os.path.join(FIX, 'pack.json'), '--keep-excerpt',
+                     '--out', os.path.join(ROOT, 'data', '_x.json')])
+        self.assertEqual(rc, 2)
+        self.assertFalse(os.path.exists(os.path.join(ROOT, 'data', '_x.json')))
 
     def test_linked_to_original(self):
         self.assertEqual(self.rec.get('status'), '연결')

@@ -347,11 +347,23 @@ def main(argv=None):
     ap.add_argument('--out', default=os.path.join(REPO, 'data', 'sources.json'))
     ap.add_argument('--today', default=datetime.datetime.now().strftime('%Y-%m-%d %H:%M'))
     ap.add_argument('--no-pii-gate', action='store_true', help='시험용: 엄격 검사 건너뜀')
+    ap.add_argument('--keep-excerpt', action='store_true',
+                    help='발췌 글자도 씀(저장소 밖 파일에만 허용). 기본은 글자 빼고 조문 목록만 — 볼트 글은 저장소에 넣지 않음(261021 10:20)')
     a = ap.parse_args(argv)
+    if a.keep_excerpt and os.path.commonpath([os.path.abspath(a.out), REPO]) == REPO:
+        print('--keep-excerpt 는 저장소 밖 --out 에만 써요 → 멈춤', file=sys.stderr)
+        return 2
     with open(a.pack, encoding='utf-8') as f:
         pack = json.load(f)
     apply_overrides(pack, os.path.join(os.path.dirname(os.path.abspath(a.pack)), 'data', 'card_overrides.json'))
     out = build(pack, a.vault, a.today)
+    if not a.keep_excerpt:
+        for rec in out['cards'].values():
+            ex = rec.get('excerpt')
+            if ex:
+                ex['text'] = ''          # 원문 글은 잠긴 볼트 문서(앱 「볼트 문서」)에서 봄
+                ex['in_vault_doc'] = True
+            rec.pop('heading', None)     # 제목줄도 볼트 글 → 저장소에 안 씀
     data = json.dumps(out, ensure_ascii=False, indent=1, sort_keys=True) + '\n'
     fd, tmp = tempfile.mkstemp(suffix='.json')
     with os.fdopen(fd, 'w', encoding='utf-8') as f:
