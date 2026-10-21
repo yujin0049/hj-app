@@ -15,7 +15,7 @@ public-pack.json 카드(기본: regulations)의 이름·원문 칸·r코드와 �
 사용: python3 tools/link_sources.py [--vault /home/box/vault] [--pack public-pack.json]
         [--out data/sources.json] [--no-pii-gate] [--today 2026-10-21]
 """
-import argparse, datetime, hashlib, json, os, re, subprocess, sys, tempfile
+import argparse, datetime, hashlib, json, os, re, subprocess, sys, tempfile, urllib.parse
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -364,6 +364,37 @@ def apply_overrides(pack, path):
         return apply_override_obj(pack, json.load(f))
 
 
+def obsidian_config(repo=REPO):
+    """data/config.json → (볼트 이름, 볼트 안 박스 폴더). 지금 볼트 「옵시디언」 안에 봇공유/ (10.21.)"""
+    try:
+        with open(os.path.join(repo, 'data', 'config.json'), encoding='utf-8') as f:
+            cfg = json.load(f)
+    except (OSError, ValueError):
+        cfg = {}
+    return cfg.get('obsidianVault') or '', cfg.get('obsidianVaultRootInBox') or ''
+
+
+def obsidian_url(path, vault, root='봇공유'):
+    """js/source-link.js obsidianUrl 과 같음: file = 봇공유/… (한 번만), .md 뺌"""
+    if not vault or not path:
+        return ''
+    p = path.replace('\\', '/').lstrip('/')
+    if root and not p.startswith(root + '/'):
+        p = root + '/' + p
+    p = re.sub(r'\.md$', '', p)
+    return 'obsidian://open?vault=%s&file=%s' % (urllib.parse.quote(vault, safe=''), urllib.parse.quote(p, safe=''))
+
+
+def add_obsidian_links(out, vault, root):
+    """연결·후보 카드마다 옵시디언에서 여는 주소(obsidian)를 붙임"""
+    for rec in out['cards'].values():
+        if rec.get('path') and vault:
+            rec['obsidian'] = obsidian_url(rec['path'], vault, root)
+        else:
+            rec.pop('obsidian', None)
+    return out
+
+
 def pii_gate(path):
     script = os.path.join(PII_DIR, 'pii_check.py')
     if not os.path.isfile(script):
@@ -385,7 +416,17 @@ def main(argv=None):
     ap.add_argument('--no-pii-gate', action='store_true', help='시험용: 엄격 검사 건너뜀')
     ap.add_argument('--keep-excerpt', action='store_true',
                     help='발췌 글자도 씀(저장소 밖 파일에만 허용). 기본은 글자 빼고 조문 목록만 — 볼트 글은 저장소에 넣지 않음(261021 10:20)')
+    ap.add_argument('--update-links', action='store_true',
+                    help='볼트를 다시 훑지 않고 --out(지금 sources.json)의 옵시디언 주소만 data/config.json 기준으로 고침')
     a = ap.parse_args(argv)
+    if a.update_links:
+        with open(a.out, encoding='utf-8') as f:
+            out = json.load(f)
+        add_obsidian_links(out, *obsidian_config())
+        with open(a.out, 'w', encoding='utf-8', newline='\n') as f:
+            f.write(json.dumps(out, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
+        print('옵시디언 주소만 고침: %d개 → %s' % (sum(1 for r in out['cards'].values() if r.get('obsidian')), a.out))
+        return 0
     if a.keep_excerpt and os.path.commonpath([os.path.abspath(a.out), REPO]) == REPO:
         print('--keep-excerpt 는 저장소 밖 --out 에만 써요 → 멈춤', file=sys.stderr)
         return 2
@@ -393,6 +434,7 @@ def main(argv=None):
         pack = json.load(f)
     apply_overrides(pack, os.path.join(os.path.dirname(os.path.abspath(a.pack)), 'data', 'card_overrides.json'))
     out = build(pack, a.vault, a.today)
+    add_obsidian_links(out, *obsidian_config())
     if not a.keep_excerpt:
         for rec in out['cards'].values():
             ex = rec.get('excerpt')

@@ -92,12 +92,15 @@ class T(unittest.TestCase):
         js = os.path.join(ROOT, 'js', 'source-link.js')
         code = ("require(%r); var S=globalThis.SourceLink;"
                 "console.log(JSON.stringify([S.obsidianUrl({}, '봇공유/a.md'),"
-                "S.obsidianUrl({obsidianVault:'봇공유',obsidianVaultRootInBox:'봇공유'}, '봇공유/20 규정·지침/위임전결규정.md')]))") % js
+                "S.obsidianUrl({obsidianVault:'옵시디언',obsidianVaultRootInBox:'봇공유'}, '봇공유/20 규정·지침/위임전결규정.md'),"
+                "S.obsidianUrl({obsidianVault:'옵시디언',obsidianVaultRootInBox:'봇공유'}, '20 규정·지침/위임전결규정.md')]))") % js
         r = subprocess.run(['node', '-e', code], capture_output=True, text=True)
         self.assertEqual(r.returncode, 0, r.stderr)
-        a, b = json.loads(r.stdout)
+        a, b, c = json.loads(r.stdout)
         self.assertEqual(a, '')
-        self.assertEqual(b, 'obsidian://open?vault=%EB%B4%87%EA%B3%B5%EC%9C%A0&file=20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EC%9C%84%EC%9E%84%EC%A0%84%EA%B2%B0%EA%B7%9C%EC%A0%95')
+        want = 'obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EC%9C%84%EC%9E%84%EC%A0%84%EA%B2%B0%EA%B7%9C%EC%A0%95'
+        self.assertEqual(b, want)
+        self.assertEqual(c, want)   # 봇공유/ 가 없으면 붙임
 
 
 class T위임전결카드(unittest.TestCase):

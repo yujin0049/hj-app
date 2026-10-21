@@ -15,10 +15,11 @@
     }
     return cache;
   }
+  /* 볼트 「옵시디언」 안에서 박스 공유 폴더는 봇공유/ → 파일 경로는 봇공유/ 로 시작(한 번만). tools/link_sources.py obsidian_url 과 같음 */
   function obsidianUrl(cfg, path) {
     if (!cfg.obsidianVault || !path) return '';
-    var p = path, pre = (cfg.obsidianVaultRootInBox || '') + '/';
-    if (pre.length > 1 && p.indexOf(pre) === 0) p = p.slice(pre.length);
+    var p = String(path).replace(/\\/g, '/').replace(/^\/+/, ''), pre = (cfg.obsidianVaultRootInBox || '') + '/';
+    if (pre.length > 1 && p.indexOf(pre) !== 0) p = pre + p;
     p = p.replace(/\.md$/, '');
     return 'obsidian://open?vault=' + encodeURIComponent(cfg.obsidianVault) + '&file=' + encodeURIComponent(p);
   }
@@ -37,7 +38,7 @@
         '<div class="pre src-excerpt">' + esc(ex.text) + '</div>';
       if (ex.articles_missing && ex.articles_missing.length) h += '<p class="muted">발췌 못 한 조문: ' + esc(ex.articles_missing.join(', ')) + '</p>';
     }
-    var url = obsidianUrl(cfg, rec.path);
+    var url = cfg.obsidianVault && /^obsidian:\/\/open\?/.test(rec.obsidian || '') ? rec.obsidian : obsidianUrl(cfg, rec.path);
     if (url) h += '<a class="btn-ghost block" href="' + esc(url) + '">옵시디언에서 열기</a>';
     h += '<p class="muted">점수 ' + Math.round((rec.score || 0) * 100) + ' · 수정 ' + esc(rec.modified || '') + ' · 자동 연결이라 확인 필요할 수 있어요.</p></div>';
     return h;
