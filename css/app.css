@@ -437,3 +437,5 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
 .tile-img b, .tile-img .tile-sub { padding: 0 18px; }
 @media (min-width: 700px) { .tiles { grid-template-columns: repeat(3, 1fr); } }
 .top input[type="search"] { background-color: #fff !important; }
+/* 위임전결 실무 기준 끝의 규정 원문 메모 (js/app.js styleNotes) */
+.reg-note { font-size: .78em; color: var(--muted); font-weight: 400; }
