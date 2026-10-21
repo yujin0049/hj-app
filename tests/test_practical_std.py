@@ -1,6 +1,7 @@
 """위임전결 실무 기준 시험 (유진님 10.21. 확인). 실행: python -m unittest tests/test_practical_std.py -v
 - 정해진 모든 자리에 「1,000만원 이상 부총장(담당 선생님 구두 안내, 유진님 10.21.)」 + 작은 메모 「규정 원문 경계는 3,000만원(위임전결규정 별표)」
 - 연습·문제 정답은 1,000만원 실무 기준을 따름
+- 실제 담당자 이름은 공개 저장소에 두지 않음(「담당 선생님 구두 안내」). 이름은 볼트·잠긴 묶음에만
 - 카드 덮어쓰기는 앱(js/app.js applyOverrides)과 같은 규칙(파이썬판 tools/link_sources.py apply_override_obj)"""
 import copy, json, os, re, shutil, subprocess, sys, unittest
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -182,6 +183,58 @@ class T덮어쓰기규칙(unittest.TestCase):
         self.assertIn("'reg-note'", src)
         css = open(os.path.join(ROOT, 'css', 'app.css'), encoding='utf-8').read()
         self.assertIn('.reg-note', css)
+
+
+# 공개 저장소에 실제 이름을 두지 않음. 이름 자체는 이 시험에도 안 적음:
+# ① 「OOO 선생님 구두 안내」 꼴은 「담당」만 허용 ② HJ_NAMES_FILE(저장소 밖, 한 줄에 이름 하나)이 있으면 그 이름이 추적 파일에 없는지
+# public-pack.json·dorm.json 은 유진님 결정(10.21. 「지금은 그대로 둬」)으로 이번 범위 밖
+HELD = {'public-pack.json', 'dorm.json'}
+SRC_RX = re.compile(r'([가-힣]{1,6})\s?선생님\s?구두\s?안내')
+TEXT_EXT = ('.json', '.js', '.py', '.html', '.css', '.md', '.txt', '.webmanifest', '.svg', '')
+
+
+def tracked_text_files():
+    try:
+        out = subprocess.run(['git', 'ls-files', '-z'], cwd=ROOT, capture_output=True, check=True).stdout
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    for rel in out.decode('utf-8').split('\0'):
+        if not rel or os.path.basename(rel) in HELD or os.path.splitext(rel)[1].lower() not in TEXT_EXT:
+            continue
+        fp = os.path.join(ROOT, rel)
+        if os.path.isfile(fp):
+            with open(fp, encoding='utf-8', errors='replace') as f:
+                yield rel, f.read()
+
+
+class T실명없음(unittest.TestCase):
+    def test_wording_is_generic(self):
+        self.assertTrue(PRACT.startswith('1,000만원 이상 부총장(담당 선생님 구두 안내'))
+        self.assertEqual(SOURCE, '담당 선생님 구두 안내, 유진님 10.21.')
+        self.assertTrue(OV['rules:R18']['basis'].startswith('담당 선생님 구두 안내'))
+
+    def test_only_generic_source_in_tracked_files(self):
+        files = tracked_text_files()
+        if files is None:
+            self.skipTest('git 없음')
+        bad = []
+        for rel, s in files:
+            for m in SRC_RX.finditer(s):
+                if m.group(1) != '담당':
+                    bad.append(rel)
+        self.assertEqual(sorted(set(bad)), [], '구두 안내 출처에 실제 이름(값은 안 보임)')
+
+    def test_names_file_absent(self):
+        nf = os.environ.get('HJ_NAMES_FILE')
+        if not nf or not os.path.isfile(nf):
+            self.skipTest('HJ_NAMES_FILE 없음')
+        with open(nf, encoding='utf-8') as f:
+            names = [l.strip() for l in f if len(l.strip()) >= 2]
+        files = tracked_text_files()
+        if files is None:
+            self.skipTest('git 없음')
+        bad = sorted({rel for rel, s in files for n in names if n in s})
+        self.assertEqual(bad, [], '추적 파일에 실제 이름(값은 안 보임)')
 
 
 if __name__ == '__main__':
