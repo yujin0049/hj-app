@@ -1,4 +1,4 @@
-/* 교육원 전경 3D: 앱 안 전체 화면. 모델은 이 저장소 3d/ 폴더(도면의 일반 실 이름만, 서버·편집 저장값 없음). */
+/* 교육원 전경 3D: 앱 안 전체 화면. 모델은 이 저장소 3d/ 폴더(새 버전 3d/, 이전 버전 3d/v01/, 이름표 3d/assets/labels.json — 사람 이름 없음). 버전 전환은 home.js 의 HJ3D. */
 (function () {
   var SITE = 'https://silseupdong-3d.yujin06344.workers.dev/';
   var prev = '';
@@ -14,7 +14,8 @@
       '<b>교육원 전경 3D</b>' +
       '<a class="v3d-btn" href="' + SITE + '" target="_blank" rel="noopener">편집본 ↗</a>' +
       '</header>' +
-      '<div class="v3d-stage"><iframe id="v3d-frame" title="교육원 전경 3D" src="3d/index.html?v=17" allow="fullscreen"></iframe></div>' +
+      (window.HJ3D ? window.HJ3D.btns() : '') +
+      '<div class="v3d-stage"><iframe id="v3d-frame" data-3dframe="full" title="교육원 전경 3D" src="' + (window.HJ3D ? window.HJ3D.src(false) : '3d/index.html?v=18') + '" allow="fullscreen"></iframe></div>' +
       '</div>';
     document.documentElement.classList.add('v3d-on');
     var off = function () {

@@ -4,11 +4,11 @@ const $ = (s) => document.querySelector(s);
 const PREVIEW = new URLSearchParams(location.search).get('preview') === '1';
 let started = false;
 // 편집 페이지에서 저장한 설정 (없으면 원본)
-// 연습장(GitHub Pages) 복사본: 서버·편집 저장값 없음. 도면의 일반 실 이름만 보여요.
-// 호실·이름표를 고친 편집본은 3D 사이트(PIN)에만 있어요.
+// 연습장(GitHub Pages) 복사본: 서버 없음. 이름표는 assets/labels.json
+// (유진님 3D 사이트 저장값 2026-10-20 17:39의 호실번호·위치 그대로, 사람 이름만 뺀 공개판). v01(이전 버전)도 같은 파일을 씀.
 const EMBED = new URLSearchParams(location.search).get('embed') === '1';
 document.documentElement.classList.add('inapp'); if (EMBED) document.documentElement.classList.add('embed');
-const overP = Promise.resolve(null);
+const overP = fetch('assets/labels.json', { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null);
 function applyTexts(c) {
   if (typeof c.title === 'string' && c.title) {
     document.title = c.title; $('.title b').textContent = c.title;

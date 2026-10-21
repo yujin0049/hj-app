@@ -96,13 +96,36 @@
     return '<a class="tile tile-img" href="' + href + '" target="_blank" rel="noopener"><img src="img/' + img + '.jpg" alt="" loading="lazy"><b>' + title + '</b><span class="tile-sub">' + sub + '</span></a>';
   }
 
-  // 홈 3D 카드: 같은 저장소 3d/ 의 v02 모델(일반 실 이름만). 층 버튼은 카드 안에서 바로, 화면을 누르면 #/3d 전체 화면.
+  // 홈 3D 카드: 같은 저장소 3d/ 의 모델. 이름표는 3d/assets/labels.json(유진님 3D 사이트 저장값의 호실번호·위치, 사람 이름 뺌).
+  // 「새 버전(v02) / 이전 버전(v01)」 전환: 고른 값은 이 탭 동안만 기억(sessionStorage), 기본은 새 버전. #/3d 전체 화면도 같은 값을 씀.
+  var V3D = { 'new': '3d/index.html', old: '3d/v01/index.html' };
+  function ver3d() { try { return sessionStorage.getItem('hj3dVer') === 'old' ? 'old' : 'new'; } catch (e) { return 'new'; } }
+  function verBtns() {
+    var v = ver3d();
+    return '<div class="v3d-ver" role="group" aria-label="3D 버전">' +
+      '<button type="button" data-3dver="new" aria-pressed="' + (v === 'new') + '">새 버전</button>' +
+      '<button type="button" data-3dver="old" aria-pressed="' + (v === 'old') + '">이전 버전</button></div>';
+  }
+  if (!window.__hj3dVerBound) {
+    window.__hj3dVerBound = true;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-3dver]');
+      if (!b) return;
+      var v = b.getAttribute('data-3dver') === 'old' ? 'old' : 'new';
+      try { sessionStorage.setItem('hj3dVer', v); } catch (err) { /* 무시 */ }
+      document.querySelectorAll('[data-3dver]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-3dver') === v)); });
+      document.querySelectorAll('iframe[data-3dframe]').forEach(function (f) {
+        f.src = V3D[v] + (f.getAttribute('data-3dframe') === 'embed' ? '?embed=1&v=18' : '?v=18');
+      });
+    });
+  }
+  window.HJ3D = { src: function (embed) { return V3D[ver3d()] + (embed ? '?embed=1&v=18' : '?v=18'); }, btns: verBtns };
   function card3d() {
     return '<section class="card home3d"><div class="home3d-head"><h2>교육원 전경 3D</h2>' +
-      '<button class="btn-ghost small" type="button" data-go="#/3d">전체 화면</button></div>' +
-      '<div class="home3d-stage"><iframe title="교육원 전경 3D 미리보기" src="3d/index.html?embed=1&amp;v=17" loading="lazy"></iframe></div>' +
-      '<p class="muted small">층 버튼을 눌러 보세요. 화면을 누르면 크게 돌려 볼 수 있어요. ' +
-      '<a href="https://silseupdong-3d.yujin06344.workers.dev/" target="_blank" rel="noopener">호실 이름이 들어간 편집본은 3D 사이트(PIN) ↗</a></p></section>';
+      '<button class="btn-ghost small" type="button" data-go="#/3d">전체 화면</button></div>' + verBtns() +
+      '<div class="home3d-stage"><iframe data-3dframe="embed" title="교육원 전경 3D 미리보기" src="' + window.HJ3D.src(true).replace(/&/g, '&amp;') + '" loading="lazy"></iframe></div>' +
+      '<p class="muted small">층 버튼을 눌러 보세요. 화면을 누르면 크게 돌려 볼 수 있어요. 호실번호는 3D 사이트에 입력한 값 그대로예요. ' +
+      '<a href="https://silseupdong-3d.yujin06344.workers.dev/" target="_blank" rel="noopener">편집은 3D 사이트(PIN) ↗</a></p></section>';
   }
   function render(el, api) {
     if (!api.unlocked()) return renderPublic(el, api);
