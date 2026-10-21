@@ -17,6 +17,7 @@ self.addEventListener('fetch', function (e) {
   var url;
   try { url = new URL(req.url); } catch (err) { return; }
   if (url.origin !== self.location.origin) return;
+  if (url.pathname.indexOf('/api/') >= 0) return;   /* 잠긴 API(볼트 문서 등)는 저장하지 않음 */
   e.respondWith(fetch(req, { cache: 'no-store' }).then(function (res) {
     if (res && res.ok && res.type === 'basic') {
       var copy = res.clone();

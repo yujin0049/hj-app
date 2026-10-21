@@ -439,3 +439,18 @@ input:focus, select:focus, textarea:focus { box-shadow: 0 0 0 2px var(--navy); }
 .top input[type="search"] { background-color: #fff !important; }
 /* 위임전결 실무 기준 끝의 규정 원문 메모 (js/app.js styleNotes) */
 .reg-note { font-size: .78em; color: var(--muted); font-weight: 400; }
+/* 볼트 문서 (js/modules/vault.js, js/vault-md.js) */
+#vault-q { width: 100%; box-sizing: border-box; margin-top: 8px; }
+.vault-dir > summary { cursor: pointer; padding: 6px 0; word-break: break-all; }
+.vault-dir.lv1, .vault-dir.lv2, .vault-dir.lv3 { margin-left: 12px; }
+.vault-path { word-break: break-all; }
+.vault-body { line-height: 1.65; word-break: break-word; }
+.vault-body h2 { font-size: 1.15rem; margin: 22px 0 8px; }
+.vault-body h3, .vault-body h4, .vault-body h5, .vault-body h6 { font-size: 1.02rem; margin: 16px 0 6px; }
+.vault-body pre { white-space: pre-wrap; background: #F2F4F6; border-radius: 12px; padding: 12px; font-size: .85rem; overflow-x: auto; }
+.vault-body blockquote { margin: 10px 0; padding: 8px 12px; border-left: 3px solid var(--navy); background: #F5F7FA; border-radius: 0 10px 10px 0; }
+.vault-body li.lv1 { margin-left: 16px; } .vault-body li.lv2 { margin-left: 32px; } .vault-body li.lv3 { margin-left: 48px; }
+.vault-body .wiki-missing { color: var(--muted); border-bottom: 1px dashed currentColor; }
+.vault-body .scroll { overflow-x: auto; }
+.vault-body table { border-collapse: collapse; }
+.vault-body th, .vault-body td { border: 1px solid #E5E8EB; padding: 6px 8px; vertical-align: top; }

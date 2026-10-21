@@ -38,6 +38,7 @@
         '<div class="pre src-excerpt">' + esc(ex.text) + '</div>';
       if (ex.articles_missing && ex.articles_missing.length) h += '<p class="muted">발췌 못 한 조문: ' + esc(ex.articles_missing.join(', ')) + '</p>';
     }
+    h += '<div data-vault-open></div>';
     var url = cfg.obsidianVault && /^obsidian:\/\/open\?/.test(rec.obsidian || '') ? rec.obsidian : obsidianUrl(cfg, rec.path);
     if (url) h += '<a class="btn-ghost block" href="' + esc(url) + '">옵시디언에서 열기</a>';
     h += '<p class="muted">점수 ' + Math.round((rec.score || 0) * 100) + ' · 수정 ' + esc(rec.modified || '') + ' · 자동 연결이라 확인 필요할 수 있어요.</p></div>';
@@ -50,6 +51,13 @@
     return load().then(function (d) {
       var rec = d.src && d.src.cards ? d.src.cards[key] : null;
       slot.innerHTML = html(esc, rec, d.cfg, fallback);
+      var holder = slot.querySelector('[data-vault-open]');
+      if (!holder || !rec || !rec.path || !root.VaultApi) return;
+      /* 잠긴 「볼트 문서」 팩에 같은 볼트 파일이 있으면 앱 안에서 원문 열기. 없거나 잠겨 있으면 그대로 */
+      return root.VaultApi.idForPath(rec.path).then(function (id) {
+        if (!/^[0-9a-f]{12}$/.test(id || '')) return;
+        holder.innerHTML = '<a class="btn block" data-open-vault-doc href="#/vault/doc/' + id + '">원문 보기</a>';
+      });
     });
   }
   root.SourceLink = { load: load, fill: fill, obsidianUrl: obsidianUrl, html: html };

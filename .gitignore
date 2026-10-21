@@ -1,0 +1,4 @@
+vault_pack/
+**/vault_pack/
+cf_upload_vault.js
+__pycache__/
