@@ -8,11 +8,11 @@
  },
  "counts": {
   "진행": 33,
-  "대기(유진님 몫)": 41,
+  "대기(유진님 몫)": 43,
   "막힘": 4,
   "끝": 15,
-  "all": 93,
-  "open": 78
+  "all": 95,
+  "open": 80
  },
  "waits": [
   "대기: KORUS",
@@ -37,13 +37,13 @@
   {
    "t": "T002",
    "title": "사천 에어쇼 견학 지출품의(식사·간식·버스·보험·현수막, 1,242,000원)",
-   "bot": "",
+   "bot": "지출단계 리마인더",
    "state": "끝",
    "raw": "취소(결재 회수 완료)",
-   "progress": null,
-   "verified": null,
+   "progress": 100,
+   "verified": "미검증",
    "due": "2026-10-21",
-   "updated": "2026-10-21 10:03",
+   "updated": "2026-10-21 22:02",
    "yujin": [],
    "yujin_src": "",
    "yujin_guess": [],
@@ -135,10 +135,10 @@
    "bot": "지출단계 리마인더",
    "state": "진행",
    "raw": "진행 중",
-   "progress": null,
-   "verified": null,
+   "progress": 40,
+   "verified": "미검증",
    "due": "2026-10-26",
-   "updated": "2026-10-21 08:27",
+   "updated": "2026-10-21 20:31",
    "yujin": [],
    "yujin_src": "",
    "yujin_guess": [],
@@ -199,18 +199,15 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "진행 중",
-   "progress": null,
-   "verified": null,
+   "progress": 30,
+   "verified": "봇 대조 10.21.",
    "due": "2026-11-05",
-   "updated": "2026-10-21 17:50",
+   "updated": "2026-10-21 20:31",
    "yujin": [
-    "KORUS 입력",
-    "유진님 직접"
+    "KORUS 입력"
    ],
-   "yujin_src": "추정",
-   "yujin_guess": [
-    "유진님 직접"
-   ],
+   "yujin_src": "현황판",
+   "yujin_guess": [],
    "risk": []
   },
   {
@@ -311,7 +308,7 @@
    "progress": 5,
    "verified": null,
    "due": "2026-10-30",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-21 22:02",
    "yujin": [
     "결재"
    ],
@@ -327,10 +324,10 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "할 일",
-   "progress": null,
-   "verified": null,
+   "progress": 10,
+   "verified": "봇 대조 10.21.",
    "due": "2026-11-30",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-21 20:31",
    "yujin": [
     "결재"
    ],
@@ -344,20 +341,19 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "확인 필요",
-   "progress": null,
-   "verified": null,
+   "progress": 30,
+   "verified": "봇 대조 10.21.(클로드는 기록 중복만)",
    "due": "2026-10-23",
-   "updated": "2026-10-21 17:50",
+   "updated": "2026-10-21 22:02",
    "yujin": [
-    "대기: PC",
     "KORUS 입력",
-    "확인·판단"
+    "대기: PC"
    ],
-   "yujin_src": "추정",
-   "yujin_guess": [
-    "확인·판단"
-   ],
-   "risk": []
+   "yujin_src": "현황판",
+   "yujin_guess": [],
+   "risk": [
+    "만료·기한"
+   ]
   },
   {
    "t": "T021",
@@ -365,10 +361,10 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "할 일",
-   "progress": null,
-   "verified": null,
+   "progress": 10,
+   "verified": "봇 대조 10.21.",
    "due": "2026-12-14",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-21 20:31",
    "yujin": [
     "KORUS 입력"
    ],
@@ -411,13 +407,13 @@
   {
    "t": "T024",
    "title": "정비사 1차(11.2.~11.25.) 강사료 4주 묶음 지급의뢰·예산 포함 여부",
-   "bot": "",
+   "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "확인 필요",
    "progress": null,
-   "verified": null,
+   "verified": "미검증",
    "due": "2026-11-23",
-   "updated": "2026-10-21 10:03",
+   "updated": "2026-10-21 22:14",
    "yujin": [
     "확인·판단"
    ],
@@ -838,14 +834,12 @@
    "progress": null,
    "verified": null,
    "due": "2026-10-21",
-   "updated": "2026-10-21 14:37",
+   "updated": "2026-10-21 22:33",
    "yujin": [
     "제출"
    ],
-   "yujin_src": "추정",
-   "yujin_guess": [
-    "제출"
-   ],
+   "yujin_src": "현황판",
+   "yujin_guess": [],
    "risk": []
   },
   {
@@ -1138,10 +1132,10 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "확인 필요",
-   "progress": null,
-   "verified": null,
+   "progress": 10,
+   "verified": "미검증",
    "due": "2026-10-23",
-   "updated": "2026-10-21 14:35",
+   "updated": "2026-10-21 20:31",
    "yujin": [
     "확인·판단",
     "KORUS 입력"
@@ -1178,10 +1172,10 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "확인 필요",
-   "progress": null,
-   "verified": null,
+   "progress": 20,
+   "verified": "미검증",
    "due": "2026-10-23",
-   "updated": "2026-10-21 14:35",
+   "updated": "2026-10-21 20:31",
    "yujin": [
     "확인·판단",
     "KORUS 입력"
@@ -1441,10 +1435,10 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "할 일",
-   "progress": null,
-   "verified": null,
+   "progress": 10,
+   "verified": "미검증",
    "due": "2026-12-24",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-21 20:31",
    "yujin": [
     "KORUS 입력"
    ],
@@ -1458,10 +1452,10 @@
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
    "raw": "할 일",
-   "progress": null,
-   "verified": null,
+   "progress": 0,
+   "verified": "미검증",
    "due": "2027-01-28",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-21 20:31",
    "yujin": [
     "제출"
    ],
@@ -1594,10 +1588,44 @@
     "기한 놓치면 불이익",
     "만료·기한"
    ]
+  },
+  {
+   "t": "T096",
+   "title": "자격증 특강 강사 성범죄경력조회 동의서·행정정보 공동이용 사전동의서 받기(발급 3일, 10.30. 개강 전)",
+   "bot": "지출단계 리마인더",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": 30,
+   "verified": "봇 대조(g08·g09 원문 스크립트 추출 10.21.",
+   "due": "2026-10-27",
+   "updated": "2026-10-21 22:14",
+   "yujin": [
+    "제출"
+   ],
+   "yujin_src": "현황판",
+   "yujin_guess": [],
+   "risk": []
+  },
+  {
+   "t": "T097",
+   "title": "경남항공교육원-755 변경계획 결재(정비사 1차 11.2.~11.25. 넣기) — 11.2.(월) 개강 전",
+   "bot": "지출단계 리마인더",
+   "state": "대기(유진님 몫)",
+   "raw": "할 일",
+   "progress": 0,
+   "verified": "미검증",
+   "due": "2026-10-30",
+   "updated": "2026-10-21 22:14",
+   "yujin": [
+    "결재"
+   ],
+   "yujin_src": "현황판",
+   "yujin_guess": [],
+   "risk": []
   }
  ],
- "read_at": "2026-10-21 20:30",
- "built_at": "2026-10-21 20:34",
- "built_iso": "2026-10-21T20:34+09:00",
+ "read_at": "2026-10-22 08:10",
+ "built_at": "2026-10-22 08:10",
+ "built_iso": "2026-10-22T08:10+09:00",
  "refresh": "30분마다(평일 08:00~20:00) 현황판 다시 읽기 → 이 파일 갱신"
 }
