@@ -92,9 +92,11 @@
       '<p><b>꼭 알 조문</b><br>' + api.esc(r.articles || '확인 필요') + '</p>' +
       '<p><b>한 줄</b><br>' + api.esc(r.summary || '') + '</p>' +
       '<div data-source-slot><p><b>원문</b><br>' + api.esc(r.source || '확인 필요') + '</p></div>' +
+      '<div data-regdocs-slot></div>' +
       '<p class="muted">익히는 시간(추정) ' + api.esc(r.minutes || '') + '</p></section>';
     el.querySelector('#back').onclick = function () { api.go('#/study'); };
     if (window.SourceLink) window.SourceLink.fill(el, 'regulations:' + r.id, r.source || '확인 필요', api.esc);
+    if (window.RegDocs) window.RegDocs.fill(el, 'regulations:' + r.id, api.esc);
   }
 
   ShellModules.study = { id: 'study', tab: '공부', icon: icon, render: render };

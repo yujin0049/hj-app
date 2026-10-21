@@ -1,0 +1,15 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><base href="../../"><link rel="stylesheet" href="css/app.css"></head>
+<body><div id="card" class="card"><div data-source-slot></div><div data-regdocs-slot></div></div><pre id="result">대기</pre>
+<script src="js/source-link.js"></script><script src="js/reg-docs.js"></script>
+<script>
+/* T057 시험용: 규정 카드와 같은 칸을 만들고 「보기」 두 개를 눌러 원문이 열리는지 적는다(tests/test_reg_docs.py) */
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+var el=document.getElementById('card'), out=document.getElementById('result');
+SourceLink.fill(el,'regulations:g8','확인 필요',esc).then(function(){return RegDocs.fill(el,'regulations:g8',esc);}).then(function(){
+  var bs=el.querySelectorAll('[data-regdoc-open]'); bs.forEach(function(b){b.click();});
+  setTimeout(function(){
+    var r=[];el.querySelectorAll('[data-regdoc-body]').forEach(function(b){r.push((b.classList.contains('hidden')?'닫힘':'열림')+'|'+b.textContent.length+'|'+b.textContent.slice(0,40).replace(/\n/g,' '));});
+    out.textContent='버튼 '+bs.length+'\n'+r.join('\n');
+  },1500);
+});
+</script></body></html>
