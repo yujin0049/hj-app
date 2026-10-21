@@ -233,3 +233,32 @@ class PII(Base):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class Range(Base):
+    """기간 일정(시작~끝): end 칸 또는 제목 안 「11.3.(화)~11.4.(수)」 → 이벤트 end (달력이 띠로 그림)"""
+    def test_end_from_title(self):
+        f = make_calendar.end_from_title
+        self.assertEqual(f('가짜 기관교육 (11.3.(화)~11.4.(수))', '2026-11-03'), '2026-11-04')
+        self.assertEqual(f('가짜 9.29~10.2 행사', '2026-09-29'), '2026-10-02')
+        self.assertEqual(f('가짜 12.30.~1.2.', '2026-12-30'), '2027-01-02')
+        self.assertEqual(f('시간 10:00~12:00', '2026-11-03'), '')
+        self.assertEqual(f('다른 날 11.5.~11.6.', '2026-11-03'), '')
+        self.assertEqual(f('학기 9.1.~12.19.', '2026-09-01'), '')  # 60일 넘음
+
+    def test_master_range(self):
+        tmp = os.path.join(self.out, '일정총괄.json')
+        d = json.load(open(os.path.join(FX, '일정총괄.json'), encoding='utf-8'))
+        lst = d if isinstance(d, list) else next(v for v in d.values() if isinstance(v, list) and v and isinstance(v[0], dict))
+        lst.append({'date': '2026-11-03', 'title': '가짜 기관교육 (11.3.(화)~11.4.(수))', 'kind': '일정', 'end': None, 'yujin_action': True})
+        lst.append({'date': '2026-11-10', 'title': '가짜 워크숍', 'kind': '일정', 'end': '2026-11-12', 'yujin_action': True})
+        json.dump(d, open(tmp, 'w', encoding='utf-8'), ensure_ascii=False)
+        args = ['--raw', os.path.join(FX, 'raw_업무.json'), '--extra', os.path.join(FX, 'extra.json'), '--out', self.out,
+                '--today', '2026-10-21', '--log', self.log, '--master', tmp, '--ingest', '/없음',
+                '--unknown-log', os.path.join(self.out, 'unk.txt'), '--decisions', '/없음']
+        rc, msg = run(make_calendar.main, args)
+        self.assertEqual(rc, 0, msg)
+        ev = json.load(open(os.path.join(self.out, 'calendar.json'), encoding='utf-8'))['events']
+        by = {e['title']: e for e in ev}
+        self.assertEqual(by['가짜 기관교육 (11.3.(화)~11.4.(수))'].get('end'), '2026-11-04')
+        self.assertEqual(by['가짜 워크숍'].get('end'), '2026-11-12')

@@ -34,6 +34,30 @@ def read_table(path):
     return list(csv.reader(io.StringIO(t.replace('\ufeff', ''))))
 
 
+RANGE_RE = re.compile(r'(\d{1,2})\.\s*(\d{1,2})\.?\s*(?:\([월화수목금토일]\))?\s*[~∼-]\s*(?:(\d{1,2})\.\s*)?(\d{1,2})\.?\s*(?:\([월화수목금토일]\))?')
+
+
+def end_from_title(title, start):
+    """제목 안 「11.3.(화)~11.4.(수)」 같은 기간 → 끝 날짜(시작 날짜와 같은 날로 시작할 때만, 60일 안). 없으면 ''."""
+    try:
+        s = dt.date.fromisoformat(start)
+    except (TypeError, ValueError):
+        return ''
+    for m in RANGE_RE.finditer(str(title or '')):
+        mo, d, mo2, d2 = m.groups()
+        if (int(mo), int(d)) != (s.month, s.day):
+            continue
+        try:
+            e = dt.date(s.year, int(mo2 or mo), int(d2))
+        except ValueError:
+            continue
+        if e < s:
+            e = e.replace(year=s.year + 1)
+        if 0 < (e - s).days <= 60:
+            return e.isoformat()
+    return ''
+
+
 def norm_date(v, year):
     v = str(v or '').strip()
     m = re.match(r'^(20\d\d)[-./]\s*(\d{1,2})[-./]\s*(\d{1,2})\.?$', v)
@@ -265,6 +289,10 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
               'yujin': [], 'check': ex.get('check', ''), '_mk': ex.get('mkind', '')}
         if ex.get('end'):
             ev['end'] = norm_date(ex['end'], year)
+        if not ev.get('end'):
+            ev['end'] = end_from_title(title, date)
+        if not ev['end'] or ev['end'] <= date:
+            ev.pop('end', None)
         if ex.get('cond'):
             ev['cond'] = ex['cond']
         if origin == 'ingest' and ex.get('_todo'):

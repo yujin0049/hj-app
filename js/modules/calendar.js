@@ -71,6 +71,7 @@
     '.cl-flt label{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:4px}',
     '.cl-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px}',
     '.cl-grid .wd{font-size:12px;color:var(--muted);text-align:center;padding:4px 0}.cl-grid .wd.sun{color:var(--no)}',
+    '.cl-ev.band{border-radius:6px 0 0 6px;margin-right:-5px}.cl-ev.band.cont{border-radius:0;margin-left:-5px;opacity:.85}.cl-ev.band.last{border-radius:0 6px 6px 0;margin-right:0}',
     '.cl-day{min-height:78px;border-radius:12px;padding:4px;cursor:pointer;background:#fff;border:1px solid transparent;overflow:hidden}',
     '.cl-day.out{opacity:.35}.cl-day.sel{border-color:var(--navy)}.cl-day .n{font-size:12px;font-weight:700;display:inline-block;min-width:22px;height:22px;line-height:22px;text-align:center;border-radius:11px}',
     '.cl-day.today .n{background:var(--ink);color:#fff}.cl-day.sun .n{color:var(--no)}.cl-day.today.sun .n{color:#fff}',
@@ -113,7 +114,10 @@
   }
   function uniq(arr) { var o = {}; arr.forEach(function (v) { if (v) o[v] = 1; }); return Object.keys(o).sort(); }
   /* 현황판 날짜(정본)는 크게, 같은 T번호의 하위 단계는 작게 (대장 결정 261021) */
+  function isBand(C, e) { return !!(e.end && e.end > e.date && C.addDays(e.date, 14) >= e.end); }
   function evChip(C, e, today) {
+    if (e._cont) return '<span class="cl-ev band cont l-' + e.lane + (e._last ? ' last' : '') + '" data-span="' + esc(e.id) + '" title="' + esc((e.t ? e.t + ' ' : '') + e.title + ' (~' + C.md(e.end) + ')') + '">↔ ' + esc(e.t || e.title) + '</span>';
+    if (isBand(C, e)) return '<span class="cl-ev band start l-' + e.lane + (isMain(e) ? ' main' : '') + '" data-span="' + esc(e.id) + '" title="' + esc((e.t ? e.t + ' ' : '') + e.title + ' (~' + C.md(e.end) + ')') + '">' + (e.t ? '<b>' + esc(e.t) + '</b> ' : '') + esc(e.title) + '</span>';
     if (e.sub) return '<span class="cl-ev sub l-' + e.lane + '" title="' + esc(e.title) + '">└ ' + esc(e.step || e.title) + '</span>';
     var main = isMain(e);
     var s = !main || e.kind === '수업' || e.kind === '참고' || e.kind === '반복' ? { cls: '' } : C.dueState(e.date, today, e.status);
@@ -135,7 +139,7 @@
     var lane = { yujin: '유진님 할 일', prof: '교수님 일정', ref: '참고' }[e.lane];
     return '<div class="row" data-ev="' + esc(e.id) + '"><span class="bar ln-' + e.lane + '"></span><div class="tx"><b>' + esc(e.title) +
       (e.check ? '<span class="tag chk">' + (/^충돌/.test(e.check) ? '충돌' : '확인 필요') + '</span>' : '') +
-      ((e.yujin || []).length ? '<span class="tag">' + esc(e.yujin[0]) + '</span>' : '') + '</b><small>' + esc(C.md(e.date)) + ' · ' + esc(e.t || '') +
+      ((e.yujin || []).length ? '<span class="tag">' + esc(e.yujin[0]) + '</span>' : '') + '</b><small>' + esc(C.md(e.date)) + (isBand(C, e) ? '~' + esc(C.md(e.end)) : '') + ' · ' + esc(e.t || '') +
       (e.t ? ' · ' : '') + esc(lane) + ' · ' + esc(e.group || '') + (e.status ? ' · ' + esc(e.status) : '') + (e.cond ? ' · 조건: ' + esc(e.cond) : '') + '</small></div>' +
       '<span class="dd ' + s.cls + '">' + esc(e.lane === 'prof' || e.kind === '참고' ? (s.n === 0 ? '오늘' : s.n > 0 ? 'D-' + s.n : (-s.n) + '일 전') : s.label) + '</span></div>';
   }
@@ -153,7 +157,15 @@
     var st = C.staleness(D.meta);
     var p = view.cur.split('-'), y = +p[0], m = +p[1];
     var byDay = {};
-    evs.forEach(function (e) { (byDay[e.date] = byDay[e.date] || []).push(e); });
+    /* 기간 일정(date~end, 14일 이하, 긴 학기 기간 등은 첫날만)은 걸친 모든 날에 띠로 그려요 */
+    evs.forEach(function (e) {
+      (byDay[e.date] = byDay[e.date] || []).push(e);
+      if (isBand(C, e)) {
+        for (var d2 = C.addDays(e.date, 1); d2 <= e.end; d2 = C.addDays(d2, 1)) {
+          (byDay[d2] = byDay[d2] || []).push(Object.assign({}, e, { _cont: d2, _last: d2 === e.end }));
+        }
+      }
+    });
     Object.keys(byDay).forEach(function (k) { byDay[k].sort(mainFirst); });
     var html = '<section class="card">' +
       (st.warn ? '<div class="cl-stale" id="cl-stale">⚠ 자료가 최신이 아닐 수 있어요 — ' + esc(st.why) + '</div>' : '') +
