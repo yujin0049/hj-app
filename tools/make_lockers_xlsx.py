@@ -20,6 +20,9 @@ SHEETS = {"엔진실습실": "엔진실습실", "2층학생": "2층 휴게실"}
 NO_HEADS = ("칸번호", "번호")
 KEY_HEAD, ST_HEAD = "열쇠수", "상태"
 HEAD_ROW_SCAN = 10
+# 칸이 0개여도 앱에서 늘 보여 줄 위치(2층 학생 사물함은 유진님 담당 구역, 10.21.)
+SECTIONS = [{"위치": "엔진실습실 1층"}, {"위치": "엔진실습실 2층"},
+            {"위치": "2층 휴게실", "note": "2층 학생 사물함(유진님 담당)이에요. 번호·칸 수 확인 전이라 아직 0칸이에요. 장부 「2층학생」 시트에 번호가 채워지면 여기에 나와요."}]
 
 
 def find_cols(ws):
@@ -82,7 +85,7 @@ def main(argv=None):
     out = {"format": 1, "entity": "lockers", "sample": False,
            "updated": dt.datetime.now(M.KST).isoformat(timespec="minutes"),
            "source": "엑셀봇 사물함 장부 xlsx(엔진실습실·2층학생 시트의 칸번호·열쇠 수·상태만, 이름·학번 없음)",
-           "assumed": True, "note": note, "version": a.version, "sheets": info, "items": items}
+           "assumed": True, "note": note, "version": a.version, "sheets": info, "sections": SECTIONS, "items": items}
     tmp = a.out + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         head = {k: v for k, v in out.items() if k != "items"}

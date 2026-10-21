@@ -170,14 +170,16 @@
       return natCmp(a['번호'], b['번호']);
     });
   }
-  function locations(items) {
+  /* sections: 자료(lockers.json sections)에 적힌 위치는 칸이 0개여도 늘 보여 줘요(예: 2층 학생 사물함, T053) */
+  function locations(items, sections) {
     var order = ['엔진실습실 1층', '엔진실습실 2층', '5101호', '2층 휴게실'], seen = {};
+    (sections || []).forEach(function (sc) { if (sc && sc['위치']) seen[sc['위치']] = 1; });
     items.forEach(function (it) { seen[it['위치']] = 1; });
     var rest = Object.keys(seen).filter(function (l) { return order.indexOf(l) < 0; }).sort();
     return order.filter(function (l) { return seen[l]; }).concat(rest);
   }
 
-  root.APLockers = { lockerNo: lockerNo, parseCsv: parseCsv, fromTable: fromTable, summarize: summarize, recommend: recommend, isPiiHead: isPiiHead, STATUSES: STATUSES, COLS: COLS };
+  root.APLockers = { locations: locations, lockerNo: lockerNo, parseCsv: parseCsv, fromTable: fromTable, summarize: summarize, recommend: recommend, isPiiHead: isPiiHead, STATUSES: STATUSES, COLS: COLS };
 
   /* ---------- 화면 ---------- */
   var seed = null, view = { loc: '', st: '', sel: '', more: false, report: null };
@@ -235,7 +237,9 @@
     var mine = saved();
     var data = mine || seed || { items: [] };
     var items = data.items;
-    var sum = summarize(items), locs = locations(items);
+    var sum = summarize(items), secs = Array.isArray(data.sections) ? data.sections : [], locs = locations(items, secs);
+    var secNote = function (l) { var sc = secs.filter(function (x) { return x && x['위치'] === l; })[0]; return sc && sc.note ? sc.note : ''; };
+    var zero = { total: 0, '빈칸': 0, '사용': 0, '확인 필요': 0, '사용 중지': 0 };
     if (view.loc && locs.indexOf(view.loc) < 0) view.loc = '';
     var scope = view.loc ? (sum.by[view.loc] || sum.all) : sum.all;
     var e = api.esc;
@@ -257,7 +261,7 @@
     /* 위치별 표 */
     h += '<section class="card"><h2 style="margin:0 0 6px">위치별 현황</h2><div class="scroll"><table class="lk-sum" id="lk-sum"><thead><tr><th>위치</th><th>전체</th><th>빈칸</th><th>사용</th><th>확인 필요</th><th>사용 중지</th></tr></thead><tbody>';
     locs.forEach(function (l) {
-      var s = sum.by[l];
+      var s = sum.by[l] || zero;
       h += '<tr data-loc="' + e(l) + '"><td><b>' + e(l) + '</b></td><td>' + s.total + '</td><td>' + s['빈칸'] + '</td><td>' + s['사용'] + '</td><td>' + s['확인 필요'] + '</td><td>' + s['사용 중지'] + '</td></tr>';
     });
     h += '<tr><td><b>합계</b></td><td>' + sum.all.total + '</td><td>' + sum.all['빈칸'] + '</td><td>' + sum.all['사용'] + '</td><td>' + sum.all['확인 필요'] + '</td><td>' + sum.all['사용 중지'] + '</td></tr></tbody></table></div></section>';
@@ -300,7 +304,7 @@
         .sort(function (a, b) { return natCmp(a['번호'], b['번호']); });
       visible += list.length;
       h += '<div class="lk-loc" data-board="' + e(l) + '"><h2>' + e(l) + ' <small>' + list.length + '개' + (view.st ? ' · ' + e(view.st) : '') + '</small></h2>';
-      if (!list.length) h += '<p class="muted">해당하는 사물함이 없어요.</p>';
+      if (!list.length) h += '<p class="muted"' + (secNote(l) ? ' data-empty-section' : '') + '>' + e(secNote(l) && !items.some(function (x) { return x['위치'] === l; }) ? secNote(l) : '해당하는 사물함이 없어요.') + '</p>';
       else h += '<div class="lk-grid">' + list.map(function (x) {
         var id = x['위치'] + '|' + x['번호'];
         var k = x['열쇠수'] == null ? '?' : x['열쇠수'];

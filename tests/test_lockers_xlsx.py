@@ -91,6 +91,22 @@ class T들어있는자료(unittest.TestCase):
             self.assertIn(it['상태'], ['빈칸', '사용', '확인 필요', '사용 중지'])
         self.assertNotRegex(json.dumps(d, ensure_ascii=False), r'"(이름|학번|성명)"')
 
+    def test_2f_student_section_kept(self):
+        with open(os.path.join(ROOT, 'data', 'lockers.json'), encoding='utf-8') as f:
+            d = json.load(f)
+        self.assertIn('2층 휴게실', [x['위치'] for x in d['sections']])
+        self.assertIn('2층학생', d['sheets'])
+
+    def test_2f_section_shows_in_app(self):
+        import shutil as sh, subprocess
+        if not sh.which('node'):
+            self.skipTest('node 없음')
+        js = os.path.join(ROOT, 'js', 'modules', 'lockers.js')
+        code = ("globalThis.window=globalThis;require(%r);var L=globalThis.APLockers;"
+                "console.log(JSON.stringify(L.locations([{'위치':'엔진실습실 1층'}],[{'위치':'2층 휴게실'}])))") % js
+        out = subprocess.run(['node', '-e', code], capture_output=True, text=True, timeout=30)
+        self.assertEqual(json.loads(out.stdout.strip().splitlines()[-1]), ['엔진실습실 1층', '2층 휴게실'], out.stderr)
+
 
 if __name__ == '__main__':
     unittest.main()
