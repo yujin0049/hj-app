@@ -1,0 +1,44 @@
+{
+ "prof_note": "가짜",
+ "items": [
+  {
+   "title": "가짜 특강 마감",
+   "date": "2026-10-30",
+   "ref": "T001",
+   "same_as": "deadline",
+   "lane": "yujin",
+   "kind": "마감",
+   "source": "테스트"
+  },
+  {
+   "title": "가짜 강의 1회차",
+   "date": "2026-10-30",
+   "ref": "T001",
+   "lane": "prof",
+   "kind": "수업",
+   "source": "테스트"
+  },
+  {
+   "title": "시트와 다른 날 마감",
+   "date": "2026-10-27",
+   "ref": "T008",
+   "same_as": "deadline",
+   "lane": "yujin",
+   "kind": "마감",
+   "source": "테스트"
+  },
+  {
+   "title": "총괄과 겹치는 일",
+   "date": "2026-11-03",
+   "ref": "T002",
+   "lane": "yujin",
+   "kind": "마감",
+   "source": "테스트"
+  },
+  {
+   "ref": "T003",
+   "status": "완료",
+   "source": "테스트"
+  }
+ ]
+}

@@ -66,6 +66,8 @@
       menuBtn('schedule', '남은 일정', '날짜, 담당, 완료, 시트 저장') +
       menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
       menuBtn('lockers', '사물함', '5101호·2층 휴게실 색깔 판, 열쇠 수, 배정 추천') +
+      menuBtn('calendar', '계획 달력', '월·주 보기, 유진님 할 일·교수님 일정, D-day') +
+      menuBtn('status', '현황표', '유진님 할 일 먼저, 상태·마감·담당 봇, OJNT 진행률') +
       menuLink('https://silseupdong-3d.yujin06344.workers.dev', '교육원 3D', '항공정비 실습동 3D 모델 · 새 창') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
       menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
@@ -79,7 +81,7 @@
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });

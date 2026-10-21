@@ -1,0 +1,39 @@
+{
+ "today": "2026-10-21",
+ "events": [
+  {
+   "date": "2026-11-03",
+   "title": "총괄: 서류 받기 (박민수 주무관)",
+   "t": "T002",
+   "kind": "계획",
+   "who": "박민수",
+   "yujin_action": true,
+   "condition": "결재 뒤"
+  },
+  {
+   "date": "2026-10-29",
+   "title": "현황판 반영",
+   "t": "T008",
+   "kind": "현황판",
+   "who": "",
+   "yujin_action": true
+  },
+  {
+   "date": "2026-11-10",
+   "title": "총괄 참고 일정",
+   "t": "",
+   "kind": "캘린더",
+   "who": "",
+   "yujin_action": false,
+   "새칸": "x"
+  }
+ ],
+ "conflicts": [
+  {
+   "kind": "출처끼리 날짜 다름",
+   "t": "T008",
+   "detail": "현황판 10.26. ↔ 캘린더 10.27."
+  }
+ ],
+ "checks": []
+}
