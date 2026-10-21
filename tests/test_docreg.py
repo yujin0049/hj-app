@@ -37,16 +37,37 @@ class DataFile(unittest.TestCase):
             self.assertEqual(hits, [], path)
 
 
+class MergeConditions(unittest.TestCase):
+    """대장 merge 조건(261021): ① 「언제 하나」 해설마다 추정 표시 ② 제외 목록 문서(1644·1588) 근거 문제 없음"""
+    def setUp(self):
+        self.d = json.loads(read('data', 'docreg.json'))
+
+    def test_when_note_everywhere(self):
+        note = self.d['when_note']
+        self.assertEqual(note, '(2026.3~10월 자료만 보고 추정)')
+        when = [q for q in self.d['questions'] if q['type'] == 'when']
+        self.assertTrue(when)
+        for q in when:
+            self.assertIn(note, q['why'], q['id'])
+        self.assertIn("q.type === 'when'", read('js', 'modules', 'docreg.js'))
+
+    def test_excluded_refs(self):
+        ex = set(self.d['excluded']['refs'])
+        self.assertTrue({'항공해양방산학부항공정비과-1644', '항공해양방산학부항공정비과-1588'} <= ex)
+        for q in self.d['questions']:
+            self.assertFalse(ex & set(q['ref']), q['id'])
+
+
 class Wiring(unittest.TestCase):
     def test_entry_and_module(self):
         self.assertIn("'docreg'", read('js', 'registry.js'))
         self.assertIn('data-go="#/docreg"', read('js', 'modules', 'home.js'))
         self.assertIn("menuBtn('docreg'", read('js', 'modules', 'more.js'))
         idx = read('index.html')
-        self.assertIn('js/docreg-core.js?v=21', idx)
+        self.assertIn('js/docreg-core.js?v=22', idx)
         self.assertLess(idx.index('docreg-core.js'), idx.index('js/app.js'))
         self.assertIn('ShellModules.docreg', read('js', 'modules', 'docreg.js'))
 
-    def test_cache_v21(self):
-        self.assertGreaterEqual(int(re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 21)
-        self.assertNotIn('?v=20', read('index.html'))
+    def test_cache_v22(self):
+        self.assertGreaterEqual(int(re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 22)
+        self.assertNotIn('?v=21', read('index.html'))

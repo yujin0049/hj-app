@@ -192,7 +192,10 @@
       '<section class="dr-card dr-q" id="dr-quiz"><div class="meta"><span>' + esc(title) + '</span><span id="dr-pos">' + (sess.i + 1) + ' / ' + sess.list.length + '</span></div>' +
       '<div class="dr-bar"><i style="width:' + Math.round(sess.i * 100 / sess.list.length) + '%"></i></div>' +
       '<p class="dr-why" style="margin:8px 0 0"><span class="dr-tag">' + esc(catName(q.cat)) + '</span>' + esc(D.TYPES.filter(function (t) { return t.id === q.type; }).map(function (t) { return t.name; })[0] || '') + '</p>' +
-      '<h2>' + esc(q.q) + '</h2>' + ch + ans + '</section>';
+      '<h2>' + esc(q.q) + '</h2>' +
+      /* 대장 merge 조건 ①: 「언제 하나」는 2026년 3~10월 한 해치 자료로 짐작한 것이라 풀기 전에도 알려 줘요 */
+      (q.type === 'when' ? '<p class="dr-why" id="dr-est" style="margin:-6px 0 12px">※ ' + esc(data.when_note || '(2026.3~10월 자료만 보고 추정)').replace(/^\(|\)$/g, '') + '</p>' : '') +
+      ch + ans + '</section>';
     el.querySelectorAll('[data-ch]').forEach(function (b) {
       b.onclick = function () {
         if (sess.picked !== null) return;
