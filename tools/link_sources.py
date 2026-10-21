@@ -258,7 +258,11 @@ def excerpt_for(card, doc, max_total=900):
             hit = next((i for i, ln in enumerate(body) if rx.search(ln)), None)
             if hit is not None:
                 break
-        if hit is not None and add(' '.join(body[hit:hit + 4])[:280]):
+        chunk = ' '.join(body[hit:hit + 4]) if hit is not None else ''
+        nxt = re.search(r'\s제\s?\d+\s?조(의\s?\d+)?\s?[(（]', chunk[5:])
+        if nxt:
+            chunk = chunk[:5 + nxt.start()]   # 다음 조문 앞에서 자름
+        if hit is not None and add(chunk[:280].strip()):
             found.append(k)
         if sum(len(p) for p in parts) > max_total:
             break
@@ -311,6 +315,21 @@ def build(pack, vault, today):
     return out
 
 
+def apply_overrides(pack, path):
+    """app.js 와 같은 규칙: data/card_overrides.json 의 칸으로 카드를 덮어씀."""
+    if not os.path.isfile(path):
+        return pack
+    ov = json.load(open(path, encoding='utf-8'))
+    for key, fields in ov.items():
+        if key.startswith('_') or ':' not in key:
+            continue
+        col, cid = key.split(':', 1)
+        for c in pack.get('entities', {}).get(col, []):
+            if str(c.get('id')) == cid:
+                c.update(fields)
+    return pack
+
+
 def pii_gate(path):
     script = os.path.join(PII_DIR, 'pii_check.py')
     if not os.path.isfile(script):
@@ -331,6 +350,7 @@ def main(argv=None):
     a = ap.parse_args(argv)
     with open(a.pack, encoding='utf-8') as f:
         pack = json.load(f)
+    apply_overrides(pack, os.path.join(os.path.dirname(os.path.abspath(a.pack)), 'data', 'card_overrides.json'))
     out = build(pack, a.vault, a.today)
     data = json.dumps(out, ensure_ascii=False, indent=1, sort_keys=True) + '\n'
     fd, tmp = tempfile.mkstemp(suffix='.json')

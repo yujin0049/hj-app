@@ -376,13 +376,26 @@
       return res.json();
     });
   }
+  /* 원문 대조로 고친 카드 칸 덮어쓰기 (data/card_overrides.json, 키 = 묶음:id) */
+  function applyOverrides(pack, ov) {
+    if (!ov) return;
+    Object.keys(ov).forEach(function (key) {
+      if (key.charAt(0) === '_') return;
+      var k = key.split(':'), list = pack.entities[k[0]] || [];
+      list.forEach(function (c) {
+        if (String(c.id) === k[1]) Object.keys(ov[key]).forEach(function (f) { c[f] = ov[key][f]; });
+      });
+    });
+  }
   function loadData() {
     return Promise.all([
       getJson('public-pack.json').catch(function () { return null; }),
-      getJson('dorm.json').catch(function () { return null; })
+      getJson('dorm.json').catch(function () { return null; }),
+      getJson('data/card_overrides.json').catch(function () { return null; })
     ]).then(function (r) {
       var pack = isPack(r[0]) ? r[0] : { appTitle: '행정 업무 연습장', packVersion: '', corrections: [], catalogs: {}, entities: {} };
       if (r[1]) pack.entities.dorm = r[1];
+      applyOverrides(pack, r[2]);
       return pack;
     });
   }

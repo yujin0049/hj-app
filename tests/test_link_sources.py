@@ -95,3 +95,36 @@ class T(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class T위임전결카드(unittest.TestCase):
+    """공부 > 위임전결 규정 카드가 원문(별표1·2)과 맞는지. 「1,000만원 이상 부총장」은 규정에 없다(규정봇 261021)."""
+    WRONG = __import__('re').compile(r'1\s?,?\s?000\s?만\s?원|1천\s?만\s?원|천만\s?원')
+
+    @classmethod
+    def setUpClass(cls):
+        pack = json.load(open(os.path.join(ROOT, 'public-pack.json'), encoding='utf-8'))
+        L.apply_overrides(pack, os.path.join(ROOT, 'data', 'card_overrides.json'))   # 앱이 보는 것과 같게
+        cls.card = [r for r in pack['entities']['regulations'] if r['id'] == 'g8'][0]
+        src = os.path.join(ROOT, 'data', 'sources.json')
+        cls.rec = json.load(open(src, encoding='utf-8'))['cards'].get('regulations:g8', {})
+
+    def test_no_1000man_in_card(self):
+        txt = json.dumps(self.card, ensure_ascii=False)
+        self.assertIsNone(self.WRONG.search(txt), '위임전결 카드에 1,000만원 기준이 다시 들어감(규정 경계는 3,000만원)')
+
+    def test_no_1000man_in_linked_source(self):
+        self.assertIsNone(self.WRONG.search(json.dumps(self.rec, ensure_ascii=False)))
+
+    def test_card_matches_original(self):
+        c = self.card
+        self.assertIn('3,000만원 미만', c['summary'])
+        self.assertIn('3,000만원 이상 1억원 미만', c['summary'])
+        self.assertIn('남해캠퍼스부총장', c['summary'])
+        for k in ('제3조', '제4조', '제5조', '제9조', '별표1', '별표2'):
+            self.assertIn(k, c['articles'])
+
+    def test_linked_to_original(self):
+        self.assertEqual(self.rec.get('status'), '연결')
+        self.assertEqual(self.rec.get('path'), '봇공유/20 규정·지침/국립창원대_위임전결규정.md')
+        self.assertEqual(self.rec['excerpt']['articles_missing'], [])
