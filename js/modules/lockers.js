@@ -171,7 +171,7 @@
     });
   }
   function locations(items) {
-    var order = ['5101호', '2층 휴게실'], seen = {};
+    var order = ['엔진실습실 1층', '엔진실습실 2층', '5101호', '2층 휴게실'], seen = {};
     items.forEach(function (it) { seen[it['위치']] = 1; });
     var rest = Object.keys(seen).filter(function (l) { return order.indexOf(l) < 0; }).sort();
     return order.filter(function (l) { return seen[l]; }).concat(rest);
@@ -243,7 +243,7 @@
     h += '<section class="card"><p class="kicker">사물함 판</p><h1>사물함</h1>' +
       '<p class="muted">번호·위치·열쇠 수·상태만 보여요. 이름·학번·전화는 넣지 않아요. 돈은 받지 않는 방식이에요.</p>';
     if (mine) h += '<div class="okbox" id="lk-src">이 기기에 넣은 CSV예요 · ' + e(String(mine.at || '').slice(0, 16).replace('T', ' ')) + ' · ' + items.length + '개</div>';
-    else if (data.assumed) h += '<div class="warnbox" id="lk-assumed"><b>칸 수는 가정치예요' + (data.version ? ' (' + e(data.version) + ')' : '') + '.</b> ' + e(data.note || '열쇠함 사진 확인 후 v02로 갱신할 예정이에요.') + '</div>';
+    else if (data.assumed) h += '<div class="warnbox" id="lk-assumed"><b>아직 확인 전 자료예요' + (data.version ? ' (' + e(data.version) + ')' : '') + '.</b> ' + e(data.note || '열쇠함 사진 확인 후 v02로 갱신할 예정이에요.') + '</div>';
     else if (data.sample) h += '<div class="warnbox" id="lk-sample"><b>예시 데이터예요.</b> 실제 사물함이 아니에요. 엑셀봇이 만든 CSV를 넣으면 바뀌어요.</div>';
     h += '<div class="statgrid lk-statgrid" style="margin-top:12px">' +
       '<div><b id="n-empty">' + scope['빈칸'] + '</b><span>빈 사물함</span></div>' +
