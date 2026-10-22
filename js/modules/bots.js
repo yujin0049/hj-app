@@ -6,6 +6,39 @@
   'use strict';
   var view = { state: '', bot: '', q: '', open: {} };
   var data = null, tried = false, failed = false;
+  var score = null, scoreTried = false;
+  function loadScore() {
+    if (scoreTried) return Promise.resolve(score);
+    scoreTried = true;
+    return fetch(new URL('data/hyunhwang_score.json', document.baseURI).href, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('hyunhwang_score'); return r.json(); })
+      .then(function (j) { score = j; return j; })
+      .catch(function () { scoreTried = false; return null; });
+  }
+  /* 건별 수치화(hyunhwang_score.json): 요약 4개 + 안 끝난 건마다 진행률·체크리스트·다음 할 일·담당·마감 */
+  function scoreSection(esc, today) {
+    var H = root.HJScore;
+    if (!score || !H) return '';
+    var tasks = score.tasks || [], s = H.summary(tasks, today, (score.summary || {}).window);
+    var list = H.openSorted(tasks, today), all = !!view.open['hs'], shown = all ? list : list.slice(0, 6);
+    var kpi = [[s.all, '전체 건수'], [s.avg_pct + '%', '평균 진행률'], [s.yujin, '유진님 몫'], [s.due7, '마감 ' + s.window + '일 이내']].map(function (k) {
+      return '<div><b>' + esc(String(k[0])) + '</b><span>' + esc(k[1]) + '</span></div>'; }).join('');
+    var rows = shown.map(function (t) {
+      var d = H.dueLabel(t, today), od = H.oDiffText(t);
+      return '<div class="hs-row" data-t="' + esc(t.t) + '"><div class="hs-t1"><span class="tn">' + esc(t.t) + '</span><span class="tt">' + esc(t.title) + '</span><span class="pc">' + esc(String(t.pct)) + '%</span></div>' +
+        '<div class="bs-bar"><i style="width:' + Math.max(0, Math.min(100, +t.pct || 0)) + '%"></i></div>' +
+        '<div class="hs-meta"><span>' + esc(t.type) + ' · ' + esc(H.stepText(t)) + '</span><span class="' + (t.owner === '유진님' ? 'yu' : '') + '">담당 ' + esc(t.owner) + '</span>' +
+        '<span class="' + d.cls + '">' + esc(d.label) + (t.due ? ' (' + esc(root.HJBots.md(t.due)) + ')' : '') + '</span>' + (od ? '<span class="od">' + esc(od) + '</span>' : '') + '</div>' +
+        '<div class="hs-steps">' + (t.steps || []).map(function (st) { return '<i class="' + (st.done ? 'ok' : '') + '">' + (st.done ? '✓ ' : '○ ') + esc(st.name) + '</i>'; }).join('') + '</div>' +
+        (t.next ? '<div class="hs-next">→ ' + esc(t.next) + '</div>' : '') +
+        (t.folder ? '<div class="hs-dir">📂 ' + esc(t.folder) + '</div>' : '') + '</div>';
+    }).join('');
+    return '<section class="bs-sec" id="hs-score"><h2>건별 진행률 <small>안 끝난 ' + s.open + '개</small></h2>' +
+      '<p class="why">진행률 = 끝난 단계 ÷ 전체 단계(업무 유형별 체크리스트, 현황판 글로 봇이 추정). 취소 ' + s.cancelled + '개는 평균에서 뺐어요' + (s.overdue ? ', 마감 지난 것 ' + s.overdue + '개' : '') + '.</p>' +
+      '<div class="hs-kpi" id="hs-kpi">' + kpi + '</div>' + rows +
+      (list.length > 6 ? '<button class="bs-more" type="button" data-more="hs">' + (all ? '접기' : (list.length - 6) + '개 더 보기') + '</button>' : '') +
+      '<p class="why" style="margin-top:6px">계산 ' + esc(fmtAt(score.built_at)) + ' · 왜: 건마다 어디까지 왔고 다음에 뭘 할지 숫자로 보면 급한 것·유진님 몫부터 손댈 수 있어요.</p></section>';
+  }
   var CSS = [
     '.bs-head{padding:4px 2px 0}.bs-head h1{margin:0 0 2px}.bs-head p{margin:0;color:var(--muted);font-size:.86rem}',
     '.bs-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0 4px}',
@@ -37,7 +70,16 @@
     '.bs-more{display:block;width:100%;border:0;background:none;color:var(--navy);font-weight:600;font-size:.86rem;padding:10px 0;cursor:pointer}',
     '.bs-flt{display:flex;gap:8px;margin:4px 0 8px}.bs-flt select,.bs-flt input{flex:1;min-width:0;border:0;background:var(--soft);border-radius:12px;padding:9px 10px;font-size:.86rem}',
     '.bs-stale{background:var(--warnbg);color:var(--warn);border-radius:14px;padding:10px 12px;font-size:.84rem;margin:10px 0}',
-    '.bs-foot{font-size:.76rem;color:var(--muted);padding:4px 4px 20px;line-height:1.5}'
+    '.bs-foot{font-size:.76rem;color:var(--muted);padding:4px 4px 20px;line-height:1.5}',
+    '.hs-kpi{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:8px 0 6px}.hs-kpi div{background:var(--soft);border-radius:12px;padding:8px 2px;text-align:center}',
+    '.hs-kpi b{display:block;font-size:1.15rem;font-weight:800}.hs-kpi span{font-size:.68rem;color:var(--ink-2);white-space:nowrap}',
+    '.hs-row{padding:10px 0;border-top:1px solid var(--line)}.hs-row:first-of-type{border-top:0}',
+    '.hs-t1{display:flex;gap:6px;align-items:baseline}.hs-t1 .tn{font-weight:700;color:var(--muted);font-size:.8rem}.hs-t1 .tt{flex:1;font-weight:600;font-size:.92rem;min-width:0}',
+    '.hs-t1 .pc{font-weight:800;font-size:.95rem;color:var(--navy)}',
+    '.hs-meta{font-size:.74rem;color:var(--ink-2);margin-top:3px;display:flex;flex-wrap:wrap;gap:2px 8px}.hs-meta .late{color:#F04452;font-weight:700}.hs-meta .today,.hs-meta .soon{color:#E67700;font-weight:700}',
+    '.hs-meta .yu{color:#9A5B00;font-weight:700}.hs-meta .od{color:var(--muted)}',
+    '.hs-steps{margin-top:4px;font-size:.72rem;line-height:1.6}.hs-steps i{font-style:normal;display:inline-block;margin-right:6px;color:#B0B8C1}.hs-steps i.ok{color:#03B26C;font-weight:700}',
+    '.hs-next{font-size:.8rem;margin-top:3px;color:var(--ink)}.hs-dir{font-size:.7rem;color:var(--muted);margin-top:2px;word-break:break-all}'
   ].join('\n');
   function style() {
     if (document.getElementById('bs-style')) return;
@@ -100,6 +142,7 @@
       '<div class="bs-head"><h1>봇 작업 현황</h1><p id="bs-stamp">현황판 ' + esc(fmtAt(data.read_at)) + ' 읽음 (한국 시간)</p></div>' +
       (st.warn ? '<div class="bs-stale" id="bs-stale">⚠ ' + esc(st.why) + '. 보이는 내용이 현황판과 다를 수 있어요.</div>' : '') +
       '<div class="bs-kpi" id="bs-kpi">' + kpi + '</div>' +
+      scoreSection(esc, today) +
       section(B, esc, 'bs-yu', 'yu', '유진님이 해야 할 것', '확정 ' + ys.sure + '개(현황판 「유진님 몫」 칸 값, 진한 꼬리표)를 먼저, 그다음 ' + ysSmall.slice(1) + '개(테두리 꼬리표 「추정」 = 칸이 비어 봇이 짐작). 각 묶음 안은 마감 가까운 것부터.', sec.yujin, today, { yu: 1 }, 5) +
       section(B, esc, 'bs-soon', '', '마감 임박', '마감 3일 이내(D-3)와 이미 지난 것.', sec.soon, today, {}, 5) +
       section(B, esc, 'bs-risk', 'risk', '감사 위험', '감사·검사, 개선권고, 만료, 놓치면 불이익이 있는 일.', sec.risk, today, { risk: 1 }, 5) +
@@ -126,6 +169,7 @@
   function render(el, api) {
     style();
     if (!root.HJBots) { el.innerHTML = '<section class="card"><div class="bs-stale">⚠ 봇 작업 현황 계산 파일(js/botstatus-core.js)을 못 불러왔어요. 새로고침해 주세요.</div></section>'; return; }
+    if (!score) loadScore().then(function (j) { if (j && data && el.querySelector('#bs-kpi')) paint(el, api); });
     if (data) { paint(el, api); return; }
     el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
     load().then(function (d) {
