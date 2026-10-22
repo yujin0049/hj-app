@@ -40,6 +40,16 @@ class DataFile(unittest.TestCase):
         old = {r['old'] for r in o['retired']}
         for t in self.d['tasks']:
             self.assertNotIn(t['bot'], old, t['t'])
+        for b in o['bots']:  # C006: 직급·일 수(옛 자료엔 없어도 됨)
+            if 'open' in b:
+                self.assertGreaterEqual(b['open'], b['running'])
+                self.assertLessEqual(len(b.get('top', [])), 3)
+        ranks = [c['rank'] for c in o.get('chart', [])]
+        if ranks:
+            self.assertIn('회장', ranks)
+            self.assertIn('사장', ranks)
+        for x in o.get('history', []):
+            self.assertIn(x['now'], ('대장', '문서봇', '춘식이', x['to']))
         h = self.d.get('handover')
         if h:
             self.assertTrue(h['items'])
