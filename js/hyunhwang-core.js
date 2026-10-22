@@ -43,6 +43,7 @@
     return { cls: n <= 3 ? 'soon' : 'later', label: 'D-' + n };
   }
   function stepText(t) { return (t.done || 0) + '/' + (t.total || 0) + '단계'; }
-  function oDiffText(t) { return t.o_diff == null ? '' : '현황판 ' + t.o + '%와 ' + (t.o_diff > 0 ? '+' : '') + t.o_diff; }
+  /* O칸은 계산값이 정본(인수인계봇 10.22. 15:01) → 다르면 현황판 쪽을 고칠 표시 */
+  function oDiffText(t) { return t.o_diff == null ? '' : '현황판 O 갱신 필요(' + t.o + '%→' + t.pct + '%)'; }
   return { dLeft: dLeft, isOpen: isOpen, summary: summary, openSorted: openSorted, dueLabel: dueLabel, stepText: stepText, oDiffText: oDiffText };
 });

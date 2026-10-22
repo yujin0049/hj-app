@@ -35,7 +35,7 @@ test('마감 글·단계 글·O칸 차이', () => {
   assert.equal(H.dueLabel(T({ due: '2026-10-25' }), today).label, 'D-3');
   assert.equal(H.dueLabel(T({}), today).cls, 'none');
   assert.equal(H.stepText(T({ done: 2, total: 6 })), '2/6단계');
-  assert.equal(H.oDiffText(T({ o: 30, o_diff: 3 })), '현황판 30%와 +3');
+  assert.equal(H.oDiffText(T({ o: 30, o_diff: 3, pct: 33 })), '현황판 O 갱신 필요(30%→33%)');
   assert.equal(H.oDiffText(T({})), '');
 });
 test('자료 파일: 요약이 스크립트 값과 같고, 진행률 = 끝난 단계 ÷ 전체', () => {
