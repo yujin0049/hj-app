@@ -38,15 +38,15 @@
   ]
  },
  "summary": {
-  "all": 98,
+  "all": 99,
   "cancelled": 5,
-  "avg_pct": 29,
-  "avg_pct_open": 20,
+  "avg_pct": 30,
+  "avg_pct_open": 21,
   "open": 83,
   "yujin": 45,
-  "due7": 19,
-  "overdue": 1,
-  "o_diff": 16,
+  "due7": 20,
+  "overdue": 0,
+  "o_diff": 17,
   "window": 7,
   "today": "2026-10-22"
  },
@@ -1928,41 +1928,38 @@
    "t": "T048",
    "title": "개인정보 공문 스캔해서 보내기(대상 확인 필요)",
    "type": "공문·보고",
-   "status": "할 일",
+   "status": "완료",
    "cancelled": false,
    "steps": [
     {
      "name": "자료·근거 확인",
-     "done": false
+     "done": true
     },
     {
      "name": "초안 작성",
-     "done": false
+     "done": true
     },
     {
      "name": "검토(공문서봇·규정봇)",
-     "done": false
+     "done": true
     },
     {
      "name": "결재·제출",
-     "done": false
+     "done": true
     }
    ],
-   "done": 0,
+   "done": 4,
    "total": 4,
-   "pct": 0,
-   "o": null,
+   "pct": 100,
+   "o": 100,
    "o_diff": null,
-   "next": "스캔해서 보내기(10.21. 02:47 유진님 메모). 확인 필요: 어떤 공문·받는 곳·마감(762는 업무포털 원문에서 제출…",
-   "owner": "유진님",
+   "next": "완료(유진님 15:03 「T48 했어」, 대장 전달). 유진님이 했다고 하면 즉시 완료, 증빙 재요구 없음. 학교 쪽 확인이…",
+   "owner": "-",
    "due": "",
    "d_left": null,
    "folder": "",
-   "basis": "근거 없음(0단계)",
-   "yujin": [
-    "제출",
-    "대기: PC"
-   ]
+   "basis": "상태 완료",
+   "yujin": []
   },
   {
    "t": "T051",
@@ -1995,8 +1992,8 @@
    "o_diff": null,
    "next": "입사신청서 받아 제출(마감 10.21.). 숫자는 ojnt.json만 인용",
    "owner": "유진님",
-   "due": "2026-10-21",
-   "d_left": -1,
+   "due": "2026-10-25",
+   "d_left": 3,
    "folder": "",
    "basis": "상태 「진행 중」→ 최소 1단계",
    "yujin": [
@@ -3929,9 +3926,49 @@
    "yujin": [
     "10.20. 수업 날짜"
    ]
+  },
+  {
+   "t": "T101",
+   "title": "업무 방식 정리(① 메일 첫머리 ② 공문 제목·붙임 ③ 자료·폴더 구조 ④ 회의 진행) → 「한다」",
+   "type": "공문·보고",
+   "status": "진행 중",
+   "cancelled": false,
+   "steps": [
+    {
+     "name": "자료·근거 확인",
+     "done": true
+    },
+    {
+     "name": "초안 작성",
+     "done": false
+    },
+    {
+     "name": "검토(공문서봇·규정봇)",
+     "done": false
+    },
+    {
+     "name": "결재·제출",
+     "done": false
+    }
+   ],
+   "done": 1,
+   "total": 4,
+   "pct": 25,
+   "o": 60,
+   "o_diff": -35,
+   "next": "10.22. 초안: ②③④ 규칙·예시·확실도 작성, 연습장 문제 후보 8개. ① 메일 첫머리는 근거 부족(박스 Gmail은 …",
+   "owner": "유진님",
+   "due": "",
+   "d_left": null,
+   "folder": "",
+   "basis": "상태 「진행 중」→ 최소 1단계",
+   "yujin": [
+    "결과 문서 읽기",
+    "연습장 문제 풀기"
+   ]
   }
  ],
- "read_at": "2026-10-22 14:37",
- "built_at": "2026-10-22 15:02",
- "built_iso": "2026-10-22T15:02+09:00"
+ "read_at": "2026-10-22 15:05",
+ "built_at": "2026-10-22 15:05",
+ "built_iso": "2026-10-22T15:05+09:00"
 }
