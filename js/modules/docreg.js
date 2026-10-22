@@ -106,7 +106,7 @@
       '<div class="dr-chips" id="dr-types">' + chips + '</div>' + rows + '</section>' +
       '<section class="dr-card"><h2>정례 문서 달력 <small>' + (data.recurring || []).length + '묶음</small></h2>' +
       '<p class="dr-why">해마다·학기마다 돌아오는 문서를 달별로 모았어요. 2026년 기록 기준이라 「내년에도 이맘때」로 보면 돼요.</p>' +
-      '<button class="dr-link" type="button" data-go="#/docreg/month">달별로 보기 ›</button></section>' +
+      '<button class="dr-link" type="button" data-go="#/docreg/month">달별로 보기 ›</button><button class="dr-link" type="button" data-go="#/regular-docs">달 격자로 보기(정례 문서 달력) ›</button></section>' +
       '<p class="dr-foot">자료: ' + esc(data.source || '') + ' (공개 문서 ' + (data.public_rows || 0) + '건만, 사람 이름은 ○○○). 판단·문제: Claude Code, 검산: 춘식이.<br>' +
       '왜 이렇게: 한성진 선생님처럼 제목만 보고 「내부결재인지, 어디로 보내는지, 언제 하는 일인지」 바로 아는 눈을 기르려고, 유진님 업무와 가까운 분류부터 풀게 했어요.</p>';
     el.querySelector('#dr-start').onclick = function () { sess = null; api.go(quizHash({ type: typeSel, mode: st.done && st.done < st.total ? 'new' : '' })); };

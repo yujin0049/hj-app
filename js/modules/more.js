@@ -68,6 +68,7 @@
       menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
       menuBtn('lockers', '사물함', '5101호·2층 휴게실 색깔 판, 열쇠 수, 배정 추천') +
       menuBtn('calendar', '계획 달력', '월·주 보기, 유진님 할 일·교수님 일정, D-day') +
+      menuBtn('regular-docs', '정례 문서 달력', '달 격자 · 분류 고르기 · 다가오는 달 예상') +
       menuBtn('docreg', '문서등록대장 학습', '분류별 문제 · 정례 문서 달력 · 틀린 문제 다시') +
       menuBtn('who', '학과·사람별 업무', '학과 카드 · 사람별 카드 · 누가 하나 문제') +
       menuBtn('bots', '봇 작업 현황', '지금 도는 일 한 줄씩 · 유진님 몫 · 마감 임박 · 감사 위험') +
@@ -85,7 +86,7 @@
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });

@@ -157,6 +157,8 @@
     h += '<button class="bs-entry" type="button" data-go="#/bots" id="home-bots"><span class="tile-ic purple">🤖</span><span class="bs-entry-tx"><b>봇 작업 현황</b><span class="tile-sub" id="home-bots-sub">지금 도는 일을 한 줄씩</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 학과·사람별 업무(#/who): 누가 무슨 일을 하나(유진님 10.22. 00:54 요청). 실명 없이 역할 표기만.
     h += '<button class="bs-entry" type="button" data-go="#/who" id="home-who"><span class="tile-ic teal">👥</span><span class="bs-entry-tx"><b>학과·사람별 업무</b><span class="tile-sub">누구한테 물을지 · 문제 55개</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    // 정례 문서 달력(#/regular-docs): 달마다 돌아오는 문서 격자(유진님 10.22. 「사이트에도 넣으라」).
+    h += '<button class="bs-entry" type="button" data-go="#/regular-docs" id="home-regdocs"><span class="tile-ic teal">🗓️</span><span class="bs-entry-tx"><b>정례 문서 달력</b><span class="tile-sub">달마다 오는 문서 · 다가오는 달 예상</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 문서등록대장 학습(#/docreg): 문제 풀며 문서등록대장 익히기(유진님 10.21. 20:47 지시). 진도는 자료를 읽은 뒤 채워요.
     h += '<button class="bs-entry" type="button" data-go="#/docreg" id="home-docreg"><span class="tile-ic teal">📑</span><span class="bs-entry-tx"><b>문서등록대장 학습</b><span class="tile-sub" id="home-docreg-sub">분류별 문제로 문서 익히기</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += card3d();
