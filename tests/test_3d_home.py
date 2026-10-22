@@ -101,7 +101,7 @@ class ThreeDHome(unittest.TestCase):
         for i in ('rf-ac-1', '3f-extinguisher', 'site-weld-ventilator'):  # 사진만으로 위치 불확실
             self.assertIn('위치 추정', E[i]['label'], i)
 
-    # 옥상 물탱크·가압펌프·압력탱크: 이름표 3개 따로, 각각 누르면 설명(note), 계단탑(옥탑) 밖에 있음
+    # 옥상 물탱크·가압펌프·압력탱크: 이름표 3개 따로, 각각 누르면 설명(note), 계단탑(옥탑) 안 물탱크실에 있음(10.22. 유진님 지시)
     def test_roof_tank_pump_ptank_labels_split(self):
         E = self._geo_equipment()
         want = {'rf-water-tank': '물탱크', 'rf-booster-pump-1': '가압펌프', 'rf-pressure-tank-1': '압력탱크'}
@@ -112,16 +112,47 @@ class ThreeDHome(unittest.TestCase):
         self.assertNotIn('물탱크·가압펌프', labels)
         for name in want.values():
             self.assertEqual(labels.count(name), 1, name)
-        x0, y0, x1, y1 = json.loads(read('3d', 'assets', 'building.json'))['geo']['roof']['penthouse']['rect']
-        for i, e in E.items():
-            if i.startswith(('rf-water-tank', 'rf-booster-pump-', 'rf-pressure-tank-')):
-                hw, hd = (e.get('l', 0) / 2, e['r']) if e.get('shape') == 'cyl' else (e['w'] / 2 + 0.1, e['d'] / 2 + 0.1)
-                out = e['c'][0] + hw < x0 or e['c'][0] - hw > x1 or e['c'][1] + hd < y0 or e['c'][1] - hd > y1
-                self.assertTrue(out, i)  # 계단탑과 겹치지 않음
+        self.assertIn('e.label_p', read('3d', 'assets', 'scene.js'))
         self.assertIn('e.label_p', read('3d', 'assets', 'scene.js'))
         self.assertIn('item.view', read('3d', 'assets', 'app.js'))
         import re as _re
         self.assertGreaterEqual(int(_re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 24)
+
+    # 10.22. 유진님 지시(「이건 안에 있어야지」): 물탱크·가압펌프·압력탱크는 계단탑(옥탑) 안, 코어 벽 서쪽 물탱크실에 들어감.
+    # 3층→옥상 계단(코어 벽 동쪽)·벽과 겹치지 않고, 지붕 보기에서는 옥탑 지붕·벽이 반투명(이름표는 그대로)
+    def test_roof_equipment_inside_stair_tower(self):
+        E = self._geo_equipment()
+        G = json.loads(read('3d', 'assets', 'building.json'))['geo']
+        P = G['roof']['penthouse']
+        walls = [w for w in P['walls'] if w['k'] == 'ph']
+        core = [w for w in P['walls'] if w['k'] == 'core'][0]
+        west = min(w['a'][0] for w in walls if w['a'][0] == w['b'][0])
+        south = min(w['a'][1] for w in walls if w['a'][1] == w['b'][1])
+        north = max(w['a'][1] for w in walls if w['a'][1] == w['b'][1])
+        ix0, ix1 = west + 0.15, core['a'][0] - core['t'] / 2  # 물탱크실 안쪽 면(서쪽 벽 ~ 코어 벽)
+        iy0, iy1 = south + 0.15, north - 0.15
+        st = [s for s in G['floors']['3F']['stairs']][0]
+        stair_x0 = min(f['x0'] for f in st['flights'])
+        self.assertGreater(stair_x0, ix1)  # 계단은 코어 벽 동쪽
+        ids = [i for i in E if i.startswith(('rf-water-tank', 'rf-booster-pump-', 'rf-pressure-tank-'))]
+        self.assertEqual(len(ids), 5)
+        for i in ids:
+            e = E[i]
+            hw, hd = (e['l'] / 2, e['r']) if e.get('shape') == 'cyl' else (e['w'] / 2 + (0.1 if e['k'] == 'tank' else 0), e['d'] / 2 + (0.1 if e['k'] == 'tank' else 0))
+            self.assertTrue(ix0 <= e['c'][0] - hw and e['c'][0] + hw <= ix1, i)
+            self.assertTrue(iy0 <= e['c'][1] - hd and e['c'][1] + hd <= iy1, i)
+            top = e['z0'] + (e.get('h') or 2 * e.get('r', 0))
+            self.assertLess(top, P['z1'], i)  # 옥탑 지붕 아래
+            if e.get('label'):
+                self.assertIn('계단탑(옥탑) 안', e['note'], i)
+                self.assertNotIn('동쪽 옥상 빈 자리로 옮김', e['note'], i)
+        scene = read('3d', 'assets', 'scene.js')
+        self.assertIn("const see = id === 'RF'", scene)
+        self.assertIn('SEE.roof', scene)
+        self.assertIn('SEE.ph', scene)
+        self.assertNotIn("phRoof.visible = id !== 'RF'", scene)
+        import re as _re
+        self.assertGreaterEqual(int(_re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 30)
 
     def test_photo_1021_rendered_without_photo_files(self):
         scene = read('3d', 'assets', 'scene.js')

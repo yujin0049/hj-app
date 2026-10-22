@@ -144,7 +144,7 @@ async function boot() {
   function focusRoom(item) {
     labels.forEach((l) => { l.el.classList.toggle('hl', l === item); if (l.eq) l.w = l.h = 0; }); // 설명이 붙고 빠지면 폭·높이가 바뀜
     document.querySelectorAll('.chip').forEach((c) => c.classList.toggle('on', c._item === item));
-    // 설비에 view 가 있으면 그 방향에서 (옥상 물탱크·펌프: 계단탑에 안 가리는 동남쪽 위)
+    // 설비에 view 가 있으면 그 방향에서 (옥상 물탱크·펌프: 반투명 옥탑 안을 내려다보는 남동쪽 위)
     const dir = item.view ? new THREE.Vector3(...item.view).normalize() : camera.position.clone().sub(controls.target).normalize();
     flyTo({ target: item.pos.clone().setY(item.pos.y - 1), pos: item.pos.clone().add(dir.multiplyScalar(26)) }, 0.8);
   }
