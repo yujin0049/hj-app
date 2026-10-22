@@ -10,8 +10,8 @@
   "진행": 33,
   "대기(유진님 몫)": 43,
   "막힘": 4,
-  "끝": 15,
-  "all": 95,
+  "끝": 16,
+  "all": 96,
   "open": 80
  },
  "waits": [
@@ -183,7 +183,7 @@
    "progress": null,
    "verified": null,
    "due": "2026-11-05",
-   "updated": "2026-10-21 17:50",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "확인·판단"
    ],
@@ -202,7 +202,7 @@
    "progress": 30,
    "verified": "봇 대조 10.21.",
    "due": "2026-11-05",
-   "updated": "2026-10-21 20:31",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "KORUS 입력"
    ],
@@ -219,7 +219,7 @@
    "progress": null,
    "verified": null,
    "due": "2026-11-20",
-   "updated": "2026-10-21 14:24",
+   "updated": "2026-10-22 11:05",
    "yujin": [],
    "yujin_src": "",
    "yujin_guess": [],
@@ -234,7 +234,7 @@
    "progress": null,
    "verified": null,
    "due": "",
-   "updated": "2026-10-21 14:24",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "KORUS 입력"
    ],
@@ -253,7 +253,7 @@
    "progress": null,
    "verified": null,
    "due": "",
-   "updated": "2026-10-20 20:03",
+   "updated": "2026-10-22 11:05",
    "yujin": [],
    "yujin_src": "",
    "yujin_guess": [],
@@ -268,7 +268,7 @@
    "progress": null,
    "verified": null,
    "due": "2027-02-04",
-   "updated": "2026-10-17 18:35",
+   "updated": "2026-10-22 11:05",
    "yujin": [],
    "yujin_src": "",
    "yujin_guess": [],
@@ -413,12 +413,14 @@
    "progress": null,
    "verified": "미검증",
    "due": "2026-11-23",
-   "updated": "2026-10-21 22:14",
+   "updated": "2026-10-22 10:42",
    "yujin": [
+    "결재",
     "확인·판단"
    ],
    "yujin_src": "추정",
    "yujin_guess": [
+    "결재",
     "확인·판단"
    ],
    "risk": []
@@ -639,7 +641,7 @@
    "progress": null,
    "verified": null,
    "due": "2026-11-20",
-   "updated": "2026-10-20 19:50",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "KORUS 입력",
     "결재",
@@ -834,7 +836,7 @@
    "progress": null,
    "verified": null,
    "due": "2026-10-21",
-   "updated": "2026-10-21 22:33",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "제출"
    ],
@@ -851,7 +853,7 @@
    "progress": null,
    "verified": null,
    "due": "2026-11-05",
-   "updated": "2026-10-21 14:33",
+   "updated": "2026-10-22 11:05",
    "yujin": [],
    "yujin_src": "",
    "yujin_guess": [],
@@ -1054,7 +1056,7 @@
    "progress": null,
    "verified": null,
    "due": "2026-10-30",
-   "updated": "2026-10-21 14:33",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "제출"
    ],
@@ -1387,7 +1389,7 @@
    "progress": 0,
    "verified": null,
    "due": "2027-01-15",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "결재"
    ],
@@ -1406,7 +1408,7 @@
    "progress": 33,
    "verified": null,
    "due": "2026-11-13",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-22 11:05",
    "yujin": [],
    "yujin_src": "",
    "yujin_guess": [],
@@ -1421,7 +1423,7 @@
    "progress": null,
    "verified": null,
    "due": "2026-12-17",
-   "updated": "2026-10-21 20:27",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "결재"
    ],
@@ -1438,7 +1440,7 @@
    "progress": 10,
    "verified": "미검증",
    "due": "2026-12-24",
-   "updated": "2026-10-21 20:31",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "KORUS 입력"
    ],
@@ -1455,7 +1457,7 @@
    "progress": 0,
    "verified": "미검증",
    "due": "2027-01-28",
-   "updated": "2026-10-21 20:31",
+   "updated": "2026-10-22 11:05",
    "yujin": [
     "제출"
    ],
@@ -1611,21 +1613,36 @@
    "title": "경남항공교육원-755 변경계획 결재(정비사 1차 11.2.~11.25. 넣기) — 11.2.(월) 개강 전",
    "bot": "지출단계 리마인더",
    "state": "대기(유진님 몫)",
-   "raw": "할 일",
-   "progress": 0,
+   "raw": "진행 중",
+   "progress": 80,
    "verified": "미검증",
-   "due": "2026-10-30",
-   "updated": "2026-10-21 22:14",
+   "due": "2026-10-22",
+   "updated": "2026-10-22 10:41",
    "yujin": [
-    "결재"
+    "제출"
    ],
    "yujin_src": "현황판",
    "yujin_guess": [],
    "risk": []
+  },
+  {
+   "t": "T098",
+   "title": "싱가포르 견학 집행 방식 확정: 국외여비·수의계약(T086·T087 ) vs 용역 공개경쟁입찰(수요조사서안)",
+   "bot": "지출단계 리마인더",
+   "state": "끝",
+   "raw": "취소",
+   "progress": 100,
+   "verified": "미검증",
+   "due": "",
+   "updated": "2026-10-22 11:05",
+   "yujin": [],
+   "yujin_src": "",
+   "yujin_guess": [],
+   "risk": []
   }
  ],
- "read_at": "2026-10-22 10:32",
- "built_at": "2026-10-22 10:32",
- "built_iso": "2026-10-22T10:32+09:00",
+ "read_at": "2026-10-22 11:07",
+ "built_at": "2026-10-22 11:07",
+ "built_iso": "2026-10-22T11:07+09:00",
  "refresh": "30분마다(평일 08:00~20:00) 현황판 다시 읽기 → 이 파일 갱신"
 }
