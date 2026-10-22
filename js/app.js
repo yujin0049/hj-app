@@ -429,17 +429,27 @@
       rest.parentNode.replaceChild(s, rest);
     });
   }
+  /* data/extra_questions.json 의 문제를 묶음 끝에 붙임(같은 id는 건너뜀) */
+  function addExtraQuestions(pack, extra) {
+    if (!extra || !Array.isArray(extra.questions)) return;
+    var qs = pack.entities.questions = pack.entities.questions || [];
+    var have = {};
+    qs.forEach(function (q) { if (q) have[q.id] = 1; });
+    extra.questions.forEach(function (q) { if (q && q.id && !have[q.id]) { qs.push(q); have[q.id] = 1; } });
+  }
   function loadData() {
     return Promise.all([
       getJson('public-pack.json').catch(function () { return null; }),
       getJson('dorm.json').catch(function () { return null; }),
       getJson('data/card_overrides.json').catch(function () { return null; }),
-      getJson('data/ojnt_headcount.json').catch(function () { return null; })
+      getJson('data/ojnt_headcount.json').catch(function () { return null; }),
+      getJson('data/extra_questions.json').catch(function () { return null; })
     ]).then(function (r) {
       var pack = isPack(r[0]) ? r[0] : { appTitle: '행정 업무 연습장', packVersion: '', corrections: [], catalogs: {}, entities: {} };
       if (r[1]) pack.entities.dorm = r[1];
       applyOverrides(pack, r[2]);
       if (window.APDorm && APDorm.applyHeadcount) APDorm.applyHeadcount(pack, r[3]);
+      addExtraQuestions(pack, r[4]);
       return pack;
     });
   }
