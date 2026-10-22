@@ -13,6 +13,8 @@
     return !!n && n !== '미정';
   }
   function isPerson(row) { return row && row['구분'] !== '빈방'; }
+  // 10.22. 출석부 16명 기준: 「이번 인원 아님」 줄은 남겨 두되 인원·기숙사비·대기 명단에서 뺀다
+  function excluded(row) { return !!row && String(row['상태'] || '').indexOf('이번 인원 아님') >= 0; }
   function isRoom(building, room) {
     return (building === '한울관' || building === '다솜관') && /^\d+$/.test(norm(room));
   }
@@ -298,7 +300,7 @@
     return blob.indexOf('여자 강사 전용') >= 0;
   }
   function summarize(rows, confirmedTotal, unit, months, hints) {
-    rows = rows || [];
+    rows = (rows || []).filter(function (row) { return !excluded(row); });
     hints = hints || {};
     var memo = hints.memo || hints.roomMemo || {};
     unit = unit || 200000;
@@ -330,6 +332,39 @@
       fee: fee,
       needsConfirm: !(confirmed > 0) || fee !== confirmed
     };
+  }
+  // 10.22. data/ojnt_headcount.json(숫자·규칙만, 이름 없음)을 dorm 자료 위에 얹는다. dorm.json 원본은 그대로.
+  function applyHeadcount(pack, hc) {
+    if (!pack || !hc || !hc.dorm) return pack;
+    var ents = pack.entities || (pack.entities = {});
+    var d = ents.dorm, h = hc.dorm;
+    if (d) {
+      ['ojntHeadcount', 'ojntExcluded', 'ojntBasis', 'headcountNote', 'deadlineNote', 'genderSplitNote'].forEach(function (k) {
+        if (h[k] != null) d[k] = h[k];
+      });
+      var rows = d.rows || [];
+      (h.rowRules || []).forEach(function (rule) {
+        rows.forEach(function (row) {
+          var hit = Object.keys(rule.match || {}).every(function (k) { return norm(row[k]) === norm(rule.match[k]); });
+          if (hit) Object.keys(rule.set || {}).forEach(function (k) { row[k] = rule.set[k]; });
+        });
+      });
+      if (typeof h.unnamedUpcoming === 'number') {
+        var seen = 0;
+        d.rows = rows.filter(function (row) {
+          if (row['구분'] !== '입소예정' || known(row['이름']) || excluded(row)) return true;
+          seen += 1;
+          if (seen <= h.unnamedUpcoming && h.unnamedUpcomingNote) row['비고'] = h.unnamedUpcomingNote;
+          return seen <= h.unnamedUpcoming;
+        });
+      }
+    }
+    if (Array.isArray(hc.corrections) && Array.isArray(pack.corrections)) {
+      hc.corrections.forEach(function (c) {
+        if (!pack.corrections.some(function (x) { return x.text === c.text; })) pack.corrections.push(c);
+      });
+    }
+    return pack;
   }
   function confirmedAmount(pack) {
     var lines = (pack && pack.entities && pack.entities.budget_lines) || [];
@@ -441,6 +476,8 @@
     check: check,
     teacherOnly: teacherOnly,
     summarize: summarize,
+    excluded: excluded,
+    applyHeadcount: applyHeadcount,
     confirmedAmount: confirmedAmount,
     toCsv: toCsv,
     fromCsv: fromCsv,
