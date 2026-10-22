@@ -127,6 +127,9 @@ export function buildScene(THREE, data) {
     canopy: new THREE.MeshStandardMaterial({ color: 0xcfd5dc, roughness: 0.7 }),
     edge: new THREE.LineBasicMaterial({ color: 0x7d8a99, transparent: true, opacity: 0.35 }),
   };
+  // 지붕 보기: 옥탑(계단탑) 지붕·판넬 벽을 반투명하게 — 안의 물탱크실(물탱크·가압펌프·압력탱크)이 보이게 (유진님 10.22.)
+  const SEE = { roof: M.roof.clone(), ph: M.ph.clone(), core: M.core.clone() };
+  for (const [k, op] of [['roof', 0.18], ['ph', 0.32], ['core', 0.4]]) Object.assign(SEE[k], { transparent: true, opacity: op, depthWrite: false });
   // 높은 벽(격납고)은 고른 층 높이에서 잘라 보이게 — 클리핑 평면
   const clip = new THREE.Plane(new THREE.Vector3(0, -1, 0), 1e4);
   const MC = {}; for (const k of ['wall', 'glass', 'frame', 'leaf', 'hangarDoor', 'col', 'wallInt']) { MC[k] = M[k].clone(); MC[k].clippingPlanes = [clip]; MC[k].clipShadows = true; }
@@ -218,7 +221,7 @@ export function buildScene(THREE, data) {
     floors[fid] = { g, full, cut, tall, slab, f: { id: fid, z: F.z, top: F.top } };
   }
   // 지붕
-  const R = G.roof; const roofG = new THREE.Group(); let phRoof = null;
+  const R = G.roof; const roofG = new THREE.Group(); let phRoof = null, phWall = null, phCore = null;
   roofG.add(extrude(R.slab.outer, R.slab.holes, R.slab.z, R.slab.t, M.roofTop));
   { const b = new Batch(); for (const w of R.parapet) wallPieces(w, b, b); addAll(roofG, [mesh(b, M.wall, true, true)]); }
   { // 옥탑
@@ -226,12 +229,13 @@ export function buildScene(THREE, data) {
     for (const w of P.walls) wallPieces(w, w.k === 'core' ? cb : b, w.k === 'core' ? cb : b);
     for (const o of P.windows) windowParts(o, gb, fb);
     for (const o of P.doors) doorParts(o, gb, fb, lb);
-    addAll(roofG, [mesh(b, M.ph, true, true), mesh(cb, M.core), mesh(gb, M.glass, false), mesh(fb, M.frame), mesh(lb, M.leaf)]);
+    phWall = mesh(b, M.ph, true, true); phCore = mesh(cb, M.core);
+    addAll(roofG, [phWall, phCore, mesh(gb, M.glass, false), mesh(fb, M.frame), mesh(lb, M.leaf)]);
     const [x0, y0, x1, y1] = P.rect; const t = 0.3, i = t;
     phRoof = extrude([[x0 + i, y0 + i], [x1 - i, y0 + i], [x1 - i, y1 - i], [x0 + i, y1 - i]], [], P.z1, 0.2, M.roof); roofG.add(phRoof);
     if (P.label_p) eqLabel(P, 'RF', [P.label_p[0], P.z1 + 0.6, -P.label_p[1]]); // 계단탑(옥상 출입) — 3층 계단 쪽 문 위
   }
-  // 옥상 설비 (사진·옥상 평면): 실외기·물탱크·펌프·압력탱크 — 큼직한 것만 상자·원기둥으로. 물탱크·펌프·압력탱크는 계단탑 동쪽(사진 10.21. 기준 대략). vent = 도면 밖 건물(용접실습동) 벤틸레이터, 따로 둔 모형
+  // 옥상 설비 (사진·옥상 평면): 실외기·물탱크·펌프·압력탱크 — 큼직한 것만 상자·원기둥으로. 물탱크·펌프·압력탱크는 계단탑(옥탑) 서쪽 물탱크실 안(24쪽 옥상 평면, 10.22. 유진님 지시). vent = 도면 밖 건물(용접실습동) 벤틸레이터, 따로 둔 모형
   {
     const box = new Batch(), unit = new Batch(), steel = new Batch(), tankB = new Batch(), pad = new Batch(), fans = [], cyls = [];
     const rect = (c, w, d) => [[c[0] - w / 2, c[1] - d / 2], [c[0] + w / 2, c[1] - d / 2], [c[0] + w / 2, c[1] + d / 2], [c[0] - w / 2, c[1] + d / 2]];
@@ -291,6 +295,10 @@ export function buildScene(THREE, data) {
       F.slab.material = fid === id ? M.slabOn : M.slab;
     });
     roofG.visible = id === 'ALL' || id === 'RF';
+    const see = id === 'RF'; // 지붕 보기에서만 옥탑을 반투명(전체 보기는 그대로)
+    if (phRoof) { phRoof.material = see ? SEE.roof : M.roof; phRoof.castShadow = !see; }
+    if (phWall) { phWall.material = see ? SEE.ph : M.ph; phWall.castShadow = !see; }
+    if (phCore) { phCore.material = see ? SEE.core : M.core; phCore.castShadow = !see; }
     clip.constant = id === 'ALL' || id === 'RF' ? 1e4 : (floors[id] ? floors[id].f.z + CUT : 1e4);
   }
   return { floors, roofG, show, M, eqLabels, levels: G.levels, labelZ: (fid) => (fid === 'RF' ? G.roof.slab.z : G.floors[fid].z), CUT };
