@@ -53,9 +53,14 @@ class Script(unittest.TestCase):
     def test_score(self):
         s = self.m.score_one
         r = s(self.cfg, '지출', '진행 중', '품의 완료 → 원인행위 전(11.20. 입금 대기)', '', None)
-        self.assertEqual((r['done'], r['total'], r['pct']), (2, 6, 33))
-        r = s(self.cfg, '지출', '할 일', '지출결의', '귀국 뒤 정산', None)  # 할 일의 E칸은 그 단계 일이라는 뜻 → 끝난 단계 아님
-        self.assertEqual(r['done'], 0)
+        self.assertEqual((r['done'], r['total']), (4, 6))  # 마지막 화살표 뒤 「원인행위 전」 → 그 앞 4단계 끝
+        r = s(self.cfg, '지출', '할 일', '지출결의', '귀국 뒤 정산', None)  # E칸 = 지금 와 있는 단계 → 앞 단계는 할 일이어도 끝, 그 단계는 아직
+        self.assertEqual((r['done'], r['pct']), (5, 83))
+        self.assertFalse(r['steps'][5]['done'])
+        r = s(self.cfg, '지출', '완료', '지출결의', '', None)
+        self.assertEqual(r['pct'], 100)
+        self.assertEqual(len(self.cfg['types']['기타']['steps']), 4)
+        self.assertIn('검수·세금계산서가 먼저', self.cfg['types']['지출']['_메모'])
         r = s(self.cfg, '지출', '진행 중', '해당없음', '검수 완료, 세금계산서 받음', None)
         self.assertEqual(r['done'], 4)
         self.assertTrue(all(x['done'] for x in r['steps'][:4]))
