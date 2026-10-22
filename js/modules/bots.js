@@ -79,6 +79,7 @@
     '.hs-meta{font-size:.74rem;color:var(--ink-2);margin-top:3px;display:flex;flex-wrap:wrap;gap:2px 8px}.hs-meta .late{color:#F04452;font-weight:700}.hs-meta .today,.hs-meta .soon{color:#E67700;font-weight:700}',
     '.hs-meta .yu{color:#9A5B00;font-weight:700}.hs-meta .od{color:var(--muted)}',
     '.hs-steps{margin-top:4px;font-size:.72rem;line-height:1.6}.hs-steps i{font-style:normal;display:inline-block;margin-right:6px;color:#B0B8C1}.hs-steps i.ok{color:#03B26C;font-weight:700}',
+    '.bs-top{font-size:.76rem;color:var(--ink-2);margin-top:2px}.bs-top .tn{font-weight:700;color:var(--muted)}.bs-hist{margin-top:4px;color:var(--ink)}',
     '.bs-ret{font-size:.78rem;color:var(--ink-2);padding:8px 0 10px;border-top:1px solid var(--line);line-height:1.7}.bs-ret b{color:var(--navy)}',
     '.hs-next{font-size:.8rem;margin-top:3px;color:var(--ink)}.hs-dir{font-size:.7rem;color:var(--muted);margin-top:2px;word-break:break-all}'
   ].join('\n');
@@ -131,8 +132,15 @@
     if (o) {
       out += '<section class="bs-sec" id="bs-org"><h2>지금 일하는 봇 <small>' + (o.bots || []).length + '개</small></h2>' +
         '<p class="why">역할은 볼트 99 봇/인사/일카드에서 한 줄씩. 옛 봇 일은 아래처럼 넘어갔어요.</p>' +
-        (o.bots || []).map(function (b) { return '<div class="bs-row bs-org"><span class="bs-dot d-run"></span><div class="bs-tx"><div class="bs-t1"><span class="tt">' + esc(b.name) + '</span></div><div class="bs-t2"><span>' + esc(b.role) + '</span></div></div></div>'; }).join('') +
-        '<div class="bs-ret" id="bs-retired">' + (o.retired || []).map(function (r) { return '<div>' + esc(r.old) + ' — ' + esc(r.how) + ' → <b>' + esc(r.to) + '</b></div>'; }).join('') + '</div></section>';
+        (o.bots || []).map(function (b) {
+          var cnt = b.open == null ? '' : '<div class="bs-t2"><span>진행 ' + b.running + '</span><span>남은 일 ' + b.open + '</span><span class="mi">끝 ' + b.done + '</span></div>';
+          var top = (b.top || []).map(function (x) { return '<div class="bs-top"><span class="tn">' + esc(x.t) + '</span> ' + esc(x.title) + (x.due ? ' <span class="mi">' + esc(root.HJBots.md(x.due)) + '</span>' : '') + '</div>'; }).join('');
+          return '<div class="bs-row bs-org" data-bot="' + esc(b.key) + '"><span class="bs-dot d-run"></span><div class="bs-tx"><div class="bs-t1"><span class="tt">' + esc(b.name) + '</span>' + (b.rank ? '<span class="tn">' + esc(b.rank) + '</span>' : '') + '</div><div class="bs-t2"><span>' + esc(b.role) + '</span></div>' + cnt + top + '</div></div>';
+        }).join('') +
+        '<div class="bs-ret" id="bs-retired">' + (o.retired || []).map(function (r) { return '<div>' + esc(r.old) + ' — ' + esc(r.how) + ' → <b>' + esc(r.to) + '</b></div>'; }).join('') +
+        (o.history || []).map(function (x) { return '<div class="bs-hist">' + esc(root.HJBots.md(x.date)) + ' ' + esc(x.from) + ' → ' + esc(x.to) + (x.items && x.items.length ? ' (' + esc(x.items.join(' · ')) + ')' : '') + (x.now && x.now !== x.to ? ' → 지금 <b>' + esc(x.now) + '</b>' : '') + '</div>'; }).join('') + '</div></section>';
+      if ((o.chart || []).length) out += '<section class="bs-sec" id="bs-chart"><h2>조직도·직급 <small>볼트 99 봇/인사</small></h2><p class="why">조직도_인사규정에서 자동으로 읽어요. 승진은 2주 연속 상위일 때.</p>' +
+        o.chart.map(function (c) { return '<div class="bs-row"><div class="bs-tx"><div class="bs-t1"><span class="tn">' + esc(c.rank) + '</span><span class="tt">' + esc(c.who) + '</span></div>' + (c.what ? '<div class="bs-t2"><span>' + esc(c.what) + '</span></div>' : '') + '</div></div>'; }).join('') + '</section>';
     }
     if (h && (h.items || []).length) {
       var all = !!view.open['bs-ho'], items = all ? h.items : h.items.slice(0, 6);
