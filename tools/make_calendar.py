@@ -290,6 +290,9 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
               'area': ex.get('area') or (task_t[ref]['area'] if ref in task_t else '기타'),
               'bot': task_t[ref]['bot'] if ref in task_t else '', 'src': origin, 'source': src_note,
               'yujin': [], 'check': ex.get('check', ''), '_mk': ex.get('mkind', '')}
+        # 현황판이 정본: 현황판에서 끝난 T번호(완료·취소)는 일정총괄·통합 자료가 「할 일·열림」이어도 끝난 일로(목록·오늘 할 일에서 빠지고 완료 기록에만)
+        if ref in task_t and is_done(task_t[ref]['status']) and not is_done(ev['status']):
+            ev['status'] = task_t[ref]['status']
         if ex.get('end'):
             ev['end'] = norm_date(ex['end'], year)
         if not ev.get('end'):

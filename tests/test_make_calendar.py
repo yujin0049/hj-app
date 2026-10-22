@@ -282,3 +282,30 @@ class Range(Base):
         e = [x for x in cal['events'] if x['t'] == 'T901' and x['src'].startswith('sheet')]
         self.assertEqual(e[0].get('end'), '2026-11-04')
         self.assertFalse([x for x in cal['events'] if x['t'] == 'T902'])
+
+
+class DoneHide(unittest.TestCase):
+    """현황판에서 끝난 T번호(완료·취소)는 일정총괄·통합 자료가 「할 일·열림」이어도 끝난 일로(목록·오늘 할 일에서 빠지고 완료 기록에만). 예: T048 10.22. 15:05"""
+    def test_done_on_sheet_closes_other_sources(self):
+        mc = make_calendar
+        raw = mc.parse_tasks(mc.read_table(os.path.join(FX, 'raw_업무.json')), 2026)
+        for x in raw:
+            if x['t'] == 'T002':
+                x['status'] = '완료'
+        extra = json.load(open(os.path.join(FX, 'extra.json'), encoding='utf-8'))
+        master, _, mn, mw = mc.load_master(os.path.join(FX, '일정총괄.json'), 2026)
+        iev, itd, _ = mc.load_ingest(os.path.join(FX, 'ingest'))
+        iev = list(iev or []) + [{'_origin': 'ingest', '_todo': False, 'title': '남은 서류 보내기', 'date': '2026-11-20', 'ref': 'T002', 'lane': 'yujin',
+                                  'area': '', 'kind': '할 일', '_rep': False, 'source': '통합일정', 'status': '열림'}]
+        cal, st, _, _ = mc.build(raw, extra, '2026-10-21', 2026, master, iev, itd, mn, mw, None)
+        evs = [e for e in cal['events'] if e.get('t') == 'T002']
+        self.assertTrue(evs)
+        for e in evs:
+            self.assertTrue(mc.is_done(e['status']), e)
+
+    def test_allow_words(self):
+        for w in ('사무국', '온나라', '여행사'):
+            self.assertIn(w, hjpii.ALLOW)
+        sur = '황'  # 성 한 글자+호칭 → 호칭만
+        self.assertEqual(hjpii.scrub('참석 원장님·' + sur + '교수님', set())[0], '참석 원장님·교수님')
+        self.assertEqual(hjpii.scrub('학과장교수님', set())[0], '학과장교수님')
