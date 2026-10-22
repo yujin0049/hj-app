@@ -433,11 +433,13 @@
     return Promise.all([
       getJson('public-pack.json').catch(function () { return null; }),
       getJson('dorm.json').catch(function () { return null; }),
-      getJson('data/card_overrides.json').catch(function () { return null; })
+      getJson('data/card_overrides.json').catch(function () { return null; }),
+      getJson('data/ojnt_headcount.json').catch(function () { return null; })
     ]).then(function (r) {
       var pack = isPack(r[0]) ? r[0] : { appTitle: '행정 업무 연습장', packVersion: '', corrections: [], catalogs: {}, entities: {} };
       if (r[1]) pack.entities.dorm = r[1];
       applyOverrides(pack, r[2]);
+      if (window.APDorm && APDorm.applyHeadcount) APDorm.applyHeadcount(pack, r[3]);
       return pack;
     });
   }

@@ -216,6 +216,7 @@
         memo: dormSeed.roomMemo, genderSplitStatus: dormSeed.genderSplitStatus
       });
       h += '<section class="card"><h2>기숙사 현황판</h2><div class="statgrid"><div><b>' + dormSum.traineePlan + '</b><span>연수생 인원</span></div><div><b>' + dormSum.teachers + '</b><span>강사</span></div><div><b>' + dormSum.emptyRooms + '</b><span>빈방</span></div><div><b>' + (dormSum.needsConfirm ? '확인' : api.won(dormSum.fee).replace('원', '')) + '</b><span>' + (dormSum.needsConfirm ? '기숙사비 확인 필요' : '기숙사비(원)') + '</span></div></div>';
+      if (dormSeed.ojntHeadcount) h += '<p class="item-meta">OJNT ' + dormSeed.ojntHeadcount + '명(출석부 기준)' + (dormSeed.ojntExcluded ? ' · 이번 인원 아님 ' + dormSeed.ojntExcluded + '명' : '') + '</p>';
       if (dormSum.needsConfirm) h += '<p><span class="badge warn">확인 필요</span> 계산한 기숙사비가 예산의 확정액과 달라요.</p>';
       if (dormSum.genderNeedsConfirm) h += '<p><span class="badge warn">확인 필요</span> ' + api.esc(dormSeed.genderSplitNote || '미확정 인원의 성별 구성은 확인 필요예요.') + '</p>';
       if (dormSum.reservedRooms) h += '<p class="muted">여자 강사 전용 ' + dormSum.reservedRooms + '실은 연수생 빈방에서 빼요.</p>';

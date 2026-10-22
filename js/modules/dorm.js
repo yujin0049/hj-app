@@ -69,6 +69,8 @@
       '<div><b>' + sum.emptyRooms + '</b><span>빈방</span></div></div>' +
       '<p class="item-meta">입소 ' + sum.traineesIn + '명' + (sum.namedUpcoming ? ' · 이름 있는 예정 ' + sum.namedUpcoming + '명' : '') +
       ' · 미확정 ' + sum.unconfirmed + '명' + (sum.reservedRooms ? ' · 여자 강사 전용 ' + sum.reservedRooms + '실' : '') + '</p>' +
+      (seed.ojntHeadcount ? '<p class="item-meta">OJNT ' + seed.ojntHeadcount + '명(' + api.esc(seed.ojntBasis || '출석부 기준') + ')' + (seed.ojntExcluded ? ' · 이번 인원 아님 ' + seed.ojntExcluded + '명' : '') + '</p>' : '') +
+      (seed.headcountNote ? '<p class="muted">' + api.esc(seed.headcountNote) + '</p>' : '') +
       (sum.genderNeedsConfirm ? '<p><span class="badge warn">확인 필요</span> ' + api.esc(seed.genderSplitNote || '미확정 인원의 성별 구성은 확인 필요예요.') + '</p>' : '') +
       '<p class="item-meta">강사는 다솜관. 계획서 인원에는 넣지 않아요. 생활관비는 본인 부담이라 기숙사비에서 빠져요.</p>' +
       '<p><b>기숙사비</b> ' + won(sum.fee) + (sum.needsConfirm ? ' <span class="badge warn">확인 필요</span>' : ' <span class="badge ok">확정액과 같음</span>') + '</p>' +
@@ -147,7 +149,7 @@
   }
 
   function waiting(api, state, rows, mode, seed) {
-    var list = rows.filter(function (row) { return APDorm.isPerson(row) && !APDorm.keyOf(row); });
+    var list = rows.filter(function (row) { return APDorm.isPerson(row) && !APDorm.keyOf(row) && !APDorm.excluded(row); });
     var title = mode === 'plan' ? '배정 필요' : '배정 대기';
     var h = '<div class="wait" data-wait="1"><div class="wt">' + title + ' <b>' + list.length + '명</b></div>';
     h += mode === 'plan' ? '<span class="badge">겨울방학 이동 계획</span>' : '<span class="badge warn">' + api.esc(seed.deadlineNote || '마감 11.5.(목)') + '</span>';
