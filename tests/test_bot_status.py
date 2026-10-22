@@ -23,10 +23,30 @@ class DataFile(unittest.TestCase):
         self.assertIn('현황판', self.d['source'])
         for k in ('read_at', 'built_at', 'built_iso', 'columns', 'counts', 'tasks'):
             self.assertIn(k, self.d)
-        allowed = {'t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'yujin_guess', 'risk'}
+        allowed = {'t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'yujin_guess', 'risk', 'bot_was'}
         for t in self.d['tasks']:
             self.assertLessEqual(set(t), allowed)
             self.assertIn(t['state'], ('진행', '대기(유진님 몫)', '막힘', '끝'))
+
+    def test_org_handover(self):
+        # 유진님 10.22. 16:58 「왜 웹사이트에는 인수인계가 안되어있노」: 봇 3개+클로드, 옛 봇 → 인수 봇, 인수인계 항목
+        o = self.d.get('org')
+        if not o:
+            self.skipTest('org 없음(옛 자료)')
+        keys = [b['key'] for b in o['bots']]
+        self.assertEqual(keys, ['대장', '문서봇', '춘식이', '클로드'])
+        to = {r['to'] for r in o['retired']}
+        self.assertLessEqual(to, {'대장', '문서봇', '춘식이'})
+        old = {r['old'] for r in o['retired']}
+        for t in self.d['tasks']:
+            self.assertNotIn(t['bot'], old, t['t'])
+        h = self.d.get('handover')
+        if h:
+            self.assertTrue(h['items'])
+            blob = json.dumps(h, ensure_ascii=False)
+            self.assertNotIn('한성진', blob)
+            for x in h['items']:
+                self.assertLessEqual(len(x['summary']), 110)
 
     def test_no_pii_shapes(self):
         for path, s in hjpii.walk_strings(self.d):

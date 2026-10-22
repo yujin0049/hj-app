@@ -72,7 +72,7 @@ test('오래된 자료 경고(3시간)', () => {
 test('실제 data/bot_status.json 모양: 4가지 상태만, 사람 칸 없음', () => {
   const d = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'bot_status.json'), 'utf8'));
   assert.ok(d.tasks.length > 0);
-  const keys = new Set(['t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'yujin_guess', 'risk']);
+  const keys = new Set(['t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'yujin_guess', 'risk', 'bot_was']);
   for (const t of d.tasks) {
     assert.ok(B.STATES.includes(t.state), t.t + ' ' + t.state);
     assert.ok(['현황판', '추정', '묶음', ''].includes(t.yujin_src), t.t + ' yujin_src');

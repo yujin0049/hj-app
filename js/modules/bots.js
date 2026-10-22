@@ -1,4 +1,4 @@
-/* 봇 작업 현황 (#/bots): 지금 도는 일을 한 줄씩. 정본은 인수인계봇 현황판 시트 「업무」 탭.
+/* 봇 작업 현황 (#/bots): 지금 도는 일을 한 줄씩. 정본은 현황판 시트 「업무」 탭.
    자료 data/bot_status.json 은 99 봇/스크립트/bot_status_build.py 가 만들고(손으로 안 옮김), 이 화면은 읽기만 해요.
    한 줄: 색 점(상태) · T번호 · 짧은 제목 · 맡은 봇 · 진행률 · 검증 · 마감 · 마지막 갱신. 맨 위: 유진님이 해야 할 것 · 마감 임박 · 감사 위험.
    사람 이름·연락처는 파일에 없어요(봇 이름·T번호·업무 이름만). 출처: 유진님 10.21. 20:15 「응 그거 해봐. 행정업무 연습장에 하면 될듯」. */
@@ -79,6 +79,7 @@
     '.hs-meta{font-size:.74rem;color:var(--ink-2);margin-top:3px;display:flex;flex-wrap:wrap;gap:2px 8px}.hs-meta .late{color:#F04452;font-weight:700}.hs-meta .today,.hs-meta .soon{color:#E67700;font-weight:700}',
     '.hs-meta .yu{color:#9A5B00;font-weight:700}.hs-meta .od{color:var(--muted)}',
     '.hs-steps{margin-top:4px;font-size:.72rem;line-height:1.6}.hs-steps i{font-style:normal;display:inline-block;margin-right:6px;color:#B0B8C1}.hs-steps i.ok{color:#03B26C;font-weight:700}',
+    '.bs-ret{font-size:.78rem;color:var(--ink-2);padding:8px 0 10px;border-top:1px solid var(--line);line-height:1.7}.bs-ret b{color:var(--navy)}',
     '.hs-next{font-size:.8rem;margin-top:3px;color:var(--ink)}.hs-dir{font-size:.7rem;color:var(--muted);margin-top:2px;word-break:break-all}'
   ].join('\n');
   function style() {
@@ -108,7 +109,7 @@
     return '<div class="bs-row" data-t="' + esc(t.t) + '" data-state="' + esc(t.state) + '">' +
       '<span class="bs-dot d-' + B.DOT[t.state] + '" title="' + esc(t.state) + '"></span>' +
       '<div class="bs-tx"><div class="bs-t1"><span class="tn">' + esc(t.t) + '</span><span class="tt">' + esc(t.title) + '</span></div>' +
-      '<div class="bs-t2"><span>' + esc(t.bot || '담당 봇 미기재') + '</span>' +
+      '<div class="bs-t2"><span>' + esc(t.bot || '담당 봇 미기재') + (t.bot_was ? ' <i class="mi" title="인수인계로 바뀐 담당">← ' + esc(t.bot_was) + '</i>' : '') + '</span>' +
       '<span class="mi">' + esc(B.SHORT[t.state]) + (t.raw && t.raw !== t.state ? ' · ' + esc(t.raw) : '') + '</span>' +
       '<span class="' + (pr === '미기재' ? 'na' : '') + '">진행률 ' + esc(pr) + '</span>' +
       '<span class="' + (vf === '미기재' ? 'na' : '') + '">검증 ' + esc(vf === '미기재' ? vf : vf.replace(/^점검 /, '')) + '</span>' +
@@ -121,6 +122,26 @@
     return '<section class="bs-sec ' + cls + '" id="' + id + '"><h2>' + esc(title) + ' <small>' + list.length + '개</small></h2><p class="why">' + esc(why) + '</p>' +
       shown.map(function (t) { return row(B, esc, t, today, opt); }).join('') +
       (list.length > limit ? '<button class="bs-more" type="button" data-more="' + id + '">' + (all ? '접기' : (list.length - limit) + '개 더 보기') + '</button>' : '') + '</section>';
+  }
+  /* 봇 조직(일카드) · 옛 봇 인수인계 · 오늘 인수인계 결과(업무방식 정본) — 자료는 bot_status_build.py 가 볼트에서 뽑음 */
+  function orgSection(esc) {
+    var o = data.org, h = data.handover;
+    if (!o && !h) return '';
+    var out = '';
+    if (o) {
+      out += '<section class="bs-sec" id="bs-org"><h2>지금 일하는 봇 <small>' + (o.bots || []).length + '개</small></h2>' +
+        '<p class="why">역할은 볼트 99 봇/인사/일카드에서 한 줄씩. 옛 봇 일은 아래처럼 넘어갔어요.</p>' +
+        (o.bots || []).map(function (b) { return '<div class="bs-row bs-org"><span class="bs-dot d-run"></span><div class="bs-tx"><div class="bs-t1"><span class="tt">' + esc(b.name) + '</span></div><div class="bs-t2"><span>' + esc(b.role) + '</span></div></div></div>'; }).join('') +
+        '<div class="bs-ret" id="bs-retired">' + (o.retired || []).map(function (r) { return '<div>' + esc(r.old) + ' — ' + esc(r.how) + ' → <b>' + esc(r.to) + '</b></div>'; }).join('') + '</div></section>';
+    }
+    if (h && (h.items || []).length) {
+      var all = !!view.open['bs-ho'], items = all ? h.items : h.items.slice(0, 6);
+      out += '<section class="bs-sec" id="bs-ho"><h2>인수인계 <small>' + h.items.length + '개 · ' + esc(fmtAt(h.saved_at)) + '</small></h2>' +
+        '<p class="why">전임자 업무방식 정본의 항목 제목과 한 줄 요약만 보여요. 원문: ' + esc(h.doc) + '</p>' +
+        items.map(function (x) { return '<div class="bs-row"><div class="bs-tx"><div class="bs-t1"><span class="tt">' + esc(x.title) + '</span>' + (x.n ? '<span class="tn">' + x.n + '줄</span>' : '') + '</div>' + (x.summary ? '<div class="bs-t2"><span>' + esc(x.summary) + '</span></div>' : '') + '</div></div>'; }).join('') +
+        (h.items.length > 6 ? '<button class="bs-more" type="button" data-more="bs-ho">' + (all ? '접기' : (h.items.length - 6) + '개 더 보기') + '</button>' : '') + '</section>';
+    }
+    return out;
   }
   function paint(el, api) {
     var B = root.HJBots, esc = api.esc, today = B.todayKST();
@@ -142,6 +163,7 @@
       '<div class="bs-head"><h1>봇 작업 현황</h1><p id="bs-stamp">현황판 ' + esc(fmtAt(data.read_at)) + ' 읽음 (한국 시간)</p></div>' +
       (st.warn ? '<div class="bs-stale" id="bs-stale">⚠ ' + esc(st.why) + '. 보이는 내용이 현황판과 다를 수 있어요.</div>' : '') +
       '<div class="bs-kpi" id="bs-kpi">' + kpi + '</div>' +
+      orgSection(esc) +
       scoreSection(esc, today) +
       section(B, esc, 'bs-yu', 'yu', '유진님이 해야 할 것', '확정 ' + ys.sure + '개(현황판 「유진님 몫」 칸 값, 진한 꼬리표)를 먼저, 그다음 ' + ysSmall.slice(1) + '개(테두리 꼬리표 「추정」 = 칸이 비어 봇이 짐작). 각 묶음 안은 마감 가까운 것부터.', sec.yujin, today, { yu: 1 }, 5) +
       section(B, esc, 'bs-soon', '', '마감 임박', '마감 3일 이내(D-3)와 이미 지난 것.', sec.soon, today, {}, 5) +
@@ -150,7 +172,7 @@
       '<p class="why">' + (view.state ? '위 숫자를 한 번 더 누르면 전체로 돌아가요.' : '끝난 일은 빼고 보여요. 「끝」 숫자를 누르면 끝난 일만.') + '</p>' +
       '<div class="bs-flt"><select id="bs-bot" aria-label="맡은 봇">' + botOpts + '</select><input id="bs-q" type="search" placeholder="T번호·낱말" value="' + esc(view.q) + '" aria-label="찾기"></div>' +
       list.map(function (t) { return row(B, esc, t, today, null); }).join('') + '</section>' +
-      '<p class="bs-foot">정본: ' + esc(data.source || '현황판') + '. 이 화면은 읽기만 해요. 고칠 땐 현황판(인수인계봇)에서.<br>' +
+      '<p class="bs-foot">정본: ' + esc(data.source || '현황판') + '. 이 화면은 읽기만 해요. 고칠 땐 현황판(대장)에서.<br>' +
       (cols.progress ? '' : '진행률 칸이 현황판에 아직 없어 「미기재」로 보여요. ') + (cols.verified ? '' : '검증 칸도 아직 없어 「미기재」예요. ') +
       '갱신: ' + esc(data.refresh || '') + '.<br>왜 이렇게: 유진님이 휴대폰 한 화면에서 「내가 할 일」과 「급한 일」부터 보게, 정본 하나(현황판)만 읽어 손으로 옮긴 틀린 값이 안 생기게 했어요.</p>';
     el.querySelectorAll('[data-st]').forEach(function (b) {
