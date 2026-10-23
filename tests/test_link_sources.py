@@ -24,7 +24,10 @@ def run(extra=('--keep-excerpt',)):
     out = tempfile.mktemp(suffix='.json')
     rc = L.main(['--vault', VAULT, '--pack', os.path.join(FIX, 'pack.json'),
                  '--out', out, '--today', '2026-10-21 10:00'] + list(extra))
-    data = json.load(open(out, encoding='utf-8')) if os.path.exists(out) else None
+    data = None
+    if os.path.exists(out):
+        with open(out, encoding='utf-8') as fh:
+            data = json.load(fh)
     return rc, data, out
 
 
@@ -32,6 +35,9 @@ class T(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.rc, cls.d, cls.out = run()
+        if cls.d is None:   # 261023: data None 이면 원인(검사기 경로)을 바로 보이게
+            raise AssertionError('sources.json 안 써짐 rc=%s · pii_check.py 경로=%s (HJ_PII_DIR 확인)'
+                                 % (cls.rc, os.path.join(L.PII_DIR, 'pii_check.py')))
         cls.c = cls.d['cards']
 
     def test_pii_gate_passes(self):

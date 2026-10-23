@@ -14,9 +14,21 @@ def read(*p):
     return open(os.path.join(ROOT, *p), encoding='utf-8').read()
 
 
+class PublicTakedown(unittest.TestCase):
+    # 261023 유진님 「적용」: 업무 현황(99건·대기 45건)은 공개 사이트에서 내림 → 저장소(=공개 Pages)에 다시 올리지 않는다
+    def test_not_shipped(self):
+        self.assertFalse(os.path.exists(os.path.join(ROOT, 'data', 'bot_status.json')))
+
+
+# 자료 파일 모양 시험: 저장소 밖에서 만든 파일을 HJ_BOT_STATUS 로 주면 그대로 검사(공개 저장소엔 없음)
+BOT_STATUS = os.environ.get('HJ_BOT_STATUS') or os.path.join(ROOT, 'data', 'bot_status.json')
+
+
+@unittest.skipUnless(os.path.exists(BOT_STATUS), 'bot_status.json 공개 저장소에서 내림(261023) · HJ_BOT_STATUS 로 검사')
 class DataFile(unittest.TestCase):
     def setUp(self):
-        self.d = json.loads(read('data', 'bot_status.json'))
+        with open(BOT_STATUS, encoding='utf-8') as fh:
+            self.d = json.load(fh)
 
     def test_shape(self):
         self.assertEqual(self.d['version'], 1)
