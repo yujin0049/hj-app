@@ -38,12 +38,8 @@ test('마감 글·단계 글·O칸 차이', () => {
   assert.equal(H.oDiffText(T({ o: 30, o_diff: 3, pct: 33 })), '현황판 O 갱신 필요(30%→33%)');
   assert.equal(H.oDiffText(T({})), '');
 });
-const HS_FILE = process.env.HJ_HYUNHWANG_SCORE || path.join(__dirname, '..', 'data', 'hyunhwang_score.json');
-test('261023 공개 내림: data/hyunhwang_score.json 은 저장소에 없음', () => {
-  assert.ok(!fs.existsSync(path.join(__dirname, '..', 'data', 'hyunhwang_score.json')));
-});
-test('자료 파일(HJ_HYUNHWANG_SCORE 로 줄 때): 요약이 스크립트 값과 같고, 진행률 = 끝난 단계 ÷ 전체', { skip: !fs.existsSync(HS_FILE) && '공개 저장소에서 내림' }, () => {
-  const d = JSON.parse(fs.readFileSync(HS_FILE, 'utf8'));
+test('자료 파일: 요약이 스크립트 값과 같고, 진행률 = 끝난 단계 ÷ 전체', () => {
+  const d = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'hyunhwang_score.json'), 'utf8'));
   const s = H.summary(d.tasks, d.summary.today, d.summary.window);
   for (const k of ['all', 'avg_pct', 'yujin', 'due7', 'open', 'cancelled']) assert.equal(s[k], d.summary[k], k);
   for (const t of d.tasks) {

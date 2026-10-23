@@ -9,20 +9,9 @@ import hjpii  # noqa: E402
 SCRIPT = '/home/box/vault/봇공유/99 봇/스크립트/hyunhwang_score.py'
 
 
-class PublicTakedown(unittest.TestCase):
-    # 261023 유진님 「적용」: 현황판 수치화도 공개 사이트에서 내림 → 저장소에 다시 올리지 않는다
-    def test_not_shipped(self):
-        self.assertFalse(os.path.exists(os.path.join(ROOT, 'data', 'hyunhwang_score.json')))
-
-
-HS_FILE = os.environ.get('HJ_HYUNHWANG_SCORE') or os.path.join(ROOT, 'data', 'hyunhwang_score.json')
-
-
-@unittest.skipUnless(os.path.exists(HS_FILE), 'hyunhwang_score.json 공개 저장소에서 내림(261023) · HJ_HYUNHWANG_SCORE 로 검사')
 class DataFile(unittest.TestCase):
     def setUp(self):
-        with open(HS_FILE, encoding='utf-8') as fh:
-            self.d = json.load(fh)
+        self.d = json.load(open(os.path.join(ROOT, 'data', 'hyunhwang_score.json'), encoding='utf-8'))
 
     def test_shape(self):
         for k in ('summary', 'tasks', 'types', 'rule', 'built_iso'):

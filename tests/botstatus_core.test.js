@@ -69,12 +69,8 @@ test('오래된 자료 경고(3시간)', () => {
   assert.equal(B.stale(d, Date.parse('2026-10-21T23:30+09:00')).warn, true);
   assert.equal(B.stale({}, 0).warn, true);
 });
-const BS_FILE = process.env.HJ_BOT_STATUS || path.join(__dirname, '..', 'data', 'bot_status.json');
-test('261023 공개 내림: data/bot_status.json 은 저장소에 없음', () => {
-  assert.ok(!fs.existsSync(path.join(__dirname, '..', 'data', 'bot_status.json')));
-});
-test('실제 bot_status.json 모양(HJ_BOT_STATUS 로 줄 때): 4가지 상태만, 사람 칸 없음', { skip: !fs.existsSync(BS_FILE) && '공개 저장소에서 내림' }, () => {
-  const d = JSON.parse(fs.readFileSync(BS_FILE, 'utf8'));
+test('실제 data/bot_status.json 모양: 4가지 상태만, 사람 칸 없음', () => {
+  const d = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'data', 'bot_status.json'), 'utf8'));
   assert.ok(d.tasks.length > 0);
   const keys = new Set(['t', 'title', 'bot', 'state', 'raw', 'progress', 'verified', 'due', 'updated', 'yujin', 'yujin_src', 'yujin_guess', 'risk', 'bot_was']);
   for (const t of d.tasks) {

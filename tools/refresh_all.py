@@ -61,10 +61,10 @@ def main(argv=None):
     # 261023 클로드 검토: 기준선(data/pii_baseline.json) 대비 새 의심·실명이 있으면 종료코드 1 → 커밋·배포 중단
     pb = subprocess.run([sys.executable, os.path.join(ROOT, 'pii_baseline.py')], cwd=ROOT)
     if pb.returncode:
-        steps['기준선 검사'] = {'ok': False, 'why': '새 의심 또는 실명(pii_baseline.py rc=%d)' % pb.returncode}
+        steps['새 의심 검사'] = {'ok': False, 'why': '새 의심 또는 실명(pii_baseline.py rc=%d)' % pb.returncode}
         finish(meta_p, old, now, steps, False, 1)
         return 1
-    steps['기준선 검사'] = {'ok': True}
+    steps['새 의심 검사'] = {'ok': True}
     finish(meta_p, old, now, steps, ok, 0)
     if a.no_worker:
         return 0 if ok else 1
