@@ -66,6 +66,7 @@
       menuBtn('schedule', '남은 일정', '날짜, 담당, 완료, 시트 저장') +
       menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
       menuLink('https://silseupdong-3d.yujin06344.workers.dev', '교육원 3D', '항공정비 실습동 3D 모델 · 새 창') +
+      menuLink('trainer3d.html', '훈련기 3D', '공군 05-009 전시 훈련기 · 돌려보고 부품 익히기 · 새 창') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
       menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
       menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +

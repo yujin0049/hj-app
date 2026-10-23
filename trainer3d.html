@@ -1,0 +1,452 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#eef4fb">
+<meta name="robots" content="noindex, nofollow">
+<title>공군 05-009 훈련기</title>
+<style>
+  /* 전시 훈련기 3D: 격납고 하늘 위에 유리 UI 패널 */
+  :root{
+    --sky-top:#cfe3ff; --sky-bot:#eef4fb;
+    --fg:#14202e; --muted:#5a6676;
+    --panel:rgba(255,255,255,.82); --panel-brd:rgba(20,40,70,.14);
+    --accent:#d7262f; --accent-ink:#fff;
+    --chip:rgba(20,40,70,.07);
+    --shadow:0 10px 34px rgba(16,34,60,.18);
+    color-scheme:light;
+  }
+  @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+    --sky-top:#0b1220; --sky-bot:#141c2b;
+    --fg:#e8eef7; --muted:#9aa7b8;
+    --panel:rgba(20,27,40,.80); --panel-brd:rgba(150,180,220,.16);
+    --accent:#ff4d57; --accent-ink:#14060a;
+    --chip:rgba(150,180,220,.10);
+    --shadow:0 12px 40px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }}
+  :root[data-theme="dark"]{
+    --sky-top:#0b1220; --sky-bot:#141c2b;
+    --fg:#e8eef7; --muted:#9aa7b8;
+    --panel:rgba(20,27,40,.80); --panel-brd:rgba(150,180,220,.16);
+    --accent:#ff4d57; --accent-ink:#14060a;
+    --chip:rgba(150,180,220,.10);
+    --shadow:0 12px 40px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;font-family:"Pretendard","Noto Sans KR",system-ui,sans-serif;color:var(--fg);overflow:hidden}
+  img{max-width:100%}
+  #app{position:fixed;inset:0;background:radial-gradient(130% 110% at 50% 12%,var(--sky-top),var(--sky-bot));overflow:hidden}
+  canvas{display:block;touch-action:none}
+
+  .disp{font-family:"Black Han Sans","Pretendard","Noto Sans KR",sans-serif;font-weight:400;letter-spacing:.01em}
+  .mono{font-family:"Spline Sans Mono",ui-monospace,monospace}
+
+  #top{position:fixed;left:0;top:env(safe-area-inset-top,0);
+    padding:max(14px,env(safe-area-inset-top,0)) max(16px,env(safe-area-inset-left,0)) 0;
+    display:flex;align-items:flex-start;gap:12px;pointer-events:none;z-index:5}
+  #top .tt{pointer-events:auto}
+  #top h1{margin:0;font-size:clamp(20px,5vw,30px);line-height:1}
+  #top h1 .num{color:var(--accent)}
+  #top p{margin:4px 0 0;font-size:12.5px;color:var(--muted);max-width:46ch}
+  #top a.home{display:inline-block;margin-top:7px;font-size:12px;font-weight:700;color:var(--accent);text-decoration:none}
+  .badge{display:inline-block;margin-left:8px;font-size:11px;letter-spacing:.12em;
+    background:var(--accent);color:var(--accent-ink);padding:3px 9px;border-radius:999px;font-weight:700;vertical-align:middle}
+
+  #theme{position:fixed;top:max(14px,env(safe-area-inset-top,0));right:max(14px,env(safe-area-inset-right,0));
+    z-index:6;width:40px;height:40px;border-radius:12px;border:1px solid var(--panel-brd);
+    background:var(--panel);color:var(--fg);backdrop-filter:blur(10px);box-shadow:var(--shadow);
+    cursor:pointer;font-size:17px;display:grid;place-items:center}
+
+  #bar{position:fixed;left:50%;transform:translateX(-50%);
+    bottom:calc(14px + env(safe-area-inset-bottom,0));z-index:6;
+    display:flex;gap:8px;flex-wrap:wrap;justify-content:center;max-width:94vw;
+    background:var(--panel);border:1px solid var(--panel-brd);backdrop-filter:blur(12px);
+    padding:8px;border-radius:16px;box-shadow:var(--shadow)}
+  .btn{font-family:inherit;font-size:13px;font-weight:600;color:var(--fg);cursor:pointer;
+    background:var(--chip);border:1px solid transparent;border-radius:10px;padding:9px 13px;white-space:nowrap}
+  .btn:hover{border-color:var(--panel-brd)}
+  .btn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+  .btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+  #info{position:fixed;z-index:6;left:max(16px,env(safe-area-inset-left,0));
+    bottom:calc(74px + env(safe-area-inset-bottom,0));width:min(340px,86vw);
+    background:var(--panel);border:1px solid var(--panel-brd);backdrop-filter:blur(12px);
+    border-radius:16px;box-shadow:var(--shadow);padding:15px 16px}
+  #info .ey{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);font-weight:700}
+  #info h2{margin:3px 0 2px;font-size:19px}
+  #info .en{font-size:12px;color:var(--muted);margin-bottom:9px}
+  #info p.d{margin:0 0 10px;font-size:13.5px;line-height:1.6;color:var(--fg)}
+  #info dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:12.5px}
+  #info dt{color:var(--muted)}
+  #info dd{margin:0;text-align:right}
+  #info .note{margin-top:10px;font-size:11.5px;color:var(--muted);line-height:1.5;border-top:1px dashed var(--panel-brd);padding-top:8px}
+  #info .back{margin-top:11px;font-size:12px;color:var(--accent);background:none;border:0;padding:0;cursor:pointer;font-weight:700;font-family:inherit}
+  .hint{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom,0));
+    z-index:4;font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--panel-brd);
+    padding:6px 12px;border-radius:999px;backdrop-filter:blur(8px);pointer-events:none;transition:opacity .5s}
+
+  #labels{position:fixed;inset:0;z-index:3;pointer-events:none}
+  .lab{position:absolute;transform:translate(-50%,-50%);font-size:11px;font-weight:700;
+    background:var(--accent);color:var(--accent-ink);padding:3px 7px;border-radius:7px;white-space:nowrap;box-shadow:var(--shadow)}
+
+  @media (max-width:560px){
+    #info{width:min(340px,calc(100vw - 32px))}
+    #top p{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto}}
+</style>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Spline+Sans+Mono:wght@500&display=swap">
+</head>
+<body>
+<div id="app"><div id="labels"></div></div>
+
+<div id="top"><div class="tt">
+  <h1 class="disp">공군 <span class="num">05-009</span> 훈련기<span class="badge">교육용 3D</span></h1>
+  <p>국립창원대학교 남해캠퍼스 경남항공교육원 전시 기체 · 드래그로 돌려보고 부품을 눌러 보세요</p>
+  <a class="home" href="./#/more">‹ 연습장으로</a>
+</div></div>
+
+<button id="theme" title="테마 전환" aria-label="테마 전환">◐</button>
+<div class="hint" id="hint">드래그 회전 · 휠/핀치 확대 · 부품 클릭</div>
+<div id="info"></div>
+
+<div id="bar">
+  <button class="btn" id="spin" aria-pressed="false">프로펠러</button>
+  <button class="btn" id="auto" aria-pressed="false">자동 회전</button>
+  <button class="btn" id="names" aria-pressed="false">부품 이름</button>
+  <button class="btn" id="reset">시점 초기화</button>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+  "use strict";
+  var THREE = window.THREE;
+  if(!THREE){ document.getElementById('info').innerHTML='<p class="d">3D 엔진을 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.</p>'; return; }
+  var app = document.getElementById('app');
+  var labelLayer = document.getElementById('labels');
+
+  function stored(){ try{ return localStorage.getItem('t3d-theme'); }catch(e){ return null; } }
+  function sysDark(){ return window.matchMedia && matchMedia('(prefers-color-scheme:dark)').matches; }
+  function isDark(){ var a=document.documentElement.getAttribute('data-theme'); if(a) return a==='dark'; return sysDark(); }
+  (function(){ var s=stored(); if(s) document.documentElement.setAttribute('data-theme',s); })();
+
+  var THEMES = {
+    light:{ hemiSky:0xbfd6ff, hemiGround:0x6f7884, hemiI:0.95, dir:0xffffff, dirI:1.05, amb:0x4a5663, ambI:0.35, ground:0x9aa3ad, ring:0xb9c2cc },
+    dark:{  hemiSky:0x33405e, hemiGround:0x0e121b, hemiI:0.75, dir:0xb7ccff, dirI:0.85, amb:0x25303f, ambI:0.30, ground:0x1b2130, ring:0x2c3444 }
+  };
+
+  var scene = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, 1, 0.1, 200);
+  var renderer = new THREE.WebGLRenderer({antialias:true, alpha:true});
+  renderer.setPixelRatio(Math.min(devicePixelRatio||1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  app.appendChild(renderer.domElement);
+
+  var hemi = new THREE.HemisphereLight(0xffffff,0x444444,1);
+  var dir = new THREE.DirectionalLight(0xffffff,1);
+  dir.position.set(6,9,5); dir.castShadow=true;
+  dir.shadow.mapSize.set(1024,1024);
+  dir.shadow.camera.left=-8; dir.shadow.camera.right=8; dir.shadow.camera.top=8; dir.shadow.camera.bottom=-8;
+  dir.shadow.camera.near=1; dir.shadow.camera.far=40; dir.shadow.bias=-0.0004;
+  var amb = new THREE.AmbientLight(0xffffff,0.3);
+  scene.add(hemi,dir,amb);
+
+  var groundMat = new THREE.MeshStandardMaterial({color:0x9aa3ad, roughness:0.95, metalness:0});
+  var ground = new THREE.Mesh(new THREE.CircleGeometry(7.4,64), groundMat);
+  ground.rotation.x=-Math.PI/2; ground.position.y=-1.12; ground.receiveShadow=true; scene.add(ground);
+  var ringMat = new THREE.MeshStandardMaterial({color:0xb9c2cc, roughness:1, metalness:0});
+  var ring = new THREE.Mesh(new THREE.RingGeometry(4.9,5.05,64), ringMat);
+  ring.rotation.x=-Math.PI/2; ring.position.y=-1.11; scene.add(ring);
+
+  function applyTheme(){
+    var t = isDark()? THEMES.dark : THEMES.light;
+    hemi.color.setHex(t.hemiSky); hemi.groundColor.setHex(t.hemiGround); hemi.intensity=t.hemiI;
+    dir.color.setHex(t.dir); dir.intensity=t.dirI;
+    amb.color.setHex(t.amb); amb.intensity=t.ambI;
+    groundMat.color.setHex(t.ground); ringMat.color.setHex(t.ring);
+  }
+  applyTheme();
+  if(window.matchMedia){ try{ matchMedia('(prefers-color-scheme:dark)').addEventListener('change',applyTheme); }catch(e){} }
+
+  var MAT = {
+    white: new THREE.MeshStandardMaterial({color:0xf2f4f7, roughness:0.55, metalness:0.08}),
+    red:   new THREE.MeshStandardMaterial({color:0xd7262f, roughness:0.45, metalness:0.1}),
+    dark:  new THREE.MeshStandardMaterial({color:0x2a2f38, roughness:0.6, metalness:0.2}),
+    strut: new THREE.MeshStandardMaterial({color:0x8a929c, roughness:0.5, metalness:0.5}),
+    tyre:  new THREE.MeshStandardMaterial({color:0x1b1d22, roughness:0.85, metalness:0}),
+    glass: new THREE.MeshStandardMaterial({color:0x213246, roughness:0.08, metalness:0.2, transparent:true, opacity:0.55})
+  };
+
+  var aircraft = new THREE.Group();
+  scene.add(aircraft);
+  var partMeshes = {};
+  function reg(mesh, part){ mesh.castShadow=true; if(part){ mesh.userData.part=part; (partMeshes[part]=partMeshes[part]||[]).push(mesh);} return mesh; }
+  function cylZ(rTop,rBot,len,z,mat,part,seg){
+    var m=new THREE.Mesh(new THREE.CylinderGeometry(rTop,rBot,len,seg||26), mat);
+    m.rotation.x=Math.PI/2; m.position.z=z; aircraft.add(m); return reg(m,part);
+  }
+  function coneZ(r,len,z,mat,part){
+    var m=new THREE.Mesh(new THREE.ConeGeometry(r,len,26), mat);
+    m.rotation.x=Math.PI/2; m.position.z=z; aircraft.add(m); return reg(m,part);
+  }
+  function box(w,h,d,x,y,z,mat,part){
+    var m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d), mat);
+    m.position.set(x,y,z); aircraft.add(m); return reg(m,part);
+  }
+
+  cylZ(0.60,0.58,1.25,0.28,MAT.white,'fuselage');
+  cylZ(0.58,0.16,2.25,-1.35,MAT.white,'fuselage');
+  coneZ(0.16,0.3,-2.6,MAT.white,'fuselage');
+  cylZ(0.58,0.50,0.70,1.20,MAT.white,'engine');
+  cylZ(0.50,0.42,0.55,1.78,MAT.red,'engine');
+  coneZ(0.30,0.34,2.22,MAT.red,'prop');
+
+  (function(){
+    var c=new THREE.Mesh(new THREE.SphereGeometry(0.6,24,18), MAT.glass);
+    c.scale.set(0.55,0.42,0.95); c.position.set(0,0.42,0.72); aircraft.add(c); reg(c,'canopy');
+    var f=new THREE.Mesh(new THREE.TorusGeometry(0.33,0.025,8,24), MAT.dark);
+    f.rotation.y=Math.PI/2; f.position.set(0,0.4,0.72); f.scale.set(1,1.15,1); aircraft.add(f); reg(f,'canopy');
+  })();
+
+  box(5.3,0.14,1.18,0,-0.2,0.5,MAT.white,'wing');
+  box(0.55,0.17,1.02,2.62,-0.2,0.5,MAT.red,'wing');
+  box(0.55,0.17,1.02,-2.62,-0.2,0.5,MAT.red,'wing');
+
+  box(2.15,0.11,0.6,0,0.04,-2.25,MAT.white,'hstab');
+  box(0.12,0.98,0.78,0,0.5,-2.3,MAT.white,'vstab');
+  box(0.14,0.34,0.5,0,0.88,-2.42,MAT.red,'vstab');
+
+  function strut(x,z,topY,botY){
+    var len=topY-botY;
+    var m=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.05,len,12), MAT.strut);
+    m.position.set(x,(topY+botY)/2,z); aircraft.add(m); reg(m,'gear');
+  }
+  function wheel(x,z,y){
+    var w=new THREE.Mesh(new THREE.CylinderGeometry(0.22,0.22,0.15,20), MAT.tyre);
+    w.rotation.z=Math.PI/2; w.position.set(x,y,z); aircraft.add(w); reg(w,'gear');
+    var h=new THREE.Mesh(new THREE.CylinderGeometry(0.08,0.08,0.17,12), MAT.strut);
+    h.rotation.z=Math.PI/2; h.position.set(x,y,z); aircraft.add(h); reg(h,'gear');
+  }
+  strut(0,1.28,-0.5,-0.95); wheel(0,1.28,-1.02);
+  strut(0.8,0.5,-0.28,-0.9); wheel(0.8,0.5,-0.98);
+  strut(-0.8,0.5,-0.28,-0.9); wheel(-0.8,0.5,-0.98);
+
+  var propGroup = new THREE.Group(); propGroup.position.set(0,0,2.08); aircraft.add(propGroup);
+  (function(){
+    for(var i=0;i<2;i++){
+      var b=new THREE.Mesh(new THREE.BoxGeometry(0.14,1.7,0.05), MAT.dark);
+      var tip=new THREE.Mesh(new THREE.BoxGeometry(0.15,0.2,0.055), MAT.red); tip.position.y=0.78;
+      var holder=new THREE.Group(); holder.rotation.z=i*Math.PI; holder.add(b); holder.add(tip);
+      propGroup.add(holder); reg(b,'prop'); reg(tip,'prop');
+    }
+  })();
+
+  function texFromCanvas(w,h,draw){
+    var cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+    var ctx=cv.getContext('2d'); draw(ctx,w,h);
+    var t=new THREE.CanvasTexture(cv); t.anisotropy=4; t.needsUpdate=true; return t;
+  }
+  function taegeuk(ctx,cx,cy,r){
+    ctx.save();
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI*2); ctx.fillStyle='#cd2e3a'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx,cy,r,0,Math.PI); ctx.fillStyle='#0047a0'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx-r/2,cy,r/2,0,Math.PI*2); ctx.fillStyle='#cd2e3a'; ctx.fill();
+    ctx.beginPath(); ctx.arc(cx+r/2,cy,r/2,0,Math.PI*2); ctx.fillStyle='#0047a0'; ctx.fill();
+    ctx.restore();
+  }
+  var sideTex = texFromCanvas(256,128,function(ctx,w,h){
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='#17202c'; ctx.font='bold 70px "Pretendard", sans-serif';
+    ctx.textBaseline='middle'; ctx.fillText('공군',12,h/2);
+    taegeuk(ctx,196,h/2,34);
+  });
+  function sideDecal(sign){
+    var t=sideTex;
+    if(sign<0){ t=sideTex.clone(); t.wrapS=THREE.RepeatWrapping; t.repeat.x=-1; t.offset.x=1; t.needsUpdate=true; }
+    var m=new THREE.Mesh(new THREE.PlaneGeometry(1.25,0.62), new THREE.MeshBasicMaterial({map:t,transparent:true}));
+    m.position.set(sign*0.605,0.12,0.25); m.rotation.y=sign*Math.PI/2; aircraft.add(m); reg(m,'fuselage');
+  }
+  sideDecal(1); sideDecal(-1);
+  var tailTex = texFromCanvas(256,96,function(ctx,w,h){
+    ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='#17202c'; ctx.textBaseline='middle'; ctx.textAlign='center';
+    ctx.font='700 34px "Spline Sans Mono", monospace'; ctx.fillText('ROKAF',w/2,26);
+    ctx.font='700 56px "Spline Sans Mono", monospace'; ctx.fillText('05-009',w/2,66);
+  });
+  function tailDecal(sign){
+    var t=tailTex;
+    if(sign<0){ t=tailTex.clone(); t.wrapS=THREE.RepeatWrapping; t.repeat.x=-1; t.offset.x=1; t.needsUpdate=true; }
+    var m=new THREE.Mesh(new THREE.PlaneGeometry(0.64,0.24), new THREE.MeshBasicMaterial({map:t,transparent:true}));
+    m.position.set(sign*0.065,0.62,-2.26); m.rotation.y=sign*Math.PI/2; aircraft.add(m); reg(m,'vstab');
+  }
+  tailDecal(1); tailDecal(-1);
+
+  var PARTS = {
+    prop:{ey:'01',kr:'프로펠러',en:'Propeller / Spinner',d:'엔진 회전력을 추력으로 바꾸는 날개. 이 기체는 2엽 프로펠러에 빨간 스피너를 달고 있어요.',fn:'추력 발생'},
+    engine:{ey:'02',kr:'엔진부·카울',en:'Engine cowling',d:'프로펠러를 돌리는 엔진을 덮는 부분. 앞쪽 빨간 카울 안에 엔진이 들어가요.',fn:'엔진 보호·냉각'},
+    canopy:{ey:'03',kr:'조종석 캐노피',en:'Canopy',d:'조종사가 앉는 조종석을 덮는 투명 덮개. 넓은 시야를 확보해요.',fn:'시야 확보·조종석 보호'},
+    wing:{ey:'04',kr:'주날개 (저익)',en:'Main wing (low-wing)',d:'양력을 만드는 핵심 구조. 동체 아래쪽에 붙은 저익 배치이고, 날개 끝은 빨강으로 칠해 눈에 잘 띄게 했어요.',fn:'양력 발생'},
+    vstab:{ey:'05',kr:'수직꼬리날개',en:'Vertical stabilizer',d:'기수가 좌우로 흔들리지 않게 잡아주는 꼬리날개. 꼭대기와 옆면에 공군 표식(05-009)이 있어요.',fn:'방향 안정'},
+    hstab:{ey:'06',kr:'수평꼬리날개',en:'Horizontal stabilizer',d:'기체가 위아래로 흔들리지 않게 잡아주는 꼬리날개.',fn:'세로 안정'},
+    fuselage:{ey:'07',kr:'동체',en:'Fuselage',d:'조종석·엔진·날개를 잇는 몸체. 옆면에 「공군」과 태극 마크가 그려져 있어요.',fn:'구조 연결·탑재'},
+    gear:{ey:'08',kr:'착륙장치',en:'Landing gear',d:'앞바퀴 1개와 주바퀴 2개로 된 고정식 삼륜(트라이시클) 방식. 접지 않고 늘 내려와 있어요.',fn:'지상 이동·착륙'}
+  };
+  var ANCHOR = {
+    prop:[0,0,2.5], engine:[0,0,1.8], canopy:[0,0.62,0.72], wing:[1.7,-0.2,0.5],
+    vstab:[0,1.0,-2.35], hstab:[0.95,0.05,-2.25], fuselage:[0,0.1,-0.5], gear:[0.8,-0.98,0.5]
+  };
+
+  var labelEls={};
+  Object.keys(PARTS).forEach(function(k){
+    var el=document.createElement('div'); el.className='lab'; el.textContent=PARTS[k].kr; el.style.display='none';
+    labelLayer.appendChild(el); labelEls[k]=el;
+  });
+  var showNames=false;
+
+  var infoEl=document.getElementById('info');
+  function overview(){
+    infoEl.innerHTML=''+
+      '<div class="ey">전시 기체</div>'+
+      '<h2 class="disp">공군 훈련기</h2>'+
+      '<div class="en">ROKAF trainer · 05-009</div>'+
+      '<p class="d">국립창원대학교 남해캠퍼스 경남항공교육원에 전시된 항공정비 교육용 기체예요. 부품을 눌러 이름과 역할을 볼 수 있어요.</p>'+
+      '<dl>'+
+      '<dt>형식</dt><dd>저익 단발 프로펠러기</dd>'+
+      '<dt>착륙장치</dt><dd>고정식 삼륜</dd>'+
+      '<dt>표식</dt><dd>공군 · 태극 · 05-009</dd>'+
+      '<dt>전시 위치</dt><dd>용접실습동 앞 (CWNU 10)</dd>'+
+      '<dt>용도</dt><dd>교육·전시</dd>'+
+      '</dl>'+
+      '<div class="note">길이·날개폭·엔진 등 세부 제원은 실측·자료 확인 필요(미확인). 사진에서 보이는 특징만 반영한 교육용 모형이에요.</div>';
+  }
+  function detail(k){
+    var p=PARTS[k];
+    infoEl.innerHTML=''+
+      '<div class="ey">부품 '+p.ey+'</div>'+
+      '<h2 class="disp">'+p.kr+'</h2>'+
+      '<div class="en">'+p.en+'</div>'+
+      '<p class="d">'+p.d+'</p>'+
+      '<dl><dt>주요 역할</dt><dd>'+p.fn+'</dd></dl>'+
+      '<button class="back" id="backBtn">‹ 전체 정보로</button>';
+    document.getElementById('backBtn').onclick=function(){ select(null); };
+  }
+  overview();
+
+  var selected=null;
+  function setEmissive(key,on){
+    (partMeshes[key]||[]).forEach(function(m){
+      if(m.material && m.material.emissive){ m.material.emissive.setHex(on?0x4a0b0d:0x000000); }
+    });
+  }
+  function select(key){
+    if(selected) setEmissive(selected,false);
+    selected=key;
+    if(key){ setEmissive(key,true); detail(key); } else { overview(); }
+  }
+
+  var target=new THREE.Vector3(0,0.1,0);
+  var cam={theta:-0.72, phi:1.12, r:9.2};
+  var HOME={theta:-0.72, phi:1.12, r:9.2};
+  function place(){
+    var sp=Math.sin(cam.phi), x=target.x+cam.r*sp*Math.sin(cam.theta),
+        y=target.y+cam.r*Math.cos(cam.phi), z=target.z+cam.r*sp*Math.cos(cam.theta);
+    camera.position.set(x,y,z); camera.lookAt(target);
+  }
+  place();
+
+  var dragging=false, moved=0, lx=0, ly=0, pinchD=0;
+  var cvs=renderer.domElement;
+  function down(x,y){ dragging=true; moved=0; lx=x; ly=y; }
+  function move(x,y){
+    if(!dragging) return;
+    var dx=x-lx, dy=y-ly; lx=x; ly=y; moved+=Math.abs(dx)+Math.abs(dy);
+    cam.theta-=dx*0.006; cam.phi-=dy*0.006;
+    cam.phi=Math.max(0.2,Math.min(1.5,cam.phi)); place(); hideHint();
+  }
+  function up(){ dragging=false; }
+  cvs.addEventListener('mousedown',function(e){ down(e.clientX,e.clientY); });
+  window.addEventListener('mousemove',function(e){ move(e.clientX,e.clientY); });
+  window.addEventListener('mouseup',function(){ up(); });
+  cvs.addEventListener('wheel',function(e){ e.preventDefault(); cam.r*=(1+e.deltaY*0.0012); cam.r=Math.max(4.5,Math.min(16,cam.r)); place(); hideHint(); },{passive:false});
+  cvs.addEventListener('touchstart',function(e){
+    if(e.touches.length===1){ down(e.touches[0].clientX,e.touches[0].clientY); }
+    else if(e.touches.length===2){ pinchD=dist2(e); }
+  },{passive:true});
+  cvs.addEventListener('touchmove',function(e){
+    if(e.touches.length===1){ move(e.touches[0].clientX,e.touches[0].clientY); }
+    else if(e.touches.length===2){ var d=dist2(e); if(pinchD){ cam.r*=(pinchD/d); cam.r=Math.max(4.5,Math.min(16,cam.r)); place(); } pinchD=d; hideHint(); }
+  },{passive:true});
+  cvs.addEventListener('touchend',function(e){ if(e.touches.length===0){ up(); if(moved<8) pickAt(lx,ly);} pinchD=0; });
+  function dist2(e){ var a=e.touches[0],b=e.touches[1]; return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); }
+
+  var ray=new THREE.Raycaster(), ndc=new THREE.Vector2();
+  cvs.addEventListener('click',function(e){ if(moved<8) pickAt(e.clientX,e.clientY); });
+  function pickAt(px,py){
+    var rect=cvs.getBoundingClientRect();
+    ndc.x=((px-rect.left)/rect.width)*2-1; ndc.y=-((py-rect.top)/rect.height)*2+1;
+    ray.setFromCamera(ndc,camera);
+    var hits=ray.intersectObjects(aircraft.children,true);
+    for(var i=0;i<hits.length;i++){ var p=hits[i].object.userData.part; if(p){ select(p); return; } }
+    select(null);
+  }
+
+  var spinOn=false, autoOn=false;
+  function toggle(btn,get,set){ btn.addEventListener('click',function(){ set(!get()); btn.setAttribute('aria-pressed',get()?'true':'false'); }); }
+  toggle(document.getElementById('spin'),function(){return spinOn;},function(v){spinOn=v;});
+  toggle(document.getElementById('auto'),function(){return autoOn;},function(v){autoOn=v;});
+  var bNames=document.getElementById('names');
+  bNames.addEventListener('click',function(){
+    showNames=!showNames; bNames.setAttribute('aria-pressed',showNames?'true':'false');
+    Object.keys(labelEls).forEach(function(k){ labelEls[k].style.display=showNames?'block':'none'; });
+  });
+  document.getElementById('reset').addEventListener('click',function(){
+    cam.theta=HOME.theta; cam.phi=HOME.phi; cam.r=HOME.r; place(); select(null);
+  });
+  document.getElementById('theme').addEventListener('click',function(){
+    var next=isDark()?'light':'dark';
+    document.documentElement.setAttribute('data-theme',next);
+    try{ localStorage.setItem('t3d-theme',next); }catch(e){}
+    applyTheme();
+  });
+
+  var hintEl=document.getElementById('hint'); setTimeout(hideHint,5000);
+  function hideHint(){ if(hintEl){ hintEl.style.opacity='0'; } }
+
+  function resize(){
+    var w=app.clientWidth, h=app.clientHeight;
+    renderer.setSize(w,h,false); camera.aspect=w/h; camera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize',resize); resize();
+
+  var v3=new THREE.Vector3();
+  function updateLabels(){
+    if(!showNames) return;
+    var w=app.clientWidth, h=app.clientHeight;
+    Object.keys(ANCHOR).forEach(function(k){
+      var a=ANCHOR[k]; v3.set(a[0],a[1],a[2]); aircraft.localToWorld(v3); v3.project(camera);
+      var el=labelEls[k];
+      if(v3.z>1){ el.style.display='none'; return; }
+      el.style.display='block';
+      el.style.left=((v3.x*0.5+0.5)*w)+'px';
+      el.style.top=((-v3.y*0.5+0.5)*h)+'px';
+    });
+  }
+  function tick(){
+    requestAnimationFrame(tick);
+    if(spinOn) propGroup.rotation.z-=0.35;
+    if(autoOn && !dragging){ cam.theta+=0.0022; place(); }
+    updateLabels();
+    renderer.render(scene,camera);
+  }
+  tick();
+})();
+</script>
+</body>
+</html>
