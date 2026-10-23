@@ -19,7 +19,10 @@ import argparse, datetime, hashlib, json, os, re, subprocess, sys, tempfile, url
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-PII_DIR = os.environ.get('HJ_PII_DIR') or '/home/box/vault/봇공유/99 봇/스크립트'   # 다른 PC: 환경변수 HJ_PII_DIR
+_PII_CANDS = [os.environ.get('HJ_PII_DIR') or '',
+              '/home/box/vault/봇공유/99 봇/스크립트',
+              '/home/box/obsidian_vault/봇공유/99 봇/스크립트']   # 다른 PC: 환경변수 HJ_PII_DIR
+PII_DIR = next((d for d in _PII_CANDS if d and os.path.isfile(os.path.join(d, 'pii_check.py'))), _PII_CANDS[1])
 LINK, CAND = 0.80, 0.45
 COLLECTIONS = ('regulations',)
 # 봇 메모·운영 노트는 원문이 아니다 → 건너뜀

@@ -393,7 +393,7 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
            'groups': GROUPS, 'rule': '날짜 정본 = 현황판. 같은 T번호의 다른 날짜는 「T번호 하위: 단계명」(대장 결정 261021)',
            'lanes': {'yujin': '유진님 할 일', 'prof': '교수님 일정', 'ref': '참고(유진님 일 아님)'},
            'prof_note': extra.get('prof_note', ''), 'events': events, 'checks': checks}
-    st = {'version': 1, 'source': '인수인계봇 현황판 시트 「업무」 탭',
+    st = {'version': 1, 'source': '춘식이 (현황판 시트 「업무」 탭)',
           'counts': {'tasks': len(tasks), 'yujin': sum(1 for t in tasks if t['yujin']),
                      'active': sum(1 for t in tasks if not is_done(t['status']))},
           'groups': GROUPS, 'tasks': tasks, 'others': others}

@@ -203,7 +203,7 @@
     if (data) { paint(el, api); return; }
     el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
     load().then(function (d) {
-      if (!d) { el.innerHTML = '<section class="card"><div class="bs-stale" id="bs-stale">⚠ 봇 작업 현황 자료(data/bot_status.json)를 불러오지 못했어요. 인터넷을 확인하고 새로고침해 주세요.</div></section>'; return; }
+      if (!d) { el.innerHTML = '<section class="card"><div class="bs-stale" id="bs-stale">봇 작업 현황은 공개 사이트에서 내렸어요(유진님 10.23.). 현황판 시트·볼트에서 보세요.</div></section>'; return; }
       paint(el, api);
     });
   }
