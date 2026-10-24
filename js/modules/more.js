@@ -59,6 +59,7 @@
     if (page === 'month') return month(el, api);
     if (page === 'plan') return plan(el, api);
     if (page === 'settings') return settings(el, api);
+    if (page === 'roadmap') return roadmap(el, api);
     el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p>' + (api.pack().packVersion ? '<p class="muted" id="pack-ver" style="font-size:.8rem;margin:4px 0 0">공부·규칙 자료판 ' + api.esc(api.pack().packVersion) + ' (public-pack.json)</p>' : '') + '</section>' +
       menuBtn('filefind', '파일 찾기', '낱말로 옵시디언·PC 파일 찾기, 내려받은 파일 정리') +
       menuBtn('news', '교육원 소식', '행사, 일정, 공지') +
@@ -79,6 +80,7 @@
       menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
       menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +
       menuBtn('plan', '사업 기획', '내년 준비 점검') +
+      menuBtn('roadmap', '로봇 로드맵', '내 로봇·3D 공부 단계') +
       menuBtn('records', '내 기록', '점수와 자주 틀린 규칙') +
       menuBtn('rules', '규칙 목록', '문장과 근거를 고칠 수 있어요') +
       menuBtn('month', '매달 할 일', '알림 문구 수정') +
@@ -296,6 +298,31 @@
     el.querySelector('#wipe').onclick = function () {
       if (confirm('이 기기에서 고친 내용과 점수를 모두 지울까요?')) api.resetAll();
     };
+  }
+
+  function roadmap(el, api) {
+    el.innerHTML = '<button class="linkish" id="back" type="button">← 더보기</button>' +
+      '<section class="card"><h1>로봇 로드맵 🚀</h1>' +
+      '<p class="muted">두근거릴 때 꺼내봐요. 불(만들기)+쇠(기계). 급하지 않게 한 단계씩.</p>' +
+      '<h2>사다리 (쉬운 것부터)</h2>' +
+      '<div class="scroll"><table class="plain"><tr><th>단계</th><th>할 것</th><th>도구(무료)</th></tr>' +
+      '<tr><td>0</td><td>전동팬 뜸/못뜸 계산기</td><td>Python</td></tr>' +
+      '<tr><td>1</td><td>3D에 물리 붙이기</td><td>three.js(훈련기 3D)</td></tr>' +
+      '<tr><td>2</td><td>본격 시뮬(디지털 트윈)</td><td>Gazebo·Webots</td></tr>' +
+      '<tr><td>3</td><td>실물 드론+로그</td><td>교육원 기체</td></tr>' +
+      '<tr><td>4</td><td>제어는 기성 펌웨어</td><td>ArduPilot·PX4</td></tr>' +
+      '<tr><td>5</td><td>CAD</td><td>Fusion 360(학생무료)</td></tr>' +
+      '<tr><td>6</td><td>에이전트 제어</td><td>ROS2+시뮬</td></tr>' +
+      '<tr><td>7</td><td>방제 드론→밭로봇</td><td>지역연계</td></tr>' +
+      '</table></div></section>' +
+      '<section class="card"><h2>심화: 시뮬에서 강화학습(RL)</h2>' +
+      '<p>장애물 코스 → 3D(Omniverse) → 물리(Newton) → 정책 훈련(Isaac Lab) → 검증(Isaac Sim) → 실물(Microduck).</p>' +
+      '<p class="muted">⚠ Isaac·Omniverse는 NVIDIA RTX GPU 필수 = Mac 불가(Windows/Linux+엔비디아). 쉬운 시작: Gymnasium+PyBullet.</p></section>' +
+      '<section class="card"><h2>지금 첫걸음</h2><p><b>0단계 전동팬 계산기</b> — 재밌고 물리·배터리 감이 잡혀요. 클로드가 같이 만들어 줘요.</p></section>' +
+      '<section class="card"><h2>주의</h2><ul>' +
+      '<li>모르는 1인 OS·에이전트를 업무 PC(개인정보!)에 깔지 말기. 여분·VM에서만.</li>' +
+      '<li>개인 프로젝트는 업무와 분리.</li></ul></section>';
+    el.querySelector('#back').onclick = function () { api.go('#/more'); };
   }
 
   ShellModules.more = { id: 'more', tab: '더보기', icon: icon, render: render };
