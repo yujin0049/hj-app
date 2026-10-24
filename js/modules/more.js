@@ -60,6 +60,7 @@
     if (page === 'plan') return plan(el, api);
     if (page === 'settings') return settings(el, api);
     if (page === 'roadmap') return roadmap(el, api);
+    if (page === 'orgmap') return orgmap(el, api);
     el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p></section>' +
       menuBtn('news', '교육원 소식', '행사, 일정, 공지') +
       menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
@@ -73,6 +74,7 @@
       menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +
       menuBtn('plan', '사업 기획', '내년 준비 점검') +
       menuBtn('roadmap', '로봇 로드맵', '내 로봇·3D 공부 단계') +
+      menuBtn('orgmap', '부서 안내', '학교 부서별 하는 일·누구한테 물을까') +
       menuBtn('records', '내 기록', '점수와 자주 틀린 규칙') +
       menuBtn('rules', '규칙 목록', '문장과 근거를 고칠 수 있어요') +
       menuBtn('month', '매달 할 일', '알림 문구 수정') +
@@ -314,6 +316,56 @@
       '<section class="card"><h2>주의</h2><ul>' +
       '<li>모르는 1인 OS·에이전트를 업무 PC(개인정보!)에 깔지 말기. 여분·VM에서만.</li>' +
       '<li>개인 프로젝트는 업무와 분리.</li></ul></section>';
+    el.querySelector('#back').onclick = function () { api.go('#/more'); };
+  }
+
+  function orgmap(el, api) {
+    function tbl(head, rows) {
+      return '<div class="scroll"><table class="plain"><tr>' + head.map(function (c) { return '<th>' + c + '</th>'; }).join('') + '</tr>' +
+        rows.map(function (r) { return '<tr>' + r.map(function (c) { return '<td>' + c + '</td>'; }).join('') + '</tr>'; }).join('') + '</table></div>';
+    }
+    el.innerHTML = '<button class="linkish" id="back" type="button">← 더보기</button>' +
+      '<section class="card"><h1>부서 안내</h1>' +
+      '<p class="muted">학교 부서별 하는 일, 누구한테 물을까. 이름은 빼고 직위·부서만. 통합 후 규정 바뀌는 중이라 「누가 결재하나」 먼저 확인.</p>' +
+      '<h2>힘의 지도 (한 줄)</h2>' +
+      '<p>결재 정점 = <b>부총장</b> · 사업 돈 = <b>글로컬센터</b> · 실무 관문 = <b>행정지원과</b>(돈·계약·시설)+<b>대학운영실</b>(학사) · 기준 = 창원 <b>총무과·재무과</b></p></section>' +
+      '<section class="card"><h2>남해 부서별</h2>' +
+      tbl(['부서', '하는 일'], [
+        ['부총장', '캠퍼스 총괄, 큰 문서 최종 결재'],
+        ['글로컬센터', '글로컬 돈·e나라도움·원인행위·지출결의. 교육원 지급의뢰 처리'],
+        ['대학운영실', '학사 관문(교무학사·학생·정보화)'],
+        ['행정지원과', '돈·계약 관문 — 예산·계약·결산·급여, 시설공사·안전, 기간제 채용'],
+        ['RISE(앵커)본부', '산업인력·관광·평생교육·유학생 프로그램(주무관 8)'],
+        ['경남항공교육원', '국토부 훈련기관. 학사보고·강사료·재료비. 직원 1명'],
+        ['생활관', 'OJNT 기숙사 입·퇴사, 생활관비']
+      ]) + '</section>' +
+      '<section class="card"><h2>창원 본교 (기준)</h2>' +
+      tbl(['부서', '정하는 것'], [
+        ['총무과', '위임전결·사무분장·인사 = 누가 결재하나'],
+        ['재무과', '예산 배정·이용전용·집행 조사·현금사고'],
+        ['시설과', '시설 공문'],
+        ['글로컬대학사업단', '학교 전체 글로컬비 중앙관리·승인 (남해 센터와 다름)']
+      ]) + '</section>' +
+      '<section class="card"><h2>글로컬센터 안 (직위별)</h2>' +
+      tbl(['직위', '담당'], [
+        ['센터장(교수)', '총괄·최종 결재'],
+        ['팀장(회계7급)', '행정 총책·예산편성·규정·위원회'],
+        ['주무관(예산)', '예산·e나라도움·서무 (돈·장부)'],
+        ['주무관(시설)', '시설공사·기자재·기간제 급여·세무'],
+        ['주무관(교육원)', '경남항공교육원 지원·방산 비교과 ← 내 자리'],
+        ['주무관(DN+·관광/국제/평생)', '해당 학과·프로그램·지역연계']
+      ]) + '</section>' +
+      '<section class="card"><h2>내 일별 — 누구한테</h2>' +
+      tbl(['일', '먼저', '그다음'], [
+        ['글로컬 지출', '글로컬 예산 주무관', '팀장→센터장→(큰 건)부총장'],
+        ['제반사항 제공', '글로컬센터 기안', '팀장→센터장→부총장'],
+        ['강사료', '2학기 글로컬센터장 / 1학기 행정지원과장', '대학운영실·행정지원과'],
+        ['OJNT 기숙사', '생활관', '관장(교수 겸보)'],
+        ['시설·안전', '행정지원과 시설팀', '창원 시설과']
+      ]) + '</section>' +
+      '<section class="card"><h2>조심</h2><ul>' +
+      '<li>행정지원과 바쁜 날 피하기: 매달 8~10·15~20·21일~말일, 특히 8·6월 말. 초순 첫 주에, 완성본+산출근거로, 1주 전.</li>' +
+      '<li>통합 후 규정 바뀜 → 「누가 결재하나」 먼저 확인, 확인한 답은 적어두고 다시 안 묻기.</li></ul></section>';
     el.querySelector('#back').onclick = function () { api.go('#/more'); };
   }
 
