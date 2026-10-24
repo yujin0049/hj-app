@@ -1,0 +1,232 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>경남항공교육원 모션 포스터</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@500;600;700&display=swap">
+<style>
+/* Layout: one 4:5 motion poster centered on a dark stage, series controls underneath — a presentation you page through. */
+:root{
+  --stage:#0d0e13; --blue:#3f53e3; --panel:#2a2c32; --ink:#eef0f6; --mute:#9aa0b8; --yellow:#f4d50b;
+  --display:"IBM Plex Sans KR","Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  color-scheme:dark;
+}
+html,body{height:100%}
+body{background:var(--stage);color:var(--ink);font-family:var(--display);overflow:hidden}
+.stage{height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  padding-block:12px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));box-sizing:border-box;background:var(--stage)}
+.poster{position:relative;width:min(100%,calc((100svh - 110px) * .8));aspect-ratio:4/5;max-width:100%;container-type:inline-size;
+  overflow:hidden;border-radius:4px;box-shadow:0 30px 80px -20px rgba(40,60,220,.45);background:var(--blue);touch-action:pan-y}
+canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.txt{position:absolute;left:8%;top:12.5%;width:66%;pointer-events:none}
+.brand{display:flex;align-items:center;gap:2.2cqw;font-weight:600;font-size:3.4cqw;letter-spacing:.02em}
+.brand svg{width:5.4cqw;height:5.4cqw;flex:none}
+h1{margin:3.2cqw 0 0;font-weight:600;font-size:7.6cqw;line-height:1.12;letter-spacing:-.02em;text-wrap:balance}
+.sub{margin-top:2.4cqw;font-size:3cqw;color:var(--mute);font-weight:500;letter-spacing:.01em}
+.term{position:absolute;right:4%;top:1.6%;width:44%;margin:0;font:400 1.55cqw/1.55 var(--mono);color:rgba(238,240,246,.7);white-space:pre;overflow:hidden}
+.term b{color:var(--yellow);font-weight:500}
+.foot{position:absolute;left:5%;right:5%;bottom:3.2%;display:flex;justify-content:space-between;gap:4cqw;font:500 2.1cqw/1.3 var(--mono);color:rgba(238,240,246,.82);letter-spacing:.04em}
+.txt>*{transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.poster.enter .txt>*{opacity:0;transform:translateY(1.6cqw)}
+.poster.enter .txt>:nth-child(2){transition-delay:.08s}
+.controls{display:flex;align-items:center;gap:10px;font:500 13px var(--mono);color:var(--mute)}
+.controls button{appearance:none;border:1px solid #2f3242;background:#171922;color:var(--ink);height:34px;min-width:34px;padding:0 12px;border-radius:17px;font:inherit;cursor:pointer}
+.controls button:hover{border-color:var(--blue)}
+.controls button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.count{min-width:64px;text-align:center;font-variant-numeric:tabular-nums;color:var(--ink)}
+.dots{display:flex;gap:6px}
+.dots i{width:22px;height:3px;border-radius:2px;background:#2f3242;overflow:hidden;position:relative}
+.dots i.on::after{content:"";position:absolute;inset:0;background:var(--yellow);transform-origin:left;animation:bar var(--dur,8s) linear forwards}
+.dots i.done{background:#6b7190}
+.paused .dots i.on::after{animation-play-state:paused}
+@keyframes bar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+:fullscreen .stage{background:#000}
+@media (prefers-reduced-motion:reduce){.txt>*{transition:none}}
+</style>
+
+<div class="stage" id="stage">
+  <div class="poster enter" id="poster" aria-live="polite">
+    <canvas id="cv" aria-hidden="true"></canvas>
+    <pre class="term" id="term"></pre>
+    <div class="txt">
+      <div class="brand">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="none" stroke="#eef0f6" stroke-width="1.4"/><path fill="#eef0f6" d="M18.6 6.2c.5-.5.4-1.2-.1-1.4-.5-.2-1 0-1.4.4l-2.6 2.6-6.3-1.7-1.2 1.2 5 2.9-2.6 2.6-2-.3-.9.9 2.4 1.3 1.3 2.4.9-.9-.3-2 2.6-2.6 2.9 5 1.2-1.2-1.7-6.3z"/></svg>
+        <span>경남항공교육원</span>
+      </div>
+      <h1 id="h1"></h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <div class="foot"><span>국립창원대학교 경남항공교육원</span><span id="fr"></span></div>
+  </div>
+  <div class="controls" id="controls">
+    <button id="prev" aria-label="이전 포스터">←</button>
+    <span class="count" id="count">01 / 03</span>
+    <button id="next" aria-label="다음 포스터">→</button>
+    <div class="dots" id="dots"></div>
+    <button id="play" aria-label="자동 넘김 멈춤">일시정지</button>
+    <button id="fs" aria-label="전체화면">전체화면</button>
+  </div>
+</div>
+
+<script>
+(()=>{
+const POSTERS=[
+ {shape:'plane',h:'Aviation<br>Training Center',sub:'국립창원대학교 경남항공교육원',fr:'AVIATION TRAINING CENTER',
+  term:['$ atc boot --campus changwon','> runway 1 clear','> <b>경남항공교육원</b> ready']},
+ {shape:'globe',h:'훈련운영기준',sub:'Training Specification',fr:'TRAINING SPECIFICATION',
+  term:['$ open 훈련운영기준.pdf','> sections loaded','> <b>spec verified</b>']},
+ {shape:'gear',h:'정비가 곧<br>비행입니다',sub:'항공정비 교육 · 경남항공교육원',fr:'MAINTENANCE · 2026',
+  term:['$ inspect --engine L,R','> torque check passed','> <b>cleared for takeoff</b>']}
+];
+const DUR=8000;
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const cv=document.getElementById('cv'),ctx=cv.getContext('2d');
+const poster=document.getElementById('poster');
+let W,H,cell,cols,rows,cells=[],noise=[],start=0,idx=0,timer=null,playing=true,typeTimer=null;
+const P={x0:.04,x1:.80,y0:.09,y1:.88};
+const rnd=Math.random;
+
+/* ---- shape masks (drawn white on black, sampled per grid cell) ---- */
+function plane(c,w,h){
+  c.save();c.translate(w*.52,h*.66);c.rotate(0.72);const s=w*.0072;c.scale(s,s);
+  c.beginPath();c.ellipse(0,0,4.6,44,0,0,Math.PI*2);c.fill();
+  const wing=m=>{c.beginPath();c.moveTo(m*3,-8);c.lineTo(m*48,13);c.lineTo(m*48,19);c.lineTo(m*3,7);c.fill();
+    c.beginPath();c.moveTo(m*2,29);c.lineTo(m*17,38);c.lineTo(m*17,42);c.lineTo(m*2,37);c.fill();
+    c.beginPath();c.ellipse(m*19,2,3.4,8,0,0,Math.PI*2);c.fill();};
+  wing(1);wing(-1);c.restore();
+}
+function globe(c,w,h){
+  const x=w*.58,y=h*.60,r=w*.36;c.lineWidth=w*.032;c.strokeStyle='#fff';
+  c.beginPath();c.arc(x,y,r,0,Math.PI*2);c.stroke();
+  c.lineWidth=w*.022;
+  for(const k of [.33,.72]){c.beginPath();c.ellipse(x,y,r*k,r,0,0,Math.PI*2);c.stroke();}
+  for(const k of [-.55,0,.55]){const yy=y+r*k,hw=Math.sqrt(1-k*k)*r;c.beginPath();c.moveTo(x-hw,yy);c.lineTo(x+hw,yy);c.stroke();}
+  c.lineWidth=w*.03;c.beginPath();c.arc(x+r*.1,y+r*.35,r*1.25,-2.5,-1.25);c.stroke();
+}
+function gear(c,w,h){
+  const x=w*.56,y=h*.64,R=w*.36,r=w*.29,n=12;c.beginPath();
+  for(let i=0;i<n*2;i++){const a=i/(n*2)*Math.PI*2,rr=i%2?r:R,da=Math.PI/(n*2)*.62;
+    c.lineTo(x+Math.cos(a-da)*rr,y+Math.sin(a-da)*rr);c.lineTo(x+Math.cos(a+da)*rr,y+Math.sin(a+da)*rr);}
+  c.closePath();c.fill();c.globalCompositeOperation='destination-out';
+  c.beginPath();c.arc(x,y,w*.15,0,Math.PI*2);c.fill();c.globalCompositeOperation='source-over';
+  const star=(sx,sy,s)=>{c.beginPath();for(let i=0;i<10;i++){const a=-Math.PI/2+i*Math.PI/5,rr=i%2?s*.42:s;c.lineTo(sx+Math.cos(a)*rr,sy+Math.sin(a)*rr);}c.fill();};
+  star(w*.20,h*.40,w*.055);star(w*.30,h*.33,w*.045);star(w*.40,h*.28,w*.04);
+}
+const SHAPES={plane,globe,gear};
+
+/* ---- glyphs ---- */
+const FAM={fill:['dot','dot','dot','dia','sq'],edge:['ring','plus','dia','d0','d1','ring'],halo:['pt','pt','ring','plus']};
+const ALL=['dot','ring','dia','plus','sq','d0','d1','pt','dA','dP'];
+function glyph(t,x,y,s,col){
+  ctx.fillStyle=col;ctx.strokeStyle=col;
+  switch(t){
+    case'dot':ctx.beginPath();ctx.arc(x,y,s*.44,0,6.283);ctx.fill();break;
+    case'pt':ctx.beginPath();ctx.arc(x,y,s*.13,0,6.283);ctx.fill();break;
+    case'ring':ctx.lineWidth=s*.1;ctx.beginPath();ctx.arc(x,y,s*.36,0,6.283);ctx.stroke();break;
+    case'dia':ctx.beginPath();ctx.moveTo(x,y-s*.46);ctx.lineTo(x+s*.46,y);ctx.lineTo(x,y+s*.46);ctx.lineTo(x-s*.46,y);ctx.fill();break;
+    case'sq':ctx.fillRect(x-s*.34,y-s*.34,s*.68,s*.68);break;
+    case'plus':ctx.fillRect(x-s*.38,y-s*.08,s*.76,s*.16);ctx.fillRect(x-s*.08,y-s*.38,s*.16,s*.76);break;
+    default:ctx.font=`500 ${s*.72}px "IBM Plex Mono",monospace`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText({d0:'0',d1:'1',dA:'A',dP:'%'}[t],x,y+s*.04);
+  }
+}
+const pick=a=>a[(rnd()*a.length)|0];
+
+function build(){
+  const dpr=Math.min(devicePixelRatio||1,2),r=poster.getBoundingClientRect();
+  W=Math.round(r.width*dpr);H=Math.round(r.height*dpr);cv.width=W;cv.height=H;
+  cols=34;cell=W/cols;rows=Math.ceil(H/cell);
+  const k=4,m=document.createElement('canvas');m.width=cols*k;m.height=rows*k;
+  const mc=m.getContext('2d');mc.fillStyle='#fff';SHAPES[POSTERS[idx].shape](mc,m.width,rows*k*(H/(rows*cell))/1);
+  const d=mc.getImageData(0,0,m.width,m.height).data,inside=new Uint8Array(cols*rows);
+  for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+    let a=0;for(const [dx,dy] of [[1,1],[3,1],[1,3],[3,3],[2,2]])a+=d[((j*k+dy)*m.width+i*k+dx)*4];
+    inside[j*cols+i]=a>500?1:0;}
+  const at=(i,j)=>i<0||j<0||i>=cols||j>=rows?0:inside[j*cols+i];
+  cells=[];
+  for(let j=0;j<rows;j++)for(let i=0;i<cols;i++){
+    const ins=at(i,j);let edge=0,near=0;
+    if(ins){edge=!(at(i-1,j)&&at(i+1,j)&&at(i,j-1)&&at(i,j+1));}
+    else{for(let dy=-2;dy<=2&&!near;dy++)for(let dx=-2;dx<=2;dx++)if(at(i+dx,j+dy)){near=1;break;}}
+    let fam=null;
+    if(ins)fam=edge?(rnd()<.55?'edge':'fill'):(rnd()<.16?'edge':'fill');
+    else if(near&&rnd()<.42)fam='halo';
+    else if(j>rows*.72&&rnd()<.16)fam='halo';
+    else if(rnd()<.018)fam='halo';
+    if(!fam)continue;
+    const x=(i+.5)*cell,y=(j+.5)*cell;
+    if((y<H*.40&&x<W*.76&&y>H*.10)||y>H*.925||(y<H*.10&&x>W*.5))continue; // keep headline, terminal, footer clear
+    const sweep=(i/cols)*.45+((rows-j)/rows)*.55;
+    cells.push({x,y,fam,t:pick(FAM[fam]),y0:y,
+      yel:(fam!=='halo'&&rnd()<.045)||(fam==='halo'&&rnd()<.025),ph:rnd()*6,
+      t0:reduce?0:250+sweep*1700+rnd()*450,
+      inPanel:x>W*P.x0&&x<W*P.x1&&y>H*P.y0&&y<H*P.y1});
+  }
+  // side column of yellow ticks, as on a status rail
+  for(const f of [.16,.22,.28,.40,.47])cells.push({x:W*.885,y:H*f,fam:'tick',t:'sq',yel:true,ph:rnd()*6,t0:reduce?0:150+f*900,inPanel:false});
+  // grain frames
+  noise=[];const nw=Math.ceil(W/2),nh=Math.ceil(H/2);
+  for(let f=0;f<3;f++){const n=document.createElement('canvas');n.width=nw;n.height=nh;const nc=n.getContext('2d'),id=nc.createImageData(nw,nh),p=id.data;
+    for(let q=0;q<p.length;q+=4){const v=rnd();if(v<.5){p[q]=p[q+1]=p[q+2]=255;}p[q+3]=(v<.5?v:(v-.5))*95;}
+    nc.putImageData(id,0,0);noise.push(n);}
+}
+
+function frame(now){
+  const t=now-start;
+  ctx.fillStyle='#3f53e3';ctx.fillRect(0,0,W,H);
+  const g=ctx.createRadialGradient(W*.8,H*.2,0,W*.8,H*.2,W*.9);g.addColorStop(0,'rgba(120,140,255,.28)');g.addColorStop(1,'rgba(20,30,160,.18)');
+  ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#2a2c32';ctx.fillRect(W*P.x0,H*P.y0,W*(P.x1-P.x0),H*(P.y1-P.y0));
+  ctx.imageSmoothingEnabled=false;ctx.globalAlpha=.55;ctx.drawImage(noise[reduce?0:((now/90)|0)%3],0,0,W,H);ctx.globalAlpha=1;
+  for(const c of cells){
+    const dt=t-c.t0;if(dt<0)continue;
+    let ty=c.t,s=cell*.86,a=1;
+    if(dt<320){ty=pick(ALL);a=.55+dt/700;}
+    else if(!reduce&&c.fam!=='tick'&&rnd()<.0016)c.t=pick(FAM[c.fam]);
+    let col=c.inPanel?`rgba(222,225,236,${a})`:`rgba(245,247,255,${a})`;
+    if(c.fam==='halo')col=c.inPanel?`rgba(160,166,186,${a})`:`rgba(220,226,255,${.8*a})`;
+    if(c.yel&&dt>=320){const on=reduce||Math.sin(now/520+c.ph)>-.55;col=on?'#f4d50b':col;}
+    glyph(ty,c.x,c.y,s,col);
+  }
+  requestAnimationFrame(frame);
+}
+
+/* ---- text + series ---- */
+const $=id=>document.getElementById(id);
+const dots=$('dots');POSTERS.forEach(()=>dots.appendChild(document.createElement('i')));
+function typeTerm(lines){
+  clearTimeout(typeTimer);const el=$('term');const full=lines.join('\n');
+  if(reduce){el.innerHTML=full;return;}
+  const plain=full.replace(/<\/?b>/g,'');let n=0;
+  const step=()=>{n++;let out='',cnt=0,i=0;while(i<full.length&&cnt<n){if(full[i]==='<'){const e=full.indexOf('>',i);out+=full.slice(i,e+1);i=e+1;continue;}out+=full[i];i++;cnt++;}
+    if(full.slice(i).startsWith('</b>'))out+='</b>';else if(out.lastIndexOf('<b>')>out.lastIndexOf('</b>'))out+='</b>';
+    el.innerHTML=out+(n<plain.length?'▍':'');if(n<plain.length)typeTimer=setTimeout(step,28);};
+  step();
+}
+function show(i){
+  idx=(i+POSTERS.length)%POSTERS.length;const p=POSTERS[idx];
+  poster.classList.add('enter');
+  $('h1').innerHTML=p.h;$('sub').textContent=p.sub;$('fr').textContent=p.fr;
+  $('count').textContent=String(idx+1).padStart(2,'0')+' / '+String(POSTERS.length).padStart(2,'0');
+  [...dots.children].forEach((d,k)=>{d.className=k<idx?'done':'';});
+  void dots.offsetWidth;dots.children[idx].className='on';dots.style.setProperty('--dur',DUR+'ms');
+  build();start=performance.now();typeTerm(p.term);
+  setTimeout(()=>poster.classList.remove('enter'),reduce?0:900);
+  schedule();
+}
+function schedule(){clearTimeout(timer);if(playing)timer=setTimeout(()=>show(idx+1),DUR);}
+$('next').onclick=()=>show(idx+1);$('prev').onclick=()=>show(idx-1);
+$('play').onclick=()=>{playing=!playing;$('play').textContent=playing?'일시정지':'자동 재생';
+  $('play').setAttribute('aria-label',playing?'자동 넘김 멈춤':'자동 넘김 시작');$('stage').classList.toggle('paused',!playing);
+  if(playing)show(idx+1);else clearTimeout(timer);};
+$('fs').onclick=()=>{const s=$('stage');try{(document.fullscreenElement?document.exitFullscreen():s.requestFullscreen()).catch(()=>{});}catch(e){}};
+addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();show(idx+1);}if(e.key==='ArrowLeft')show(idx-1);});
+let sx=null;poster.addEventListener('pointerdown',e=>sx=e.clientX);
+poster.addEventListener('pointerup',e=>{if(sx==null)return;const dx=e.clientX-sx;sx=null;if(Math.abs(dx)>40)show(idx+(dx<0?1:-1));else show(idx+1);});
+let rz;addEventListener('resize',()=>{clearTimeout(rz);rz=setTimeout(()=>{const keep=performance.now()-start;build();start=performance.now()-Math.max(keep,4000);},150);});
+if(reduce){playing=false;$('play').textContent='자동 재생';$('stage').classList.add('paused');}
+show(0);requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>
