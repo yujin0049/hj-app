@@ -10,6 +10,7 @@
     if (parts[1] === 'rule' && parts[2]) return regView(el, api, parts[2]);
     if (parts[1] === 'must') return mustView(el, api);
     if (parts[1] === 'changelog') return changelogView(el, api);
+    if (parts[1] === 'week') return weekView(el, api);
     var days = daysOf(api);
     var done = doneMap(api);
     var nDone = days.filter(function (d) { return done[d.day]; }).length;
@@ -25,6 +26,22 @@
     h += '<section class="card cl-entry"><p class="kicker">변경이력 · 학습</p><h2>카드로 보는 연습장 변화</h2>' +
       '<p class="muted">필독·학생안내·3D·LMS·봇현황·기숙사·배포 — 표지를 넘기며 요지를 읽어요</p>' +
       '<button class="btn block" id="go-changelog" type="button">변경이력 카드 열기</button></section>';
+    /* P002: 주간 엔진 진입 */
+    var week = (api.weekEngine && api.weekEngine()) || { weekId: '', label: '', days: [], allWeeks: {} };
+    if (week.weekId) {
+      h += '<section class="card week-entry"><p class="kicker">이번 주 공부</p><h2>' + api.esc(week.label || week.weekId) + '</h2>' +
+        '<p class="muted">' + week.days.length + '일 · 주간 카드만 모아 보기</p>' +
+        '<button class="btn block" id="go-week" type="button">이번 주 열기</button>';
+      var wids = Object.keys(week.allWeeks || {}).sort();
+      if (wids.length > 1) {
+        h += '<p class="muted" style="margin-top:8px">주 고르기</p><div class="chiprow">';
+        wids.forEach(function (wid) {
+          h += '<button class="chip' + (wid === week.weekId ? ' on' : '') + '" type="button" data-week="' + api.esc(wid) + '">' + api.esc(wid) + '</button>';
+        });
+        h += '</div>';
+      }
+      h += '</section>';
+    }
     if (today) {
       h += '<section class="card"><p class="kicker">오늘의 카드</p><h2>' + today.day + '일차 · ' + api.esc(today.title) + '</h2>' +
         '<p>' + api.esc(today.goal || '') + '</p><button class="btn block" id="open-today" type="button">오늘 공부 열기</button>' +
@@ -62,6 +79,14 @@
     if (gm) gm.onclick = function () { api.go('#/study/must'); };
     var gc = el.querySelector('#go-changelog');
     if (gc) gc.onclick = function () { api.go('#/study/changelog'); };
+    var gw = el.querySelector('#go-week');
+    if (gw) gw.onclick = function () { api.go('#/study/week'); };
+    el.querySelectorAll('[data-week]').forEach(function (b) {
+      b.onclick = function () {
+        var wid = b.getAttribute('data-week');
+        (api.setStudyWeek ? api.setStudyWeek(wid) : Promise.resolve()).then(function () { api.refresh(); });
+      };
+    });
     el.querySelectorAll('[data-day]').forEach(function (b) {
       b.onclick = function () { api.go('#/study/day/' + b.getAttribute('data-day')); };
     });
@@ -108,6 +133,27 @@
   }
 
 
+
+
+  function weekView(el, api) {
+    var week = (api.weekEngine && api.weekEngine()) || { weekId: '', label: '', days: [] };
+    var done = doneMap(api);
+    var h = '<button class="linkish" id="back" type="button">← 공부</button><section class="card">' +
+      '<p class="kicker">주간 엔진</p><h1>' + api.esc(week.label || week.weekId || '이번 주') + '</h1>' +
+      '<p class="muted">이 주의 study_days만 보여 줘요. (P002)</p></section>';
+    (week.days || []).forEach(function (d) {
+      h += '<button class="day" type="button" data-day="' + d.day + '"><span class="n">' + d.day + '</span><span><b>' + api.esc(d.title) + '</b>' +
+        (done[d.day] ? ' <span class="badge ok">함</span>' : '') +
+        (d.competency_id ? ' <span class="muted">' + api.esc(d.competency_id) + '</span>' : '') +
+        '</span></button>';
+    });
+    if (!(week.days || []).length) h += '<section class="card"><p>이번 주 카드가 없어요. competency_map_v02.json 을 확인해 주세요.</p></section>';
+    el.innerHTML = h;
+    el.querySelector('#back').onclick = function () { api.go('#/study'); };
+    el.querySelectorAll('[data-day]').forEach(function (b) {
+      b.onclick = function () { api.go('#/study/day/' + b.getAttribute('data-day')); };
+    });
+  }
 
   var changelogCache = null;
   function loadChangelog() {

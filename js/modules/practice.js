@@ -41,7 +41,7 @@
       '<button class="list-btn" id="go-tasks" type="button"><b>실무 과제</b><div class="item-meta">양식에 직접 입력하고 규칙마다 채점</div></button>' +
       '<button class="list-btn" id="go-learn" type="button"><b>익힐 업무 ' + items.length + '</b><div class="item-meta">우선순위와 익힘 표시</div></button>' +
       '<button class="list-btn" id="go-quiz" type="button"><b>문제 풀기</b><div class="item-meta">업무·규정, 유형, 난이도</div></button>' +
-      '<button class="list-btn" id="go-wrong" type="button"><b>틀린 문제 모아보기</b></button>';
+      '<button class="list-btn" id="go-wrong" type="button"><b>틀린 문제 · 오답 덱</b><div class="item-meta">Anki식 복습 큐 (이 기기)</div></button>';
     el.querySelector('#go-tasks').onclick = function () { api.go('#/practice/tasks'); };
     el.querySelector('#go-learn').onclick = function () { api.go('#/practice/learn'); };
     el.querySelector('#go-quiz').onclick = function () { api.go('#/practice/quiz'); };
@@ -348,9 +348,47 @@
 
   function wrongView(el, api) {
     var all = qs(api);
-    var ids = Object.keys(api.records().questions || {}).filter(function (id) { return api.records().questions[id] && api.records().questions[id].ok === false; });
-    var h = '<button class="linkish" id="back" type="button">← 연습장</button><section class="card"><h1>틀린 문제</h1>';
-    if (!ids.length) h += '<p>아직 틀린 문제가 없어요.</p>';
+    var deck = api.wrongDeck ? api.wrongDeck() : null;
+    var ids = deck ? deck.list() : Object.keys(api.records().questions || {}).filter(function (id) {
+      return api.records().questions[id] && api.records().questions[id].ok === false;
+    });
+    var mode = (api.route().parts[2] === 'review') ? 'review' : 'list';
+    if (mode === 'review') {
+      var nid = deck && deck.next ? deck.next() : (ids[0] || null);
+      var q = nid && all.filter(function (x) { return x.id === nid; })[0];
+      var h = '<button class="linkish" id="back" type="button">← 틀린 문제</button><section class="card"><p class="kicker">오답 덱 · 복습</p>';
+      if (!q) {
+        h += '<h1>복습할 문제가 없어요</h1><p class="muted">틀린 문제가 생기면 여기에 쌓여요.</p></section>';
+        el.innerHTML = h;
+        el.querySelector('#back').onclick = function () { api.go('#/practice/wrong'); };
+        return;
+      }
+      h += '<h1>' + api.esc(q.id) + '</h1><p>' + api.esc(q.질문) + '</p>' +
+        '<button class="btn-ghost" id="show-a" type="button">답 보기</button>' +
+        '<div id="ans" class="hidden okbox" style="margin-top:8px">정답: ' + api.esc(q.정답) + '<br>' + api.esc(q.해설 || '') + '</div>' +
+        '<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn" id="got-it" type="button">맞힘 · 덱에서 빼기</button>' +
+        '<button class="btn-ghost" id="again" type="button">아직 · 뒤로 보내기</button></div></section>';
+      el.innerHTML = h;
+      el.querySelector('#back').onclick = function () { api.go('#/practice/wrong'); };
+      el.querySelector('#show-a').onclick = function () { document.getElementById('ans').classList.toggle('hidden'); };
+      el.querySelector('#got-it').onclick = function () {
+        api.saveQuestion(q.id, true).then(function () {
+          if (deck && deck.dequeue) deck.dequeue(q.id);
+          api.toast('덱에서 빼었어요.');
+          api.refresh();
+        });
+      };
+      el.querySelector('#again').onclick = function () {
+        if (deck && deck.enqueue) deck.enqueue(q.id);
+        api.toast('다시 큐에 넣었어요.');
+        api.refresh();
+      };
+      return;
+    }
+    var h = '<button class="linkish" id="back" type="button">← 연습장</button><section class="card"><h1>틀린 문제</h1>' +
+      '<p class="muted">이 기기에만 저장 · 오답 덱 ' + ids.length + '개</p>' +
+      (ids.length ? '<button class="btn block" id="go-review" type="button">오답 덱 복습</button>' : '<p>아직 틀린 문제가 없어요.</p>');
     ids.forEach(function (id) {
       var q = all.filter(function (x) { return x.id === id; })[0];
       if (!q) return;
@@ -360,6 +398,8 @@
     h += '</section>';
     el.innerHTML = h;
     el.querySelector('#back').onclick = function () { api.go('#/practice'); };
+    var gr = el.querySelector('#go-review');
+    if (gr) gr.onclick = function () { api.go('#/practice/wrong/review'); };
   }
 
   ShellModules.practice = { id: 'practice', tab: '연습장', icon: icon, render: render };

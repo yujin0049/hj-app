@@ -271,7 +271,30 @@
       saveQuestion: function (id, ok) {
         state.records.questions[id] = { ok: !!ok, at: new Date().toISOString() };
         state.records.continue.questionId = id;
+        try {
+          if (!ok) {
+            var q = JSON.parse(localStorage.getItem('ap3-wrong-queue') || '[]').filter(function (x) { return x !== id; });
+            q.push(id);
+            localStorage.setItem('ap3-wrong-queue', JSON.stringify(q));
+          } else {
+            localStorage.setItem('ap3-wrong-queue', JSON.stringify(
+              JSON.parse(localStorage.getItem('ap3-wrong-queue') || '[]').filter(function (x) { return x !== id; })
+            ));
+          }
+        } catch (e) { /* 오답 큐 저장 실패는 기록만으로 충분 */ }
         return persist();
+      },
+      weekEngine: function () { return weekEngine(state.pack || { entities: {}, catalogs: {} }); },
+      setStudyWeek: function (weekId) {
+        try {
+          if (weekId) localStorage.setItem('ap3-week-override', weekId);
+          else localStorage.removeItem('ap3-week-override');
+        } catch (e) { /* */ }
+        return Promise.resolve(weekEngine(state.pack || { entities: {}, catalogs: {} }));
+      },
+      wrongDeck: function () {
+        var self = this;
+        return wrongDeckApi({ records: function () { return state.records; } });
       },
       markLearning: function (id, on) {
         if (on) state.records.learning[id] = new Date().toISOString();
@@ -347,7 +370,7 @@
       var id = list[i++];
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
-        s.src = new URL('js/modules/' + id + '.js?v=26', base).href;
+        s.src = new URL('js/modules/' + id + '.js?v=27', base).href;
         s.onload = function () { res(); };
         s.onerror = function () { rej(new Error(id)); };
         document.body.appendChild(s);
@@ -437,19 +460,125 @@
     qs.forEach(function (q) { if (q) have[q.id] = 1; });
     extra.questions.forEach(function (q) { if (q && q.id && !have[q.id]) { qs.push(q); have[q.id] = 1; } });
   }
+  /* P002: competency_map_v02.json — questions/learning_items/study_days/tasks 에 competency_id 덧붙임(이미 있으면 유지) */
+  function applyCompetencyMap(pack, map) {
+    if (!map) return;
+    var byL = map.by_학습id || map.by_업무id || {};
+    var byDay = map.by_study_day || {};
+    var weeks = map.weeks || {};
+    var dayWeek = {};
+    Object.keys(weeks).forEach(function (wid) {
+      (weeks[wid].study_days || []).forEach(function (d) { dayWeek[String(d)] = wid; });
+    });
+    (pack.entities.questions || []).forEach(function (q) {
+      if (!q || q.competency_id) return;
+      var cid = byL[q.업무id];
+      if (cid) q.competency_id = cid;
+    });
+    (pack.entities.learning_items || []).forEach(function (it) {
+      if (!it || it.competency_id) return;
+      var cid = byL[it.id];
+      if (cid) it.competency_id = cid;
+    });
+    (pack.entities.study_days || []).forEach(function (d) {
+      if (!d) return;
+      var key = String(d.day);
+      if (!d.competency_id && byDay[key]) d.competency_id = byDay[key];
+      if (!d.week_id && dayWeek[key]) d.week_id = dayWeek[key];
+    });
+    (pack.entities.tasks || []).forEach(function (t) {
+      if (!t || t.competency_id) return;
+      /* tasks 는 문서 후 매핑; 사이드카 tasks 는 mergeT020 에서 채움 */
+    });
+    pack.catalogs = pack.catalogs || {};
+    pack.catalogs.competencies = map.competencies || pack.catalogs.competencies;
+    pack.catalogs.study_weeks = weeks;
+  }
+  /* P002: t020_zero_tolerance.json — 과제·문제 붙임(같은 id 건너뜀). 파일 없어도 깨지지 않음 */
+  function mergeT020(pack, zt) {
+    if (!zt) return;
+    if (Array.isArray(zt.questions)) addExtraQuestions(pack, { questions: zt.questions });
+    if (!Array.isArray(zt.tasks)) return;
+    var ts = pack.entities.tasks = pack.entities.tasks || [];
+    var have = {};
+    ts.forEach(function (t) { if (t) have[t.id] = 1; });
+    zt.tasks.forEach(function (t) { if (t && t.id && !have[t.id]) { ts.push(t); have[t.id] = 1; } });
+  }
+  /* P002: 주간 엔진 — study_days 를 week_id/날짜로 고름. localStorage ap3-week-override 있으면 그 주 */
+  function weekEngine(pack) {
+    var weeks = (pack.catalogs && pack.catalogs.study_weeks) || {};
+    var ids = Object.keys(weeks).sort();
+    if (!ids.length) {
+      return { weekId: '', label: '', days: pack.entities.study_days || [], allWeeks: weeks };
+    }
+    var override = '';
+    try { override = localStorage.getItem('ap3-week-override') || ''; } catch (e) { /* */ }
+    var weekId = override && weeks[override] ? override : ids[0];
+    if (!override) {
+      /* 날짜 기반: 로컬 주차를 4주로 나눔(월 기준 대략). Claude 문서 후 시작일 고정 가능 */
+      var now = new Date();
+      var start = new Date(now.getFullYear(), now.getMonth(), 1);
+      var diff = Math.floor((now - start) / 86400000);
+      var idx = Math.min(ids.length - 1, Math.floor(diff / 7));
+      weekId = ids[idx] || ids[0];
+    }
+    var meta = weeks[weekId] || {};
+    var want = {};
+    (meta.study_days || []).forEach(function (d) { want[d] = 1; });
+    var days = (pack.entities.study_days || []).filter(function (d) { return want[d.day]; });
+    return { weekId: weekId, label: meta.label || weekId, days: days, allWeeks: weeks };
+  }
+  /* P002: 오답 덱 — records.questions 중 ok===false + localStorage 큐(Anki식 단순 재시도) */
+  var WRONG_Q = 'ap3-wrong-queue';
+  function wrongDeckApi(api) {
+    function readQ() {
+      try { return JSON.parse(localStorage.getItem(WRONG_Q) || '[]'); } catch (e) { return []; }
+    }
+    function writeQ(arr) {
+      try { localStorage.setItem(WRONG_Q, JSON.stringify(arr)); } catch (e) { /* */ }
+    }
+    function missedIds() {
+      var rec = (api.records() && api.records().questions) || {};
+      var ids = Object.keys(rec).filter(function (id) { return rec[id] && rec[id].ok === false; });
+      var q = readQ();
+      q.forEach(function (id) { if (ids.indexOf(id) < 0) ids.push(id); });
+      return ids;
+    }
+    return {
+      list: missedIds,
+      enqueue: function (id) {
+        if (!id) return;
+        var q = readQ().filter(function (x) { return x !== id; });
+        q.push(id);
+        writeQ(q);
+      },
+      dequeue: function (id) {
+        writeQ(readQ().filter(function (x) { return x !== id; }));
+      },
+      next: function () {
+        var ids = missedIds();
+        return ids.length ? ids[0] : null;
+      }
+    };
+  }
   function loadData() {
     return Promise.all([
       getJson('public-pack.json').catch(function () { return null; }),
       getJson('dorm.json').catch(function () { return null; }),
       getJson('data/card_overrides.json').catch(function () { return null; }),
       getJson('data/ojnt_headcount.json').catch(function () { return null; }),
-      getJson('data/extra_questions.json').catch(function () { return null; })
+      getJson('data/extra_questions.json').catch(function () { return null; }),
+      getJson('data/competency_map_v02.json').catch(function () { return null; }),
+      getJson('data/t020_zero_tolerance.json').catch(function () { return null; })
     ]).then(function (r) {
       var pack = isPack(r[0]) ? r[0] : { appTitle: '행정 업무 연습장', packVersion: '', corrections: [], catalogs: {}, entities: {} };
       if (r[1]) pack.entities.dorm = r[1];
       applyOverrides(pack, r[2]);
       if (window.APDorm && APDorm.applyHeadcount) APDorm.applyHeadcount(pack, r[3]);
       addExtraQuestions(pack, r[4]);
+      applyCompetencyMap(pack, r[5]);
+      mergeT020(pack, r[6]);
+      pack._p002 = { competencyMap: r[5], t020: r[6] };
       return pack;
     });
   }

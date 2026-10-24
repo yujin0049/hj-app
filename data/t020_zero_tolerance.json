@@ -1,0 +1,197 @@
+{
+  "_설명": "P002 Phase A · T020 제로톨러런스(견적4칸·관련근거) 사이드카. hold:true 는 퀴즈에서 숨김(grade.filterQuestions). Claude solutions/T020·01~05 뜨면 hold 해제·문항 교체. 실명·전화·메일 넣지 않음. 갭: kw 견적4칸=0, 관련근거=0.",
+  "schemaVersion": 1,
+  "source": "로드맵 v02 §1·§4 · 배울것_원인행위·견적 · T020 용호기공(원인행위만, 품의 불필요—유진님 10.20.)",
+  "hold_until": "Claude docs 01~05 + solutions/T020",
+  "tasks": [
+    {
+      "id": "t020zt-quote4",
+      "domain": "지출",
+      "level": "보통",
+      "title": "T020 견적 4칸 점검(제로톨러런스)",
+      "competency_id": "C_QUOTE_CAUSE",
+      "rules": [
+        "R1"
+      ],
+      "situation": "실습재료 견적서를 받았다. 원인행위 전에 견적일·유효기간·납기·금액을 대조한다. (Claude T020 솔루션으로 수치·문구 교체 예정)",
+      "fields": [
+        {
+          "key": "quote_date",
+          "type": "text",
+          "label": "견적일",
+          "def": ""
+        },
+        {
+          "key": "valid_until",
+          "type": "text",
+          "label": "유효기간(만료일)",
+          "def": ""
+        },
+        {
+          "key": "lead_time",
+          "type": "text",
+          "label": "납기",
+          "def": ""
+        },
+        {
+          "key": "amount",
+          "type": "text",
+          "label": "금액",
+          "def": ""
+        },
+        {
+          "key": "action",
+          "type": "select",
+          "label": "다음 행동",
+          "options": [
+            "원인행위 진행",
+            "재견적 후 (변경) 문서",
+            "품의부터"
+          ],
+          "def": ""
+        }
+      ],
+      "checks": [
+        {
+          "kind": "note",
+          "label": "Phase A stub",
+          "explain": "Claude solutions/T020 반영 전 hold. 채점 규칙은 문서 후 채움.",
+          "score": false
+        }
+      ],
+      "sample": {},
+      "explain": "견적 4칸을 안 보면 만료·납기 불일치로 원인행위가 감사 지적감이 된다.",
+      "hold": true,
+      "zero_tolerance": "견적4칸"
+    },
+    {
+      "id": "t020zt-basis",
+      "domain": "공문",
+      "level": "보통",
+      "title": "T020 관련근거 꼴(제로톨러런스)",
+      "competency_id": "C_DOC_FORM",
+      "rules": [],
+      "situation": "재료구입·(변경) 공문 초안. 본문 첫 줄은 「1. 관련근거」여야 한다. (Claude T020으로 실제 근거번호 채움)",
+      "fields": [
+        {
+          "key": "first_line",
+          "type": "text",
+          "label": "본문 첫 줄",
+          "def": ""
+        },
+        {
+          "key": "basis_a",
+          "type": "textarea",
+          "label": "가. 관련근거",
+          "def": ""
+        }
+      ],
+      "checks": [
+        {
+          "kind": "note",
+          "label": "Phase A stub",
+          "explain": "Claude solutions/T020 반영 전 hold.",
+          "score": false
+        }
+      ],
+      "sample": {},
+      "explain": "관련근거가 빠지면 계획·지출 근거가 빈다.",
+      "hold": true,
+      "zero_tolerance": "관련근거"
+    }
+  ],
+  "questions": [
+    {
+      "id": "ZT-Q4-01",
+      "업무id": "L03",
+      "업무명": "수의계약·견적(제로톨러런스 견적4칸)",
+      "competency_id": "C_QUOTE_CAUSE",
+      "규정명": "",
+      "유형": "빈칸",
+      "질문": "견적서를 받으면 바로 볼 4칸은 ( ) · 유효기간 · 납기 · 금액이에요.",
+      "보기": [
+        "견적일",
+        "사업자번호",
+        "담당자 이름",
+        "계좌번호"
+      ],
+      "정답": "견적일",
+      "해설": "견적일·유효기간·납기·금액. 만료·납기 불일치면 재견적→(변경)→원인행위.",
+      "근거": "로드맵 v02 §1·배울것 §1 (Phase A stub)",
+      "난이도": "쉬움",
+      "검증": "보류",
+      "bucket": "업무",
+      "hold": true,
+      "zero_tolerance": "견적4칸"
+    },
+    {
+      "id": "ZT-Q4-02",
+      "업무id": "L03",
+      "업무명": "수의계약·견적(제로톨러런스 견적4칸)",
+      "competency_id": "C_QUOTE_CAUSE",
+      "규정명": "",
+      "유형": "빈칸",
+      "질문": "견적 유효기간이 지났으면 원인행위 전에 할 일은?",
+      "보기": [
+        "그대로 원인행위",
+        "재견적 후 필요하면 (변경) 문서",
+        "검수부터",
+        "지급명령만"
+      ],
+      "정답": "재견적 후 필요하면 (변경) 문서",
+      "해설": "만료 견적으로 원인행위하면 안 돼요. 재견적→금액·납기 바뀌면 (변경)→원인행위.",
+      "근거": "로드맵 v02 §4 · V17 (Phase A stub)",
+      "난이도": "보통",
+      "검증": "보류",
+      "bucket": "업무",
+      "hold": true,
+      "zero_tolerance": "견적4칸"
+    },
+    {
+      "id": "ZT-RB-01",
+      "업무id": "L47",
+      "업무명": "공문 표기(제로톨러런스 관련근거)",
+      "competency_id": "C_DOC_FORM",
+      "규정명": "",
+      "유형": "빈칸",
+      "질문": "공문 본문 첫 줄은 보통 「1. ( )」로 시작해요.",
+      "보기": [
+        "관련근거",
+        "목적",
+        "추진일정",
+        "소요예산"
+      ],
+      "정답": "관련근거",
+      "해설": "「1. 관련근거」 다음에 「가. 기관-NNN호(YYYY. M. D.) 「계획명」」.",
+      "근거": "T101-4 · C03 (Phase A stub)",
+      "난이도": "쉬움",
+      "검증": "보류",
+      "bucket": "업무",
+      "hold": true,
+      "zero_tolerance": "관련근거"
+    },
+    {
+      "id": "ZT-RB-02",
+      "업무id": "L47",
+      "업무명": "공문 표기(제로톨러런스 관련근거)",
+      "competency_id": "C_DOC_FORM",
+      "규정명": "",
+      "유형": "빈칸",
+      "질문": "관련근거 「가.」 줄에 꼭 넣을 것은?",
+      "보기": [
+        "기관-번호·날짜·「계획명」",
+        "담당자 휴대전화",
+        "개인 계좌",
+        "회의 다과 메뉴"
+      ],
+      "정답": "기관-번호·날짜·「계획명」",
+      "해설": "「가. ○○-NNN호(YYYY. M. D.) 「계획명」」 꼴. 전화·계좌는 넣지 않아요.",
+      "근거": "T101-4 · C03 (Phase A stub)",
+      "난이도": "보통",
+      "검증": "보류",
+      "bucket": "업무",
+      "hold": true,
+      "zero_tolerance": "관련근거"
+    }
+  ]
+}
