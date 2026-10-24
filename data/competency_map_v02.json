@@ -1,7 +1,12 @@
 {
-  "_설명": "P002 Phase A · v02 competency_id 매핑(사이드카). public-pack.json 한 줄을 고치지 않음. app.js applyCompetencyMap 이 questions·learning_items·study_days에 competency_id를 덧붙임. 로드맵: 봇공유/00 홈/로드맵_v02.md. Claude 01 문서가 뜨면 learning_items·질문 필드 이름을 이 schema.fields 에 맞춰 보강.",
-  "schemaVersion": 1,
-  "formatHint": "pack formatVersion 1 + additive competency_id (string). Prefer this sidecar over rewriting public-pack.json.",
+  "_설명": "P002 Phase B · CP01~CP10 매핑(01_매핑_v02_to_pack). 대장 결정 CP01~CP10. public-pack 한 줄 안 고침. app.js applyCompetencyMap.",
+  "schemaVersion": 2,
+  "decisions": {
+    "관련": "편람꼴",
+    "변경": "(변경)+2669",
+    "주당시간": 3,
+    "competency_prefix": "CP"
+  },
   "fields": {
     "questions": [
       "competency_id"
@@ -14,216 +19,223 @@
       "week_id"
     ],
     "tasks": [
-      "competency_id"
+      "competency_id",
+      "zero_tol"
     ]
   },
   "competencies": [
     {
-      "id": "C_EXPENSE_CYCLE",
+      "id": "CP01",
       "name": "지출 1사이클",
-      "근거": "C01·C02·C05",
-      "done_when": "계획→제반→집행→결과 반려 없이 완주"
+      "근거": "C01·C02·C05"
     },
     {
-      "id": "C_QUOTE_CAUSE",
+      "id": "CP02",
       "name": "견적·원인행위",
-      "근거": "V17·V01·V34·C02",
-      "done_when": "만료 견적으로 원인행위 안 함"
+      "근거": "V17·V01·V34·C02"
     },
     {
-      "id": "C_DOC_FORM",
+      "id": "CP03",
       "name": "공문 꼴",
-      "근거": "T101-2·C03",
-      "done_when": "제목·관련근거·붙임 꼴로 상신"
+      "근거": "T101-2·T101-4·T101-5·편람59"
     },
     {
-      "id": "C_CARD_PROOF",
+      "id": "CP04",
       "name": "카드·증빙",
-      "근거": "C08·V02·V24",
-      "done_when": "카드 건마다 7일 내 명세서+증빙"
+      "근거": "C08·V02·V24"
     },
     {
-      "id": "C_FUND_SPLIT",
+      "id": "CP05",
       "name": "재원·과목 분리",
-      "근거": "V20·V21·V22",
-      "done_when": "결재본 글자 그대로·재원 안 섞음"
+      "근거": "V20·V21·V22"
     },
     {
-      "id": "C_MATERIAL",
+      "id": "CP06",
       "name": "재료(글로컬)",
-      "근거": "HS01·V01·V19",
-      "done_when": "W08 순서로 재료 1건 완주"
+      "근거": "HS01-15·V01·V19"
     },
     {
-      "id": "C_SPECIAL_LECTURE",
+      "id": "CP07",
       "name": "특강",
-      "근거": "HS02·V27",
-      "done_when": "특강 1사이클 완주"
+      "근거": "HS02-17·V27"
     },
     {
-      "id": "C_EQUIPMENT",
+      "id": "CP08",
       "name": "기자재",
-      "근거": "C04·C09·HS04",
-      "done_when": "심의 1차수 완주"
+      "근거": "C04·C09·HS04"
     },
     {
-      "id": "C_BUDGET_CLOSE",
+      "id": "CP09",
       "name": "예산·정산·마감",
-      "근거": "HS07·C07",
-      "done_when": "2월 말 전 맡은 줄 닫힘"
+      "근거": "HS07-05·HS03-10·C07"
     },
     {
-      "id": "C_SCHEDULE_REPORT",
+      "id": "CP10",
       "name": "일정·보고",
-      "근거": "HS10·V33",
-      "done_when": "주간업무가 현황판과 안 어긋남"
+      "근거": "HS10-15·V33"
     }
   ],
   "by_학습id": {
-    "L01": "C_EXPENSE_CYCLE",
-    "L02": "C_EXPENSE_CYCLE",
-    "L03": "C_QUOTE_CAUSE",
-    "L04": "C_EXPENSE_CYCLE",
-    "L05": "C_CARD_PROOF",
-    "L06": "C_BUDGET_CLOSE",
-    "L07": "C_FUND_SPLIT",
-    "L08": "C_FUND_SPLIT",
-    "L09": "C_SPECIAL_LECTURE",
-    "L10": "C_SPECIAL_LECTURE",
-    "L11": "C_SPECIAL_LECTURE",
-    "L12": "C_SPECIAL_LECTURE",
-    "L13": "C_SPECIAL_LECTURE",
-    "L14": "C_SPECIAL_LECTURE",
-    "L15": "C_SPECIAL_LECTURE",
-    "L16": "C_EXPENSE_CYCLE",
-    "L17": "C_DOC_FORM",
-    "L18": "C_CARD_PROOF",
-    "L19": "C_CARD_PROOF",
-    "L20": "C_EXPENSE_CYCLE",
-    "L21": "C_DOC_FORM",
-    "L22": "C_QUOTE_CAUSE",
-    "L23": "C_EXPENSE_CYCLE",
-    "L24": "C_EXPENSE_CYCLE",
-    "L25": "C_MATERIAL",
-    "L26": "C_EQUIPMENT",
-    "L27": "C_EQUIPMENT",
-    "L28": "C_MATERIAL",
-    "L29": "C_MATERIAL",
-    "L30": "C_QUOTE_CAUSE",
-    "L31": "C_SCHEDULE_REPORT",
-    "L32": "C_SCHEDULE_REPORT",
-    "L33": "C_SCHEDULE_REPORT",
-    "L34": "C_SCHEDULE_REPORT",
-    "L35": "C_SCHEDULE_REPORT",
-    "L36": "C_SCHEDULE_REPORT",
-    "L37": "C_SCHEDULE_REPORT",
-    "L38": "C_SCHEDULE_REPORT",
-    "L39": "C_SCHEDULE_REPORT",
-    "L40": "C_BUDGET_CLOSE",
-    "L41": "C_DOC_FORM",
-    "L42": "C_SCHEDULE_REPORT",
-    "L43": "C_DOC_FORM",
-    "L44": "C_DOC_FORM",
-    "L45": "C_SCHEDULE_REPORT",
-    "L46": "C_SCHEDULE_REPORT",
-    "L47": "C_DOC_FORM",
-    "L48": "C_DOC_FORM",
-    "L49": "C_SCHEDULE_REPORT",
-    "L50": "C_SCHEDULE_REPORT",
-    "L51": "C_SCHEDULE_REPORT",
-    "L52": "C_SCHEDULE_REPORT",
-    "L53": "C_SCHEDULE_REPORT",
-    "L54": "C_SCHEDULE_REPORT",
-    "L55": "C_SCHEDULE_REPORT",
-    "L56": "C_DOC_FORM",
-    "L57": "C_BUDGET_CLOSE",
-    "L58": "C_EXPENSE_CYCLE"
-  },
-  "by_study_day": {
-    "1": "C_EXPENSE_CYCLE",
-    "2": "C_QUOTE_CAUSE",
-    "3": "C_QUOTE_CAUSE",
-    "4": "C_QUOTE_CAUSE",
-    "5": "C_QUOTE_CAUSE",
-    "6": "C_QUOTE_CAUSE",
-    "7": "C_QUOTE_CAUSE",
-    "8": "C_QUOTE_CAUSE",
-    "9": "C_EXPENSE_CYCLE",
-    "10": "C_EXPENSE_CYCLE",
-    "11": "C_EXPENSE_CYCLE",
-    "12": "C_EXPENSE_CYCLE",
-    "13": "C_FUND_SPLIT",
-    "14": "C_CARD_PROOF",
-    "15": "C_FUND_SPLIT",
-    "16": "C_FUND_SPLIT",
-    "17": "C_BUDGET_CLOSE",
-    "18": "C_EQUIPMENT",
-    "19": "C_BUDGET_CLOSE",
-    "20": "C_SPECIAL_LECTURE",
-    "21": "C_CARD_PROOF",
-    "22": "C_CARD_PROOF",
-    "23": "C_SCHEDULE_REPORT",
-    "24": "C_FUND_SPLIT"
+    "L01": "CP01",
+    "L02": "CP04",
+    "L03": "CP02",
+    "L04": "CP02",
+    "L05": "CP04",
+    "L06": "CP09",
+    "L07": "CP07",
+    "L08": "CP05",
+    "L09": "CP07",
+    "L10": "CP07",
+    "L11": "CP07",
+    "L12": "CP07",
+    "L13": "CP07",
+    "L14": "CP07",
+    "L15": "CP07",
+    "L16": "CP01",
+    "L17": "CP03",
+    "L18": "CP04",
+    "L19": "CP04",
+    "L20": "CP01",
+    "L21": "CP03",
+    "L22": "CP02",
+    "L23": "CP01",
+    "L24": "CP01",
+    "L25": "CP06",
+    "L26": "CP08",
+    "L27": "CP08",
+    "L28": "CP06",
+    "L29": "CP06",
+    "L30": "CP02",
+    "L31": "CP10",
+    "L32": "CP10",
+    "L33": "CP10",
+    "L34": "CP10",
+    "L35": "CP10",
+    "L36": "CP10",
+    "L37": "CP10",
+    "L38": "CP10",
+    "L39": "CP10",
+    "L40": "CP09",
+    "L41": "CP03",
+    "L42": "CP10",
+    "L43": "CP03",
+    "L44": "CP03",
+    "L45": "CP10",
+    "L46": "CP10",
+    "L47": "CP03",
+    "L48": "CP03",
+    "L49": "CP10",
+    "L50": "CP10",
+    "L51": "CP10",
+    "L52": "CP10",
+    "L53": "CP10",
+    "L54": "CP10",
+    "L55": "CP10",
+    "L56": "CP03",
+    "L57": "CP09",
+    "L58": "CP01"
   },
   "by_업무id": {
-    "L01": "C_EXPENSE_CYCLE",
-    "L02": "C_EXPENSE_CYCLE",
-    "L03": "C_QUOTE_CAUSE",
-    "L04": "C_EXPENSE_CYCLE",
-    "L05": "C_CARD_PROOF",
-    "L06": "C_BUDGET_CLOSE",
-    "L07": "C_FUND_SPLIT",
-    "L08": "C_FUND_SPLIT",
-    "L09": "C_SPECIAL_LECTURE",
-    "L10": "C_SPECIAL_LECTURE",
-    "L11": "C_SPECIAL_LECTURE",
-    "L12": "C_SPECIAL_LECTURE",
-    "L13": "C_SPECIAL_LECTURE",
-    "L14": "C_SPECIAL_LECTURE",
-    "L15": "C_SPECIAL_LECTURE",
-    "L16": "C_EXPENSE_CYCLE",
-    "L17": "C_DOC_FORM",
-    "L18": "C_CARD_PROOF",
-    "L19": "C_CARD_PROOF",
-    "L20": "C_EXPENSE_CYCLE",
-    "L21": "C_DOC_FORM",
-    "L22": "C_QUOTE_CAUSE",
-    "L23": "C_EXPENSE_CYCLE",
-    "L24": "C_EXPENSE_CYCLE",
-    "L25": "C_MATERIAL",
-    "L26": "C_EQUIPMENT",
-    "L27": "C_EQUIPMENT",
-    "L28": "C_MATERIAL",
-    "L29": "C_MATERIAL",
-    "L30": "C_QUOTE_CAUSE",
-    "L31": "C_SCHEDULE_REPORT",
-    "L32": "C_SCHEDULE_REPORT",
-    "L33": "C_SCHEDULE_REPORT",
-    "L34": "C_SCHEDULE_REPORT",
-    "L35": "C_SCHEDULE_REPORT",
-    "L36": "C_SCHEDULE_REPORT",
-    "L37": "C_SCHEDULE_REPORT",
-    "L38": "C_SCHEDULE_REPORT",
-    "L39": "C_SCHEDULE_REPORT",
-    "L40": "C_BUDGET_CLOSE",
-    "L41": "C_DOC_FORM",
-    "L42": "C_SCHEDULE_REPORT",
-    "L43": "C_DOC_FORM",
-    "L44": "C_DOC_FORM",
-    "L45": "C_SCHEDULE_REPORT",
-    "L46": "C_SCHEDULE_REPORT",
-    "L47": "C_DOC_FORM",
-    "L48": "C_DOC_FORM",
-    "L49": "C_SCHEDULE_REPORT",
-    "L50": "C_SCHEDULE_REPORT",
-    "L51": "C_SCHEDULE_REPORT",
-    "L52": "C_SCHEDULE_REPORT",
-    "L53": "C_SCHEDULE_REPORT",
-    "L54": "C_SCHEDULE_REPORT",
-    "L55": "C_SCHEDULE_REPORT",
-    "L56": "C_DOC_FORM",
-    "L57": "C_BUDGET_CLOSE",
-    "L58": "C_EXPENSE_CYCLE"
+    "L01": "CP01",
+    "L02": "CP04",
+    "L03": "CP02",
+    "L04": "CP02",
+    "L05": "CP04",
+    "L06": "CP09",
+    "L07": "CP07",
+    "L08": "CP05",
+    "L09": "CP07",
+    "L10": "CP07",
+    "L11": "CP07",
+    "L12": "CP07",
+    "L13": "CP07",
+    "L14": "CP07",
+    "L15": "CP07",
+    "L16": "CP01",
+    "L17": "CP03",
+    "L18": "CP04",
+    "L19": "CP04",
+    "L20": "CP01",
+    "L21": "CP03",
+    "L22": "CP02",
+    "L23": "CP01",
+    "L24": "CP01",
+    "L25": "CP06",
+    "L26": "CP08",
+    "L27": "CP08",
+    "L28": "CP06",
+    "L29": "CP06",
+    "L30": "CP02",
+    "L31": "CP10",
+    "L32": "CP10",
+    "L33": "CP10",
+    "L34": "CP10",
+    "L35": "CP10",
+    "L36": "CP10",
+    "L37": "CP10",
+    "L38": "CP10",
+    "L39": "CP10",
+    "L40": "CP09",
+    "L41": "CP03",
+    "L42": "CP10",
+    "L43": "CP03",
+    "L44": "CP03",
+    "L45": "CP10",
+    "L46": "CP10",
+    "L47": "CP03",
+    "L48": "CP03",
+    "L49": "CP10",
+    "L50": "CP10",
+    "L51": "CP10",
+    "L52": "CP10",
+    "L53": "CP10",
+    "L54": "CP10",
+    "L55": "CP10",
+    "L56": "CP03",
+    "L57": "CP09",
+    "L58": "CP01"
+  },
+  "by_study_day": {
+    "1": "CP01",
+    "2": "CP02",
+    "3": "CP02",
+    "4": "CP02",
+    "5": "CP02",
+    "6": "CP02",
+    "7": "CP02",
+    "8": "CP02",
+    "9": "CP02",
+    "10": "CP02",
+    "11": "CP02",
+    "13": "CP05",
+    "14": "CP04",
+    "15": "CP05",
+    "16": "CP05",
+    "17": "CP09",
+    "18": "CP08",
+    "19": "CP09",
+    "20": "CP07",
+    "21": "CP04",
+    "22": "CP04",
+    "23": "CP10"
+  },
+  "by_task": {
+    "t1": "CP01",
+    "t2": "CP07",
+    "t3": "CP05",
+    "t4": "CP05",
+    "t5": "CP02",
+    "t6": "CP01",
+    "t7": "CP04",
+    "t8": "CP08",
+    "t13": "CP03",
+    "t14": "CP03",
+    "t15": "CP10",
+    "t16": "CP10",
+    "t020": "CP02",
+    "t020zt-quote4": "CP02",
+    "t020zt-basis": "CP03",
+    "t020zt-fund": "CP05"
   },
   "weeks": {
     "W1": {
@@ -235,6 +247,10 @@
         4,
         5,
         6
+      ],
+      "cps": [
+        "CP01",
+        "CP02"
       ]
     },
     "W2": {
@@ -246,6 +262,9 @@
         10,
         11,
         12
+      ],
+      "cps": [
+        "CP02"
       ]
     },
     "W3": {
@@ -257,6 +276,12 @@
         16,
         17,
         18
+      ],
+      "cps": [
+        "CP05",
+        "CP04",
+        "CP08",
+        "CP09"
       ]
     },
     "W4": {
@@ -268,11 +293,66 @@
         22,
         23,
         24
+      ],
+      "cps": [
+        "CP07",
+        "CP04",
+        "CP10"
       ]
     }
   },
-  "todos": [
-    "Claude 01_*.md: competency 정의·필드 확정 시 fields/competencies 갱신",
-    "Claude 02~: L## 외 업무id·T020 competency 매핑 보강"
+  "ladder": {
+    "2026.10하~11": {
+      "cps": [
+        "CP02",
+        "CP03",
+        "CP05"
+      ],
+      "force_default": "T020",
+      "label": "견적4칸·원인행위·제반·재원분리"
+    },
+    "2026.12": {
+      "cps": [
+        "CP03",
+        "CP01",
+        "CP04"
+      ],
+      "label": "공문 꼴·변경·카드/결과보고"
+    },
+    "2027.1": {
+      "cps": [
+        "CP07",
+        "CP01"
+      ],
+      "label": "특강 1사이클"
+    },
+    "2027.2": {
+      "cps": [
+        "CP09"
+      ],
+      "label": "마감·미지출"
+    }
+  },
+  "deadline": "2027-02-28",
+  "weekly_hours_default": 3,
+  "p0_new": [
+    {
+      "key": "견적4칸",
+      "competency_id": "CP02",
+      "use_학습id": "L03",
+      "note": "L03 견적 항목에 문제 추가(NEW 학습항목 대신)"
+    },
+    {
+      "key": "관련꼴",
+      "competency_id": "CP03",
+      "use_학습id": "L47",
+      "note": "L47 공문 표기"
+    },
+    {
+      "key": "재원분리",
+      "competency_id": "CP05",
+      "use_학습id": "L08",
+      "note": "L08 예산과목"
+    }
   ]
 }

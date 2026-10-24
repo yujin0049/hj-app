@@ -26,22 +26,33 @@
     h += '<section class="card cl-entry"><p class="kicker">변경이력 · 학습</p><h2>카드로 보는 연습장 변화</h2>' +
       '<p class="muted">필독·학생안내·3D·LMS·봇현황·기숙사·배포 — 표지를 넘기며 요지를 읽어요</p>' +
       '<button class="btn block" id="go-changelog" type="button">변경이력 카드 열기</button></section>';
-    /* P002: 주간 엔진 진입 */
-    var week = (api.weekEngine && api.weekEngine()) || { weekId: '', label: '', days: [], allWeeks: {} };
-    if (week.weekId) {
-      h += '<section class="card week-entry"><p class="kicker">이번 주 공부</p><h2>' + api.esc(week.label || week.weekId) + '</h2>' +
-        '<p class="muted">' + week.days.length + '일 · 주간 카드만 모아 보기</p>' +
-        '<button class="btn block" id="go-week" type="button">이번 주 열기</button>';
-      var wids = Object.keys(week.allWeeks || {}).sort();
-      if (wids.length > 1) {
-        h += '<p class="muted" style="margin-top:8px">주 고르기</p><div class="chiprow">';
-        wids.forEach(function (wid) {
-          h += '<button class="chip' + (wid === week.weekId ? ' on' : '') + '" type="button" data-week="' + api.esc(wid) + '">' + api.esc(wid) + '</button>';
-        });
-        h += '</div>';
-      }
-      h += '</section>';
+    /* P002: 주간 엔진 카드(04) */
+    var week = (api.weekEngine && api.weekEngine()) || { weekId: '', label: '', days: [], allWeeks: {}, N: 0, force: '', hours: 3 };
+    h += '<section class="card week-entry"><p class="kicker">이번 주 카드 · 남은 주 ' + (week.N || '?') + '</p>' +
+      '<h2>' + api.esc(week.ladderLabel || week.label || '주간 공부') + '</h2>' +
+      '<div class="statgrid"><div><b>' + (week.N || 0) + '</b><span class="muted">남은 주</span></div>' +
+      '<div><b>' + (week.hours || 3) + 'h</b><span class="muted">주당(대장 결정)</span></div></div>';
+    if (week.forceTask || week.force) {
+      var ft = week.forceTask || { id: week.force, title: week.force };
+      h += '<p style="margin-top:10px"><b>실전 [강제]</b> ' + api.esc(ft.title || ft.id) + '</p>' +
+        '<button class="btn block" id="go-force" type="button">T020 과제 열기</button>';
     }
+    if (week.learn && week.learn.length) {
+      h += '<p class="muted" style="margin-top:8px">배울 것</p><ul>';
+      week.learn.forEach(function (it) { h += '<li>' + api.esc(it.id) + ' · ' + api.esc(it.name || '') + '</li>'; });
+      h += '</ul>';
+    }
+    h += '<button class="btn-ghost block" id="go-week" type="button">이번 주 study_days</button>' +
+      '<button class="btn-ghost block" id="go-wrong-deck" type="button">오답 복습</button>';
+    var wids = Object.keys(week.allWeeks || {}).sort();
+    if (wids.length > 1) {
+      h += '<p class="muted" style="margin-top:8px">주 고르기</p><div class="chiprow">';
+      wids.forEach(function (wid) {
+        h += '<button class="chip' + (wid === week.weekId ? ' on' : '') + '" type="button" data-week="' + api.esc(wid) + '">' + api.esc(wid) + '</button>';
+      });
+      h += '</div>';
+    }
+    h += '</section>';
     if (today) {
       h += '<section class="card"><p class="kicker">오늘의 카드</p><h2>' + today.day + '일차 · ' + api.esc(today.title) + '</h2>' +
         '<p>' + api.esc(today.goal || '') + '</p><button class="btn block" id="open-today" type="button">오늘 공부 열기</button>' +
@@ -81,6 +92,13 @@
     if (gc) gc.onclick = function () { api.go('#/study/changelog'); };
     var gw = el.querySelector('#go-week');
     if (gw) gw.onclick = function () { api.go('#/study/week'); };
+    var gf = el.querySelector('#go-force');
+    if (gf) gf.onclick = function () {
+      var id = (week.forceTask && week.forceTask.id) || week.force || 't020';
+      api.go('#/practice/task/' + id);
+    };
+    var gwd = el.querySelector('#go-wrong-deck');
+    if (gwd) gwd.onclick = function () { api.go('#/practice/wrong/review'); };
     el.querySelectorAll('[data-week]').forEach(function (b) {
       b.onclick = function () {
         var wid = b.getAttribute('data-week');
@@ -139,8 +157,8 @@
     var week = (api.weekEngine && api.weekEngine()) || { weekId: '', label: '', days: [] };
     var done = doneMap(api);
     var h = '<button class="linkish" id="back" type="button">← 공부</button><section class="card">' +
-      '<p class="kicker">주간 엔진</p><h1>' + api.esc(week.label || week.weekId || '이번 주') + '</h1>' +
-      '<p class="muted">이 주의 study_days만 보여 줘요. (P002)</p></section>';
+      '<p class="kicker">주간 엔진 · 남은 주 ' + (week.N || '?') + '</p><h1>' + api.esc(week.ladderLabel || week.label || week.weekId || '이번 주') + '</h1>' +
+      '<p class="muted">강제 ' + api.esc(week.force || '없음') + ' · 주당 ' + (week.hours || 3) + 'h · CP ' + api.esc((week.cps || []).join(', ')) + '</p></section>';
     (week.days || []).forEach(function (d) {
       h += '<button class="day" type="button" data-day="' + d.day + '"><span class="n">' + d.day + '</span><span><b>' + api.esc(d.title) + '</b>' +
         (done[d.day] ? ' <span class="badge ok">함</span>' : '') +
