@@ -180,58 +180,6 @@ export function buildScene(THREE, data) {
   }
 
 
-  // 전시 기체 (저폴리·trainer3d 축소판): 동체·날개·꼬리·착륙장치. 바퀴 밑 ≈ -1.02(스케일 전) → 지면 맞춤
-  function displayAircraft(e) {
-    const g = new THREE.Group();
-    const sc = e.scale || 1, z0 = e.z0 || 0;
-    const mat = {
-      white: new THREE.MeshStandardMaterial({ color: 0xf2f4f7, roughness: 0.55, metalness: 0.08 }),
-      red: new THREE.MeshStandardMaterial({ color: 0xd7262f, roughness: 0.45, metalness: 0.1 }),
-      dark: new THREE.MeshStandardMaterial({ color: 0x2a2f38, roughness: 0.6, metalness: 0.2 }),
-      strut: new THREE.MeshStandardMaterial({ color: 0x8a929c, roughness: 0.5, metalness: 0.5 }),
-      tyre: new THREE.MeshStandardMaterial({ color: 0x1b1d22, roughness: 0.85, metalness: 0 }),
-      glass: new THREE.MeshStandardMaterial({ color: 0x213246, roughness: 0.08, metalness: 0.2, transparent: true, opacity: 0.55 }),
-    };
-    const add = (m) => { m.castShadow = true; m.receiveShadow = true; g.add(m); return m; };
-    const cylZ = (r0, r1, len, z, m) => { const o = new THREE.Mesh(new THREE.CylinderGeometry(r0, r1, len, 20), m); o.rotation.x = Math.PI / 2; o.position.z = z; return add(o); };
-    const coneZ = (r, len, z, m) => { const o = new THREE.Mesh(new THREE.ConeGeometry(r, len, 20), m); o.rotation.x = Math.PI / 2; o.position.z = z; return add(o); };
-    const box = (w, h, d, x, y, z, m) => { const o = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), m); o.position.set(x, y, z); return add(o); };
-    cylZ(0.60, 0.58, 1.25, 0.28, mat.white);
-    cylZ(0.58, 0.16, 2.25, -1.35, mat.white);
-    coneZ(0.16, 0.3, -2.6, mat.white);
-    cylZ(0.58, 0.50, 0.70, 1.20, mat.white);
-    cylZ(0.50, 0.42, 0.55, 1.78, mat.red);
-    coneZ(0.30, 0.34, 2.22, mat.red);
-    { const c = new THREE.Mesh(new THREE.SphereGeometry(0.6, 20, 16), mat.glass); c.scale.set(0.55, 0.42, 0.95); c.position.set(0, 0.42, 0.72); add(c); }
-    box(5.3, 0.14, 1.18, 0, -0.2, 0.5, mat.white);
-    box(0.55, 0.17, 1.02, 2.62, -0.2, 0.5, mat.red);
-    box(0.55, 0.17, 1.02, -2.62, -0.2, 0.5, mat.red);
-    box(2.15, 0.11, 0.6, 0, 0.04, -2.25, mat.white);
-    box(0.12, 0.98, 0.78, 0, 0.5, -2.3, mat.white);
-    box(0.14, 0.34, 0.5, 0, 0.88, -2.42, mat.red);
-    const strut = (x, z, topY, botY) => { const len = topY - botY; const o = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, len, 10), mat.strut); o.position.set(x, (topY + botY) / 2, z); return add(o); };
-    const wheel = (x, z, y) => {
-      const w = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.15, 16), mat.tyre); w.rotation.z = Math.PI / 2; w.position.set(x, y, z); add(w);
-      const h = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 0.17, 10), mat.strut); h.rotation.z = Math.PI / 2; h.position.set(x, y, z); add(h);
-    };
-    strut(0, 1.28, -0.5, -0.95); wheel(0, 1.28, -1.02);
-    strut(0.8, 0.5, -0.28, -0.9); wheel(0.8, 0.5, -0.98);
-    strut(-0.8, 0.5, -0.28, -0.9); wheel(-0.8, 0.5, -0.98);
-    { // 프로펠러 2엽(정지)
-      const pg = new THREE.Group(); pg.position.set(0, 0, 2.08); g.add(pg);
-      for (let i = 0; i < 2; i++) {
-        const b = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.7, 0.05), mat.dark); b.castShadow = true;
-        const tip = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.2, 0.055), mat.red); tip.position.y = 0.78; tip.castShadow = true;
-        const holder = new THREE.Group(); holder.rotation.z = i * Math.PI; holder.add(b, tip); pg.add(holder);
-      }
-    }
-    g.scale.setScalar(sc);
-    // 바퀴 밑(스케일 전 -1.02)이 지면(y=0)에 닿게 + z0 여유
-    g.position.set(e.c[0], 1.02 * sc + z0, -e.c[1]);
-    g.rotation.y = e.yaw || 0;
-    return g;
-  }
-
   const floors = {}; const order = Object.keys(G.floors);
   const CUT = 1.55; // 단면 보기: 바닥 위 1.55m 에서 자름 (창 아래쪽이 보임)
   for (const fid of order) {
@@ -302,12 +250,7 @@ export function buildScene(THREE, data) {
         tankB.prism(rect(e.c, e.w, e.d), e.z0, e.z0 + e.h);
       } else if (e.k === 'pump') box.prism(rect(e.c, e.w, e.d), e.z0, e.z0 + e.h);
       else if (e.k === 'vent') roofG.add(ventilators(e));
-      else if (e.k === 'aircraft') {
-        roofG.add(displayAircraft(e));
-        const sc = e.scale || 1;
-        eqLabel(e, 'ALL', [e.c[0], 1.02 * sc + (e.z0 || 0) + 1.2 * sc, -e.c[1]]);
-        continue;
-      } else if (e.shape === 'cyl') cyls.push(e);
+      else if (e.shape === 'cyl') cyls.push(e);
       const lp = e.label_p || e.c; // 2대 묶음(가압펌프·압력탱크)은 label_p = 가운데
       eqLabel(e, 'RF', [lp[0], e.z0 + (e.h || (e.r ? e.r * 2 : 0.5)) + 0.6, -lp[1]]);
     }

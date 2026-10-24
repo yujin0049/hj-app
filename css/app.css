@@ -581,3 +581,16 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .stu-tile, .stu-back, .stu-acc-chev { transition: none; }
 }
+
+/* 더보기·공부 그룹 헤더 */
+.menu-group {
+  margin: 18px 4px 6px;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .04em;
+  color: var(--navy);
+  opacity: .85;
+}
+.must-entry h2 { margin: 4px 0 8px; }
+.must-card h2 { font-size: 1.05rem; margin: 0 0 6px; }
+.pin-reg { border-color: rgba(0, 82, 155, .18); }

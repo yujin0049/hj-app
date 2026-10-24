@@ -162,13 +162,14 @@
     // 문서등록대장 학습(#/docreg): 문제 풀며 문서등록대장 익히기(유진님 10.21. 20:47 지시). 진도는 자료를 읽은 뒤 채워요.
     h += '<button class="bs-entry" type="button" data-go="#/docreg" id="home-docreg"><span class="tile-ic teal">📑</span><span class="bs-entry-tx"><b>문서등록대장 학습</b><span class="tile-sub" id="home-docreg-sub">분류별 문제로 문서 익히기</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += card3d();
-    h += '<div class="tiles">' +
+    h += '<p class="menu-group">바로가기</p><div class="tiles">' +
       tile('#/board', '📋', '오늘 할 일', work.length ? ('진행 중 ' + work.length + '건') : '업무 현황표', 'blue') +
       tile('#/schedule', '🗓️', '남은 일정', schedOpen ? ('남은 일 ' + schedOpen + '개') : '체크리스트', 'green') +
       tile('#/dorm', '🏠', '기숙사 현황판', '방 배정·도면', 'orange') +
+      tile('#/study/must', '📌', '주무관 필독', '교육원·항공기술 요지', 'teal') +
+      tile('#/study', '📚', '공부', '하루 10분·규정', 'teal') +
       tile('#/banner', '🪧', '현수막 만들기', '시안·예전 현수막', 'purple') +
       tile('#/3d', '🏫', '교육원 전경 3D', '앱 안에서 크게 보기', 'blue') +
-      tile('#/study', '📚', '공부', '하루 10분', 'teal') +
       '</div>';
     h += '<section class="card"><h2>확인 필요</h2>';
     if (!review.length) h += '<p class="muted">표시해 둔 확인 필요가 없어요.</p>';

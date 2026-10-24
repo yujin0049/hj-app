@@ -8,6 +8,7 @@
     var parts = api.route().parts;
     if (parts[1] === 'day' && parts[2]) return dayView(el, api, Number(parts[2]));
     if (parts[1] === 'rule' && parts[2]) return regView(el, api, parts[2]);
+    if (parts[1] === 'must') return mustView(el, api);
     var days = daysOf(api);
     var done = doneMap(api);
     var nDone = days.filter(function (d) { return done[d.day]; }).length;
@@ -17,6 +18,9 @@
     var h = '<section class="card"><p class="kicker">하루 10분</p><h1>공부</h1>' +
       '<div class="statgrid"><div><b>' + pct + '%</b><span class="muted">진도</span></div><div><b>' + leftMin + '분</b><span class="muted">남은 시간</span></div></div>' +
       '<div class="bar" style="margin-top:10px"><i style="width:' + pct + '%"></i></div></section>';
+    h += '<section class="card must-entry"><p class="kicker">주무관 필독</p><h2>교육원·항공기술 규정 요지</h2>' +
+      '<p class="muted">두 기관을 섞지 말 것 · ATIMS 10일 · 정원·시수 · 출석·시험 · 교관·기록·유효기간</p>' +
+      '<button class="btn block" id="go-must" type="button">필독 10가지 열기</button></section>';
     if (today) {
       h += '<section class="card"><p class="kicker">오늘의 카드</p><h2>' + today.day + '일차 · ' + api.esc(today.title) + '</h2>' +
         '<p>' + api.esc(today.goal || '') + '</p><button class="btn block" id="open-today" type="button">오늘 공부 열기</button>' +
@@ -30,8 +34,18 @@
         (done[d.day] ? ' <span class="badge ok">함</span>' : '') + '</span></button>';
     });
     var regs = api.pack().entities.regulations || [];
+    var pin = { g8: 1, g11: 1, g12: 1, g13: 1, g14: 1 };
+    var pinned = regs.filter(function (r) { return pin[r.id]; });
+    var rest = regs.filter(function (r) { return !pin[r.id]; });
     h += '<section class="card"><h2>알아야 할 규정</h2><p class="muted">' + regs.length + '개. 조문과 원문 위치만 적혀 있어요.</p>';
-    regs.forEach(function (r) {
+    if (pinned.length) {
+      h += '<p class="menu-group">교육원·필독 관련</p>';
+      pinned.forEach(function (r) {
+        h += '<button class="list-btn pin-reg" type="button" data-reg="' + api.esc(r.id) + '"><b>' + api.esc(r.name) + '</b> <span class="badge ok">필독</span><div class="item-meta">' + api.esc(r.summary || '') + '</div></button>';
+      });
+      h += '<p class="menu-group">그 밖 규정</p>';
+    }
+    rest.forEach(function (r) {
       h += '<button class="list-btn" type="button" data-reg="' + api.esc(r.id) + '"><b>' + api.esc(r.name) + '</b><div class="item-meta">' + api.esc(r.summary || '') + '</div></button>';
     });
     h += '</section>';
@@ -40,6 +54,8 @@
     if (open && today) open.onclick = function () { api.go('#/study/day/' + today.day); };
     var prac = el.querySelector('#go-practice');
     if (prac) prac.onclick = function () { api.go('#/practice'); };
+    var gm = el.querySelector('#go-must');
+    if (gm) gm.onclick = function () { api.go('#/study/must'); };
     el.querySelectorAll('[data-day]').forEach(function (b) {
       b.onclick = function () { api.go('#/study/day/' + b.getAttribute('data-day')); };
     });
@@ -83,6 +99,46 @@
     el.querySelector('#did').onclick = function () {
       api.markStudy(d.day, !on).then(function () { api.toast(on ? '취소했어요.' : '오늘 공부를 했어요.'); api.refresh(); });
     };
+  }
+
+
+  var mustCache = null;
+  function loadMust() {
+    if (!mustCache) {
+      mustCache = fetch(new URL('data/필독_교육원규정.json', document.baseURI).href, { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('must'); return r.json(); })
+        .catch(function () { return null; });
+    }
+    return mustCache;
+  }
+  function mustView(el, api) {
+    el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.querySelector('#back').onclick = function () { api.go('#/study'); };
+    loadMust().then(function (d) {
+      if (!d) {
+        el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card"><p>필독 자료를 못 불러왔어요.</p></section>';
+        el.querySelector('#back').onclick = function () { api.go('#/study'); };
+        return;
+      }
+      var h = '<button class="linkish" id="back" type="button">← 공부</button>' +
+        '<section class="card"><p class="kicker">주무관 필독</p><h1>' + api.esc(d.title || '주무관 필독') + '</h1>' +
+        '<p>' + api.esc(d.subtitle || '') + '</p>' +
+        '<p class="muted">원문 요지 · ' + api.esc(d.source_note || '') + '</p></section>';
+      (d.cards || []).forEach(function (c, i) {
+        h += '<section class="card must-card"><p class="kicker">' + (i + 1) + '. ' + api.esc(c.k || '') + '</p>' +
+          '<h2>' + api.esc(c.t || '') + '</h2><p>' + api.esc(c.d || '') + '</p></section>';
+      });
+      h += '<section class="card"><h2>원문 규정 카드</h2><p class="muted">앱 안 원문 보기(RegDocs)로 이어져요.</p>';
+      (d.reg_links || []).forEach(function (r) {
+        h += '<button class="list-btn" type="button" data-reg="' + api.esc(r.id) + '"><b>' + api.esc(r.label || r.id) + '</b></button>';
+      });
+      h += '<p class="muted" style="margin-top:10px">keep 원문: ' + api.esc(d.keep_path || '') + '</p></section>';
+      el.innerHTML = h;
+      el.querySelector('#back').onclick = function () { api.go('#/study'); };
+      el.querySelectorAll('[data-reg]').forEach(function (b) {
+        b.onclick = function () { api.go('#/study/rule/' + b.getAttribute('data-reg')); };
+      });
+    });
   }
 
   function regView(el, api, id) {

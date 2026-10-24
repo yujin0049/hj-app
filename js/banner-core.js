@@ -266,7 +266,7 @@
   }
 
   // F. 예전 현수막 v03. 흰 바탕, 큰 제목, 오른쪽 비행기.
-  designs.push({ key: 'F', name: '비행기', group: '예전 현수막', build(d, logo, opt) {
+  designs.push({ key: 'F', name: '예전 현수막 F', group: '예전 현수막', build(d, logo, opt) {
     const plane = planeBox(opt);
     const left = 150;
     const textW = Math.max(1400, W - plane.w - left - 40);

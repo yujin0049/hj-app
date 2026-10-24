@@ -61,22 +61,27 @@
     if (page === 'settings') return settings(el, api);
     if (page === 'roadmap') return roadmap(el, api);
     el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p>' + (api.pack().packVersion ? '<p class="muted" id="pack-ver" style="font-size:.8rem;margin:4px 0 0">공부·규칙 자료판 ' + api.esc(api.pack().packVersion) + ' (public-pack.json)</p>' : '') + '</section>' +
-      menuBtn('filefind', '파일 찾기', '낱말로 옵시디언·PC 파일 찾기, 내려받은 파일 정리') +
+      menuGroup('일상·현장') +
       menuBtn('news', '교육원 소식', '행사, 일정, 공지') +
-      menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
       menuBtn('dorm', '기숙사 현황판', '도면, 겨울방학 이동, 기숙사비') +
       menuBtn('schedule', '남은 일정', '날짜, 담당, 완료, 시트 저장') +
-      menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
       menuBtn('lockers', '사물함', '5101호·2층 휴게실 색깔 판, 열쇠 수, 배정 추천') +
+      menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
+      menuBtn('filefind', '파일 찾기', '낱말로 옵시디언·PC 파일 찾기, 내려받은 파일 정리') +
+      menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
+      menuGroup('계획·현황') +
       menuBtn('calendar', '계획 달력', '월·주 보기, 유진님 할 일·교수님 일정, D-day') +
       menuBtn('regular-docs', '정례 문서 달력', '달 격자 · 분류 고르기 · 다가오는 달 예상') +
+      menuBtn('status', '현황표', '유진님 할 일 먼저, 상태·마감·담당 봇, OJNT 진행률') +
+      menuBtn('bots', '봇 작업 현황', '지금 도는 일 한 줄씩 · 유진님 몫 · 마감 임박 · 감사 위험') +
+      menuGroup('공부·규정') +
+      menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
+      menuBtn('study-must', '주무관 필독', '교육원·항공기술 규정 요지 10가지') +
       menuBtn('docreg', '문서등록대장 학습', '분류별 문제 · 정례 문서 달력 · 틀린 문제 다시') +
       menuBtn('who', '학과·사람별 업무', '학과 카드 · 사람별 카드 · 누가 하나 문제') +
-      menuBtn('bots', '봇 작업 현황', '지금 도는 일 한 줄씩 · 유진님 몫 · 마감 임박 · 감사 위험') +
-      menuBtn('status', '현황표', '유진님 할 일 먼저, 상태·마감·담당 봇, OJNT 진행률') +
+      menuGroup('시설') +
       menuBtn('3d', '교육원 전경 3D', '앱 안에서 보기 · v02 모델') +
-      menuLink('trainer3d.html', '훈련기 3D', '공군 05-009 전시 훈련기 · 돌려보고 부품 익히기 · 새 창') +
-      menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
+      menuGroup('자료·설정') +
       menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
       menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +
       menuBtn('plan', '사업 기획', '내년 준비 점검') +
@@ -89,13 +94,14 @@
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
+        else if (id === 'study-must') api.go('#/study/must');
         else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });
   }
-  function menuLink(href, title, sub) {
-    return '<a class="list-btn" href="' + href + '" target="_blank" rel="noopener"><b>' + title + ' ↗</b><div class="item-meta">' + sub + '</div></a>';
+  function menuGroup(title) {
+    return '<p class="menu-group">' + title + '</p>';
   }
   function menuBtn(id, title, sub) {
     return '<button class="list-btn" type="button" data-page="' + id + '"><b>' + title + '</b><div class="item-meta">' + sub + '</div></button>';
