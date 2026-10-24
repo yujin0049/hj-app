@@ -3,7 +3,7 @@ var CACHE = 'hj-v35';
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(function (c) {
-    return c.addAll(['./', './index.html', './css/app.css?v=22', './js/app.js?v=22']).catch(function () {});
+    return c.addAll(['./', './index.html', './css/app.css?v=23', './js/app.js?v=22']).catch(function () {});
   }));
 });
 self.addEventListener('activate', function (e) {

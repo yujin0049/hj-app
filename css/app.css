@@ -465,3 +465,119 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
 .bs-entry-tx { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .bs-entry-tx b { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
 .bs-entry-go { color: var(--muted); font-size: 1.6rem; line-height: 1; }
+
+/* 학생 안내 (#/students) — 목록 타일·단계·아코디언 */
+.stu-hero { margin-top: 8px; }
+.stu-hero-row { display: flex; align-items: center; gap: 12px; }
+.stu-hero-row h1 { margin: 0; }
+.stu-lead { color: var(--ink-2); margin: .4rem 0 0; }
+.stu-intro { margin-top: 10px; }
+.stu-intro .stu-p:first-child { margin-top: 0; }
+
+.stu-tiles { display: flex; flex-direction: column; gap: 10px; margin: 4px 0 12px; }
+.stu-tile {
+  display: flex; align-items: center; gap: 14px;
+  width: 100%; min-height: 76px; padding: 14px 16px;
+  border: 0; border-radius: 20px; background: #fff;
+  text-align: left; color: var(--ink); cursor: pointer;
+  transition: transform .12s ease, background-color .12s ease;
+}
+.stu-tile:active { transform: scale(.98); background: #F8FAFC; }
+.stu-tile-tx { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.stu-tile-tx b { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.02em; }
+.stu-tile-go { color: var(--muted); font-size: 1.5rem; line-height: 1; flex: none; }
+
+.stu-sticky {
+  position: sticky; top: 0; z-index: 4;
+  margin: 0 -16px; padding: 6px 16px 8px;
+  background: rgba(242, 244, 246, .92);
+  -webkit-backdrop-filter: saturate(180%) blur(10px);
+  backdrop-filter: saturate(180%) blur(10px);
+}
+.stu-back {
+  display: inline-flex; align-items: center; gap: 4px;
+  min-height: 40px; padding: 0 12px;
+  border: 0; border-radius: 999px;
+  background: #fff; color: var(--navy); font-weight: 800;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  transition: transform .12s ease;
+}
+.stu-back:active { transform: scale(.97); }
+
+.stu-chips { margin: 4px 0 8px; padding-bottom: 6px; }
+.stu-chip { background: #fff; }
+.stu-chip.on { background: var(--navy); color: #fff; }
+
+.stu-progress { padding: 14px 16px; }
+.stu-progress-label { margin: 0 0 8px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.stu-progress-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.stu-progress-dot {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 32px; padding: 4px 10px 4px 4px;
+  border-radius: 999px; background: var(--blue-soft);
+  color: var(--navy); font-size: .82rem; font-weight: 700;
+}
+.stu-progress-dot i {
+  display: grid; place-items: center;
+  width: 22px; height: 22px; border-radius: 50%;
+  background: var(--navy); color: #fff; font-style: normal; font-size: .75rem;
+}
+
+.stu-sec { padding-top: 18px; }
+.stu-sec-h {
+  display: flex; align-items: center; gap: 10px;
+  margin: 0 0 12px; font-size: 1.08rem;
+}
+.stu-acc-n {
+  display: grid; place-items: center; flex: none;
+  width: 28px; height: 28px; border-radius: 10px;
+  background: var(--blue-soft); color: var(--navy);
+  font-size: .85rem; font-weight: 800;
+}
+
+.stu-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.stu-step {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--soft); border-radius: 14px; padding: 12px 14px;
+}
+.stu-step-n {
+  flex: none; width: 26px; height: 26px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--navy); color: #fff; font-size: .8rem; font-weight: 800;
+}
+.stu-step-tx { flex: 1; min-width: 0; font-size: .95rem; line-height: 1.5; }
+
+.stu-ul { margin: .4rem 0 .6rem; padding-left: 1.15rem; }
+.stu-ul li { margin: .35rem 0; }
+.stu-p { margin: .45rem 0; color: var(--ink-2); }
+.stu-table { margin: 8px 0; }
+
+.stu-acc {
+  background: #fff; border-radius: 20px; margin: 10px 0;
+  overflow: hidden;
+}
+.stu-acc-btn {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; min-height: 56px; padding: 14px 16px;
+  border: 0; background: #fff; text-align: left; cursor: pointer;
+  color: var(--ink); transition: background-color .12s ease;
+}
+.stu-acc-btn:active { background: #F8FAFC; }
+.stu-acc-tx { flex: 1; min-width: 0; }
+.stu-acc-tx b { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; }
+.stu-acc-chev {
+  flex: none; width: 10px; height: 10px;
+  border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted);
+  transform: rotate(45deg); margin-top: -4px;
+  transition: transform .18s ease;
+}
+.stu-acc.on .stu-acc-chev { transform: rotate(225deg); margin-top: 4px; }
+.stu-acc-body {
+  display: none; padding: 0 16px 16px;
+  border-top: 1px solid var(--line);
+}
+.stu-acc.on .stu-acc-body { display: block; padding-top: 12px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .stu-tile, .stu-back, .stu-acc-chev { transition: none; }
+}
