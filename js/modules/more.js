@@ -77,6 +77,7 @@
       menuGroup('공부·규정') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
       menuBtn('study-must', '주무관 필독', '교육원·항공기술 규정 요지 10가지') +
+      menuBtn('changelog', '변경이력 카드', '표지 캐러셀 · 버전 요지 · 학습 패널') +
       menuBtn('docreg', '문서등록대장 학습', '분류별 문제 · 정례 문서 달력 · 틀린 문제 다시') +
       menuBtn('who', '학과·사람별 업무', '학과 카드 · 사람별 카드 · 누가 하나 문제') +
       menuGroup('시설') +
@@ -95,6 +96,7 @@
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
         else if (id === 'study-must') api.go('#/study/must');
+        else if (id === 'changelog') api.go('#/study/changelog');
         else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs') api.go('#/' + id);
         else api.go('#/more/' + id);
       };

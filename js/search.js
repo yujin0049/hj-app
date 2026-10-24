@@ -55,6 +55,7 @@
     (ent.study_days || []).forEach(function (d) {
       push(out, '공부', d.day + '일차 ' + (d.title || ''), d.goal || '', '#/study/day/' + d.day, q);
     });
+    push(out, '공부', '변경이력 카드', '버전 요지 · 표지 캐러셀 · 학습 패널 · 필독 · 3D · 봇현황 · 배포', '#/study/changelog', q);
     (ent.questions || []).forEach(function (item) {
       push(out, '문제', item.id + ' ' + (item.질문 || ''), item.해설 || '', '#/practice/quiz', q);
     });

@@ -9,6 +9,7 @@
     if (parts[1] === 'day' && parts[2]) return dayView(el, api, Number(parts[2]));
     if (parts[1] === 'rule' && parts[2]) return regView(el, api, parts[2]);
     if (parts[1] === 'must') return mustView(el, api);
+    if (parts[1] === 'changelog') return changelogView(el, api);
     var days = daysOf(api);
     var done = doneMap(api);
     var nDone = days.filter(function (d) { return done[d.day]; }).length;
@@ -21,6 +22,9 @@
     h += '<section class="card must-entry"><p class="kicker">주무관 필독</p><h2>교육원·항공기술 규정 요지</h2>' +
       '<p class="muted">두 기관을 섞지 말 것 · ATIMS 10일 · 정원·시수 · 출석·시험 · 교관·기록·유효기간</p>' +
       '<button class="btn block" id="go-must" type="button">필독 10가지 열기</button></section>';
+    h += '<section class="card cl-entry"><p class="kicker">변경이력 · 학습</p><h2>카드로 보는 연습장 변화</h2>' +
+      '<p class="muted">필독·학생안내·3D·LMS·봇현황·기숙사·배포 — 표지를 넘기며 요지를 읽어요</p>' +
+      '<button class="btn block" id="go-changelog" type="button">변경이력 카드 열기</button></section>';
     if (today) {
       h += '<section class="card"><p class="kicker">오늘의 카드</p><h2>' + today.day + '일차 · ' + api.esc(today.title) + '</h2>' +
         '<p>' + api.esc(today.goal || '') + '</p><button class="btn block" id="open-today" type="button">오늘 공부 열기</button>' +
@@ -56,6 +60,8 @@
     if (prac) prac.onclick = function () { api.go('#/practice'); };
     var gm = el.querySelector('#go-must');
     if (gm) gm.onclick = function () { api.go('#/study/must'); };
+    var gc = el.querySelector('#go-changelog');
+    if (gc) gc.onclick = function () { api.go('#/study/changelog'); };
     el.querySelectorAll('[data-day]').forEach(function (b) {
       b.onclick = function () { api.go('#/study/day/' + b.getAttribute('data-day')); };
     });
@@ -101,6 +107,174 @@
     };
   }
 
+
+
+  var changelogCache = null;
+  function loadChangelog() {
+    if (!changelogCache) {
+      changelogCache = fetch(new URL('data/changelog_cards.json', document.baseURI).href, { cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error('changelog'); return r.json(); })
+        .catch(function () { return null; });
+    }
+    return changelogCache;
+  }
+  function changelogView(el, api) {
+    var parts = api.route().parts;
+    var detailId = parts[2] || '';
+    el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.querySelector('#back').onclick = function () { api.go('#/study'); };
+    loadChangelog().then(function (d) {
+      if (!d || !d.items || !d.items.length) {
+        el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card"><p>변경이력 자료를 못 불러왔어요.</p></section>';
+        el.querySelector('#back').onclick = function () { api.go('#/study'); };
+        return;
+      }
+      if (detailId) {
+        var hit = d.items.filter(function (it) { return it.id === detailId; })[0];
+        if (!hit) {
+          el.innerHTML = '<button class="linkish" id="back" type="button">← 변경이력</button><section class="card"><p>없는 카드예요.</p></section>';
+          el.querySelector('#back').onclick = function () { api.go('#/study/changelog'); };
+          return;
+        }
+        return changelogDetail(el, api, d, hit);
+      }
+      changelogStage(el, api, d);
+    });
+  }
+  function changelogStage(el, api, d) {
+    var items = d.items;
+    var focus = 0;
+    var h = '<button class="linkish" id="back" type="button">← 공부</button>' +
+      '<section class="cl-hero card">' +
+      '<p class="kicker">' + api.esc(d.subtitle || '변경이력 · 학습 카드') + '</p>' +
+      '<h1>' + api.esc(d.title || '변경이력') + '</h1>' +
+      '<p class="muted">오른쪽 표지를 넘기면 왼쪽 요지가 따라가요. 표지를 누르면 상세 패널이 열려요.</p></section>' +
+      '<div class="cl-stage" id="cl-stage">' +
+      '<div class="cl-left" id="cl-left" aria-live="polite"></div>' +
+      '<div class="cl-right">' +
+      '<div class="cl-rail" id="cl-rail" tabindex="0" role="listbox" aria-label="변경이력 표지">' +
+      items.map(function (it, i) {
+        return '<button class="cl-cover tone-' + api.esc(it.tone || 'sky') + '" type="button" role="option" data-i="' + i + '" data-id="' + api.esc(it.id) + '" aria-label="' + api.esc((it.ver || '') + ' ' + (it.title || '')) + '">' +
+          '<span class="cl-cover-emoji" aria-hidden="true">' + api.esc(it.emoji || '🃏') + '</span>' +
+          '<span class="cl-cover-ver">' + api.esc(it.ver || '') + '</span>' +
+          '<span class="cl-cover-label">' + api.esc(it.label || '') + '</span>' +
+          '<span class="cl-cover-title">' + api.esc(it.title || '') + '</span>' +
+          '<span class="cl-cover-tag">' + api.esc(it.tag || '') + '</span>' +
+          '</button>';
+      }).join('') +
+      '</div>' +
+      '<p class="cl-hint muted">스크롤 · 화살표 키 · 표지 클릭</p>' +
+      '</div></div>';
+    el.innerHTML = h;
+    el.querySelector('#back').onclick = function () { api.go('#/study'); };
+    var left = el.querySelector('#cl-left');
+    var rail = el.querySelector('#cl-rail');
+    var covers = Array.prototype.slice.call(el.querySelectorAll('.cl-cover'));
+    function paintLeft(i) {
+      focus = Math.max(0, Math.min(items.length - 1, i));
+      var it = items[focus];
+      left.innerHTML =
+        '<p class="cl-kicker">' + api.esc(it.tag || '') + (it.date ? ' · ' + api.esc(it.date) : '') + '</p>' +
+        '<div class="cl-ver" aria-hidden="true">' + api.esc(it.ver || '') + '</div>' +
+        '<p class="cl-label">' + api.esc(it.label || '') + '</p>' +
+        '<h2 class="cl-title">' + api.esc(it.title || '') + '</h2>' +
+        '<p class="cl-summary">' + api.esc(it.summary || '') + '</p>' +
+        '<button class="btn" type="button" id="cl-open">이 카드 상세 보기</button>';
+      covers.forEach(function (c, idx) {
+        c.classList.toggle('on', idx === focus);
+        c.setAttribute('aria-selected', idx === focus ? 'true' : 'false');
+      });
+      var open = left.querySelector('#cl-open');
+      if (open) open.onclick = function () { api.go('#/study/changelog/' + it.id); };
+    }
+    function scrollToFocus(smooth) {
+      var c = covers[focus];
+      if (!c || !rail) return;
+      var leftPad = (rail.clientWidth - c.offsetWidth) / 2;
+      var x = c.offsetLeft - Math.max(0, leftPad);
+      rail.scrollTo({ left: x, behavior: smooth ? 'smooth' : 'auto' });
+    }
+    function nearestIndex() {
+      if (!rail || !covers.length) return 0;
+      var mid = rail.scrollLeft + rail.clientWidth / 2;
+      var best = 0, bestDist = Infinity;
+      covers.forEach(function (c, i) {
+        var cx = c.offsetLeft + c.offsetWidth / 2;
+        var dist = Math.abs(cx - mid);
+        if (dist < bestDist) { bestDist = dist; best = i; }
+      });
+      return best;
+    }
+    var ticking = false;
+    rail.addEventListener('scroll', function () {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+        var n = nearestIndex();
+        if (n !== focus) paintLeft(n);
+      });
+    }, { passive: true });
+    covers.forEach(function (c) {
+      c.addEventListener('click', function () {
+        var i = Number(c.getAttribute('data-i'));
+        paintLeft(i);
+        scrollToFocus(true);
+        api.go('#/study/changelog/' + c.getAttribute('data-id'));
+      });
+    });
+    rail.addEventListener('keydown', function (ev) {
+      if (ev.key === 'ArrowRight' || ev.key === 'ArrowDown') {
+        ev.preventDefault(); paintLeft(focus + 1); scrollToFocus(true);
+      } else if (ev.key === 'ArrowLeft' || ev.key === 'ArrowUp') {
+        ev.preventDefault(); paintLeft(focus - 1); scrollToFocus(true);
+      } else if (ev.key === 'Enter' || ev.key === ' ') {
+        ev.preventDefault(); api.go('#/study/changelog/' + items[focus].id);
+      }
+    });
+    paintLeft(0);
+    requestAnimationFrame(function () { scrollToFocus(false); });
+  }
+  function changelogDetail(el, api, d, it) {
+    var h = '<button class="linkish" id="back" type="button">← 변경이력</button>' +
+      '<section class="cl-detail-head card tone-' + api.esc(it.tone || 'sky') + '">' +
+      '<p class="cl-kicker">' + api.esc(it.tag || '') + (it.date ? ' · ' + api.esc(it.date) : '') + '</p>' +
+      '<div class="cl-ver sm">' + api.esc(it.ver || '') + '</div>' +
+      '<h1>' + api.esc(it.emoji || '') + ' ' + api.esc(it.title || '') + '</h1>' +
+      '<p>' + api.esc(it.summary || '') + '</p></section>' +
+      '<p class="menu-group">상세 패널 · 눌러서 설명</p>' +
+      '<div class="cl-panels" id="cl-panels">';
+    (it.panels || []).forEach(function (p, i) {
+      h += '<button class="cl-panel tone-' + api.esc(it.tone || 'sky') + '" type="button" data-pi="' + i + '" aria-expanded="false">' +
+        '<span class="cl-panel-t">' + api.esc(p.t || '') + '</span>' +
+        '<span class="cl-panel-d" hidden>' + api.esc(p.d || '') + '</span>' +
+        '<span class="cl-panel-tip" role="tooltip">' + api.esc(p.d || '') + '</span>' +
+        '</button>';
+    });
+    h += '</div>';
+    var idx = d.items.indexOf(it);
+    h += '<div class="cl-navrow">';
+    if (idx > 0) h += '<button class="btn-ghost" type="button" id="cl-prev">← ' + api.esc(d.items[idx - 1].label || '이전') + '</button>';
+    if (idx >= 0 && idx < d.items.length - 1) h += '<button class="btn-ghost" type="button" id="cl-next">' + api.esc(d.items[idx + 1].label || '다음') + ' →</button>';
+    h += '</div>';
+    el.innerHTML = h;
+    el.querySelector('#back').onclick = function () { api.go('#/study/changelog'); };
+    var prev = el.querySelector('#cl-prev');
+    var next = el.querySelector('#cl-next');
+    if (prev) prev.onclick = function () { api.go('#/study/changelog/' + d.items[idx - 1].id); };
+    if (next) next.onclick = function () { api.go('#/study/changelog/' + d.items[idx + 1].id); };
+    el.querySelectorAll('.cl-panel').forEach(function (b) {
+      function toggle() {
+        var on = b.classList.toggle('open');
+        b.setAttribute('aria-expanded', on ? 'true' : 'false');
+        var dEl = b.querySelector('.cl-panel-d');
+        if (dEl) dEl.hidden = !on;
+      }
+      b.addEventListener('click', toggle);
+      b.addEventListener('mouseenter', function () { b.classList.add('hover'); });
+      b.addEventListener('mouseleave', function () { b.classList.remove('hover'); });
+    });
+  }
 
   var mustCache = null;
   function loadMust() {
