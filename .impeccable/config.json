@@ -1,0 +1,28 @@
+{
+  "detector": {
+    "ignoreRules": [
+      "ai-color-palette"
+    ],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "motion-poster.html"
+        ],
+        "createdAt": "2026-10-25T12:06:46.007Z",
+        "reason": "Soft Glow Squircle intentional"
+      },
+      {
+        "rule": "dark-glow",
+        "value": "*",
+        "files": [
+          "public/motion-poster/**"
+        ],
+        "createdAt": "2026-10-25T12:06:46.677Z",
+        "reason": "Soft Glow Squircle intentional"
+      }
+    ]
+  }
+}
