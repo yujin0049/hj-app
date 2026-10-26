@@ -2,12 +2,12 @@
  "version": 1,
  "tz": "Asia/Seoul",
  "stale_hours": 24,
- "last_try": "2026-10-26 11:33",
+ "last_try": "2026-10-26 12:11",
  "last_try_ok": true,
  "steps": {
   "현황판": {
    "ok": true,
-   "read_at": "2026-10-26 11:33",
+   "read_at": "2026-10-26 12:11",
    "old_raw": false,
    "why": ""
   },
@@ -24,6 +24,6 @@
    "ok": true
   }
  },
- "refreshed_at": "2026-10-26 11:33",
- "refreshed_iso": "2026-10-26T11:33+09:00"
+ "refreshed_at": "2026-10-26 12:11",
+ "refreshed_iso": "2026-10-26T12:11+09:00"
 }
