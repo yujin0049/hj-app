@@ -48,6 +48,8 @@ class TP002Schema(unittest.TestCase):
         self.assertGreaterEqual(len(ANKI['cards']), 12)
         self.assertIn('ANKI-13', {c['id'] for c in ANKI['cards']})
         self.assertIn('ANKI-14', {c['id'] for c in ANKI['cards']})
+        self.assertIn('ANKI-15', {c['id'] for c in ANKI['cards']})
+        self.assertIn('ANKI-16', {c['id'] for c in ANKI['cards']})
         self.assertEqual(ANKI['intervals_days'], [1, 3, 7, 14, 30])
 
     def test_no_pii(self):
