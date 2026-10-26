@@ -45,7 +45,9 @@ class TP002Schema(unittest.TestCase):
         self.assertTrue(works <= {'L03', 'L47', 'L08'})
 
     def test_anki_seed(self):
-        self.assertEqual(len(ANKI['cards']), 12)
+        self.assertGreaterEqual(len(ANKI['cards']), 12)
+        self.assertIn('ANKI-13', {c['id'] for c in ANKI['cards']})
+        self.assertIn('ANKI-14', {c['id'] for c in ANKI['cards']})
         self.assertEqual(ANKI['intervals_days'], [1, 3, 7, 14, 30])
 
     def test_no_pii(self):

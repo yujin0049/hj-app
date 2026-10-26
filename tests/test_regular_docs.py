@@ -46,7 +46,11 @@ class T자료(unittest.TestCase):
             out = os.path.join(d, 'r.json')
             MRD.main(['x', MRD.SRC, out])
             with open(out, encoding='utf-8') as f:
-                self.assertEqual(json.load(f), RD)
+                got = json.load(f)
+            # tips 등 수동 덧붙임은 xlsx 재생성 대상 아님
+            exp = {k: v for k, v in RD.items() if k != 'tips'}
+            self.assertEqual(got, exp)
+            self.assertIn('tips', RD)
 
     def test_wired(self):
         self.assertIn("'regular-docs'", read('js/registry.js'))
