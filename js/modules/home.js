@@ -120,6 +120,9 @@
     });
   }
   window.HJ3D = { src: function (embed) { return V3D[ver3d()] + (embed ? '?embed=1&v=18' : '?v=18'); }, btns: verBtns };
+  function otEntry() {
+    return '<button class="bs-entry" type="button" data-go="#/ot-attach" id="home-otattach"><span class="tile-ic orange">📎</span><span class="bs-entry-tx"><b>원인행위 붙임 만들기</b><span class="tile-sub">10월 시간외근무수당 · 서류 확인 후 한 권</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+  }
   function card3d() {
     return '<section class="card home3d"><div class="home3d-head"><h2>교육원 전경 3D</h2>' +
       '<button class="btn-ghost small" type="button" data-go="#/3d">전체 화면</button></div>' + verBtns() +
@@ -153,6 +156,7 @@
     var schedAll = (pack.entities.schedule && pack.entities.schedule.items) || [];
     var schedOpen = schedAll.filter(function (it) { return !it.done; }).length;
     var h = '<section class="hero"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1 class="hero-title">오늘 뭐부터 할까요?</h1></section>';
+    h += otEntry();
     // 봇 작업 현황(#/bots): 홈 맨 위에서 바로 들어가요. 숫자는 data/bot_status.json 을 읽은 뒤 채워요(유진님 10.21. 20:15 지시).
     h += '<button class="bs-entry" type="button" data-go="#/bots" id="home-bots"><span class="tile-ic purple">🤖</span><span class="bs-entry-tx"><b>봇 작업 현황</b><span class="tile-sub" id="home-bots-sub">지금 도는 일을 한 줄씩</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 학과·사람별 업무(#/who): 누가 무슨 일을 하나(유진님 10.22. 00:54 요청). 실명 없이 역할 표기만.
@@ -290,7 +294,7 @@
   function renderPublic(el, api) {
     var guide = api.guide();
     var news = (guide.sections || []).filter(function (s) { return s.id === 'news'; })[0];
-    var h = '<section class="card"><p class="kicker">행정 업무 연습장</p><h1>오늘 찾을 일</h1>' +
+    var h = otEntry() + '<section class="card"><p class="kicker">행정 업무 연습장</p><h1>오늘 찾을 일</h1>' +
       '<p>자료를 불러오지 못했어요. 새로고침해 주세요. 학생 안내는 바로 볼 수 있어요.</p>' +
       '<div class="row"><button class="btn" id="go-stu" type="button">학생 안내</button>' +
       '<button class="btn-ghost" id="go-admin" type="button">행정 업무 열기</button></div></section>';

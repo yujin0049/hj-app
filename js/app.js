@@ -335,7 +335,7 @@
     var id = route.name;
     if (id === 'tomorrow') id = 'todo';
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'todo' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' ? 'study' : id)));
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'todo' || id === 'ot-attach' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' ? 'study' : id)));
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
