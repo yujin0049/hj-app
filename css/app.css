@@ -873,7 +873,10 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
 }
 .hk-who strong { color: var(--ink); font-size: 1.02rem; }
 .hk-nav { display: flex; flex-wrap: wrap; gap: 6px; margin: 0 0 12px; }
-.hk-nav button {
+.hk-nav button,
+.hk-nav a {
+  display: inline-flex;
+  align-items: center;
   min-height: 40px;
   padding: 6px 14px;
   border: 0;
@@ -882,9 +885,11 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
   color: #333D4B;
   font-weight: 700;
   cursor: pointer;
+  text-decoration: none;
 }
 .hk-nav button[aria-current="page"] { background: #1B64DA; color: #fff; }
-.hk-nav button:hover:not([aria-current="page"]) { background: #E8F3FF; color: #1B64DA; }
+.hk-nav button:hover:not([aria-current="page"]),
+.hk-nav a:hover { background: #E8F3FF; color: #1B64DA; }
 .hk-body {
   display: grid;
   grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
@@ -1002,16 +1007,16 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
 .hk-picks { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 16px; }
 .hk-pick { min-height: 64px; background: var(--soft); border-radius: 16px; font-weight: 800; }
 .hk-pick:hover { background: #E8F3FF; color: #1B64DA; }
-.hk button:focus-visible, .hk input:focus-visible, .hk select:focus-visible {
+.hk button:focus-visible, .hk a:focus-visible, .hk input:focus-visible, .hk select:focus-visible {
   outline: 2px solid #1B64DA;
   outline-offset: 2px;
 }
-.hk-leaf:active, .hk-branch:active, .hk-pick:active, .hk-nav button:active { transform: scale(.98); }
+.hk-leaf:active, .hk-branch:active, .hk-pick:active, .hk-nav button:active, .hk-nav a:active { transform: scale(.98); }
 @media (max-width: 860px) {
   .hk-body { grid-template-columns: 1fr; }
   .hk-side { position: static; max-height: none; }
   .hk-picks { grid-template-columns: 1fr 1fr; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hk-branch .chev, .hk-leaf, .hk-branch, .hk-pick, .hk-nav button { transition: none; }
+  .hk-branch .chev, .hk-leaf, .hk-branch, .hk-pick, .hk-nav button, .hk-nav a { transition: none; }
 }
