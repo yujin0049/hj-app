@@ -13,11 +13,14 @@ class Coop(unittest.TestCase):
         self.d = json.loads(read('data', 'coop.json'))
 
     def test_shape(self):
-        self.assertEqual(self.d['version'], 'v01')
+        self.assertEqual(self.d['version'], 'v02')
         self.assertEqual(len(self.d['top5']), 5)
         self.assertGreaterEqual(len(self.d['rows']), 20)
         self.assertEqual(len(self.d['rules']), 5)
         self.assertEqual(len(self.d['people']), 12)
+        self.assertGreaterEqual(len(self.d.get('edu_now') or []), 5)
+        self.assertTrue(any('김정임' in (x.get('body') or '') or '7363' in (x.get('body') or '') for x in self.d['edu_now']))
+        self.assertTrue(any('이동렬' in (x.get('body') or '') or '7334' in (x.get('body') or '') for x in self.d['edu_now']))
         self.assertTrue(any('경로' in p['item'] for p in self.d['leave_paths']))
         for r in self.d['rows']:
             for k in ('work', 'status', 'dept', 'phone', 'who', 'line', 'note'):
@@ -43,7 +46,7 @@ class Coop(unittest.TestCase):
         self.assertIn("menuBtn('coop'", read('js', 'modules', 'more.js'))
         self.assertIn("id === 'coop'", read('js', 'app.js'))
         self.assertIn('ShellModules.coop', read('js', 'modules', 'coop.js'))
-        self.assertIn('hj-v46', read('sw.js'))
+        self.assertIn('hj-v47', read('sw.js'))
 
     def test_regression_others(self):
         home = read('js', 'modules', 'home.js')

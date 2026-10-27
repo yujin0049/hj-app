@@ -51,6 +51,9 @@
     var esc = api.esc;
     var needle = (q || '').trim().toLowerCase();
     var rows = (data.rows || []).filter(function (r) { return matchRow(r, needle); });
+    var edu = (data.edu_now || []).map(function (t) {
+      return '<div class="cp-item"><b>' + esc(t.title) + '</b><span>' + inline(esc, t.body) + '</span></div>';
+    }).join('');
     var top = (data.top5 || []).map(function (t, i) {
       return '<div class="cp-item"><b>' + (i + 1) + '. ' + esc(t.title) + '</b><span>' + inline(esc, t.to) + '</span></div>';
     }).join('');
@@ -82,6 +85,7 @@
       '<div class="cp-head"><h1>협조리스트 (원큐)</h1>' +
       '<p>업무별 협조처 · 휴보강 경로 · 번호부 등재 주업무. 자료 ' + esc(data.version || '') + ' · ' + esc(data.updated || '') + '</p>' +
       '<div class="cp-warn">' + esc(data.notice || '') + '</div></div>' +
+      '<section class="cp-card"><h2>교육원에 바로 쓸 것</h2><div class="cp-top">' + edu + '</div></section>' +
       '<section class="cp-card"><h2>오늘 당장 Top5</h2><div class="cp-top">' + top + '</div></section>' +
       '<section class="cp-card"><h2>휴보강 경로</h2>' + paths + '</section>' +
       '<section class="cp-card"><h2>협조 표 <small class="cp-m">' + rows.length + ' / ' + (data.rows || []).length + '건</small></h2>' +
