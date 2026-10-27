@@ -13,7 +13,7 @@ class Coop(unittest.TestCase):
         self.d = json.loads(read('data', 'coop.json'))
 
     def test_shape(self):
-        self.assertEqual(self.d['version'], 'v02')
+        self.assertEqual(self.d['version'], 'v03')
         self.assertEqual(len(self.d['top5']), 5)
         self.assertGreaterEqual(len(self.d['rows']), 20)
         self.assertEqual(len(self.d['rules']), 5)
@@ -46,7 +46,21 @@ class Coop(unittest.TestCase):
         self.assertIn("menuBtn('coop'", read('js', 'modules', 'more.js'))
         self.assertIn("id === 'coop'", read('js', 'app.js'))
         self.assertIn('ShellModules.coop', read('js', 'modules', 'coop.js'))
-        self.assertIn('hj-v47', read('sw.js'))
+        self.assertIn('hj-v49', read('sw.js'))
+
+
+    def test_google_ui_and_keywords(self):
+        self.assertGreaterEqual(len(self.d.get('keywords') or []), 5)
+        self.assertTrue(any(k.get('label') == '강사료' for k in self.d['keywords']))
+        for r in self.d['rows']:
+            self.assertIn('tags', r)
+            self.assertIn('money', r)
+        js = read('js', 'modules', 'coop.js')
+        self.assertIn('협조 검색', js)
+        self.assertIn('data-kw', js)
+        self.assertIn('돈처리', js)
+        self.assertIn('cp-more', js)
+        self.assertIn('who_names', js)  # notice only
 
     def test_regression_others(self):
         home = read('js', 'modules', 'home.js')
