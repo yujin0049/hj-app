@@ -79,8 +79,8 @@ class TP002Schema(unittest.TestCase):
         self.assertIn('이번 주 카드', STUDY)
         self.assertIn('go-force', STUDY)
         self.assertIn('wrong/anki', PRAC)
-        self.assertIn('hj-v42', SW)
-        self.assertIn('app.js?v=26', SW)
+        self.assertIn('hj-v49', SW)
+        self.assertIn('app.js?v=32', SW)
 
 
 if __name__ == '__main__':
