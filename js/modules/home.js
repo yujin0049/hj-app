@@ -161,6 +161,8 @@
     h += '<button class="bs-entry" type="button" data-go="#/regular-docs" id="home-regdocs"><span class="tile-ic teal">🗓️</span><span class="bs-entry-tx"><b>정례 문서 달력</b><span class="tile-sub">달마다 오는 문서 · 다가오는 달 예상</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 학사 연습(#/haksa): 통합학사행정 메뉴 모사. 실서버·저장 없음.
     h += '<button class="bs-entry" type="button" data-go="#/haksa" id="home-haksa"><span class="tile-ic blue">학</span><span class="bs-entry-tx"><b>학사 연습</b><span class="tile-sub">통합학사행정 메뉴 · 저장 없음</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    // 협조리스트 원큐(#/coop): 업무별 협조처·휴보강 경로·번호부 주업무(유진님 10.27. 「원큐에 협조리스트」).
+    h += '<button class="bs-entry" type="button" data-go="#/coop" id="home-coop"><span class="tile-ic orange">🤝</span><span class="bs-entry-tx"><b>협조리스트 (원큐)</b><span class="tile-sub">오늘 Top5 · 휴보강 경로 · 내선·주업무</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 문서등록대장 학습(#/docreg): 문제 풀며 문서등록대장 익히기(유진님 10.21. 20:47 지시). 진도는 자료를 읽은 뒤 채워요.
     h += '<button class="bs-entry" type="button" data-go="#/docreg" id="home-docreg"><span class="tile-ic teal">📑</span><span class="bs-entry-tx"><b>문서등록대장 학습</b><span class="tile-sub" id="home-docreg-sub">분류별 문제로 문서 익히기</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += card3d();

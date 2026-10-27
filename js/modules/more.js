@@ -80,6 +80,7 @@
       menuBtn('changelog', '변경이력 카드', '표지 캐러셀 · 버전 요지 · 학습 패널') +
       menuBtn('docreg', '문서등록대장 학습', '분류별 문제 · 정례 문서 달력 · 틀린 문제 다시') +
       menuBtn('who', '학과·사람별 업무', '학과 카드 · 사람별 카드 · 누가 하나 문제') +
+      menuBtn('coop', '협조리스트 (원큐)', '오늘 Top5 · 휴보강 경로 · 내선·주업무') +
       menuGroup('시설') +
       menuBtn('3d', '교육원 전경 3D', '앱 안에서 보기 · v02 모델') +
       menuGroup('자료·설정') +
@@ -97,7 +98,7 @@
         if (id === 'practice') api.go('#/practice');
         else if (id === 'study-must') api.go('#/study/must');
         else if (id === 'changelog') api.go('#/study/changelog');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });
