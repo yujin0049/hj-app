@@ -2,34 +2,47 @@
   "version": "v01",
   "date": "2026-10-28",
   "title": "내일 할 일",
+  "note": "봇큐=조사/261027_유진님대체_내일실행_v01.md",
   "items": [
     {
       "id": "t1",
       "title": "코러스 문서대장 뽑기",
       "note": "교육원→글로컬10.10후→평생·도서관·상담·취업창업·산학·홍보",
       "path": "D:\\11_업무기타\\문서등록대장_코러스뽑기_대기\\",
+      "who": "yujin",
       "done": false
     },
     {
       "id": "t2",
       "title": "OJNT 기숙사 입사·장단기 12명 생활관 제출",
+      "who": "yujin",
       "done": true,
       "done_at": "2026-10-27T23:32:00+09:00"
     },
     {
       "id": "t3",
       "title": "휴보강(미완시)",
+      "who": "yujin",
       "done": false
     },
     {
       "id": "t4",
       "title": "T081 국토부 1431·1285·627·772 본문 PC",
-      "note": "10시, 코러스/접수함",
+      "note": "10시, 코러스/접수함 · 09_교육원운영/T081_국토부받을",
+      "who": "yujin",
       "done": false
     },
     {
       "id": "t5",
       "title": "T018 강의실·실습실·명단 확인",
+      "who": "yujin",
+      "done": false
+    },
+    {
+      "id": "t6",
+      "title": "T054 회신·출석부 이미지 OK",
+      "note": "클릭만",
+      "who": "yujin",
       "done": false
     }
   ]

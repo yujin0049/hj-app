@@ -14,6 +14,7 @@ SEED_TITLES = [
     '휴보강(미완시)',
     'T081 국토부 1431·1285·627·772 본문 PC',
     'T018 강의실·실습실·명단 확인',
+    'T054 회신·출석부 이미지 OK',
 ]
 
 class Todo(unittest.TestCase):
@@ -24,7 +25,7 @@ class Todo(unittest.TestCase):
         self.assertEqual(self.d['version'], 'v01')
         self.assertEqual(self.d['date'], '2026-10-28')
         self.assertEqual(self.d['title'], '내일 할 일')
-        self.assertEqual(len(self.d['items']), 5)
+        self.assertEqual(len(self.d['items']), 6)
         for it in self.d['items']:
             self.assertIn('id', it)
             self.assertIn('title', it)
@@ -50,6 +51,14 @@ class Todo(unittest.TestCase):
             hits = [h for h in hjpii.find_pii(text) if h not in ('이름 의심',)]
             self.assertEqual(hits, [], path)
 
+    def test_t2_done_and_t6_click(self):
+        by = {it['id']: it for it in self.d['items']}
+        self.assertTrue(by['t2']['done'])
+        self.assertEqual(by['t6'].get('note'), '클릭만')
+        self.assertEqual(by['t6'].get('who'), 'yujin')
+        self.assertIn('봇큐=', self.d.get('note') or '')
+        self.assertNotIn('온'+'나라', json.dumps(self.d, ensure_ascii=False))
+
     def test_wired(self):
         self.assertIn("'todo'", read('js', 'registry.js'))
         self.assertIn('data-go="#/todo"', read('js', 'modules', 'home.js'))
@@ -57,7 +66,7 @@ class Todo(unittest.TestCase):
         self.assertIn("id === 'todo'", read('js', 'app.js'))
         self.assertIn('tomorrow', read('js', 'app.js'))
         self.assertIn('ShellModules.todo', read('js', 'modules', 'todo.js'))
-        self.assertIn('hj-v52', read('sw.js'))
+        self.assertIn('hj-v53', read('sw.js'))
         self.assertIn('data/todo.json', read('js', 'modules', 'todo.js'))
         self.assertNotIn('instagram', read('js', 'modules', 'todo.js').lower())
         self.assertNotIn('cp-hero', read('js', 'modules', 'todo.js'))
