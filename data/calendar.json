@@ -4,12 +4,12 @@
  "counts": {
   "sheet": 65,
   "master": 64,
-  "extra": 3,
-  "ingest": 133,
+  "extra": 2,
+  "ingest": 134,
   "merged": 145,
   "skipped_extra": 0,
   "conflict": 0,
-  "conflict_before_rule": 4,
+  "conflict_before_rule": 3,
   "sub_steps": 78,
   "dropped": 0,
   "total": 264
@@ -1003,24 +1003,6 @@
    "group": "기타"
   },
   {
-   "id": "X107",
-   "t": "T051",
-   "title": "T051 하위: OJNT 입사신청서 마감",
-   "date": "2026-10-21",
-   "kind": "마감",
-   "lane": "yujin",
-   "status": "진행 중",
-   "area": "기숙사",
-   "bot": "춘식이",
-   "src": "extra",
-   "source": "대장 10.21. 09:49",
-   "yujin": [],
-   "check": "",
-   "step": "OJNT 입사신청서 마감",
-   "sub": true,
-   "group": "OJNT"
-  },
-  {
    "id": "X161",
    "t": "T007",
    "title": "T007 하위: 촬영 날 수업 여부 확인",
@@ -1073,6 +1055,24 @@
    "step": "개인정보 공문 스캔해서 보내기(대상 확인 필요)",
    "sub": true,
    "group": "공문"
+  },
+  {
+   "id": "X172",
+   "t": "T051",
+   "title": "T051 하위: OJNT 입사 서약서 받기 + 실거주 확인서 임대인·사업자번호 고치기",
+   "date": "2026-10-21",
+   "kind": "할 일",
+   "lane": "yujin",
+   "status": "예정",
+   "area": "OJNT",
+   "bot": "춘식이",
+   "src": "ingest",
+   "source": "통합일정 · calendar:유진님(기본)",
+   "yujin": [],
+   "check": "",
+   "step": "OJNT 입사 서약서 받기 + 실거주 확인서 임대인·사업자번호 고치기",
+   "sub": true,
+   "group": "OJNT"
   },
   {
    "id": "X176",
@@ -1511,9 +1511,11 @@
    "status": "진행 중",
    "area": "기숙사",
    "bot": "춘식이",
-   "src": "sheet+ingest",
+   "src": "sheet+extra+ingest",
    "yujin": [],
    "check": "",
+   "note": "OJNT 입사신청서 마감",
+   "source": "대장 10.21. 09:49 · 유진님 10.22. 15:02 T051 10.25.(일)로 미룸",
    "group": "OJNT"
   },
   {

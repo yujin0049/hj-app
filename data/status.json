@@ -1131,11 +1131,11 @@
    "steps": [
     {
      "date": "2026-10-21",
-     "step": "OJNT 입사신청서 마감",
-     "title": "OJNT 입사신청서 마감",
+     "step": "OJNT 입사 서약서 받기 + 실거주 확인서 임대인·사업자번호 고치기",
+     "title": "OJNT 입사 서약서 받기 + 실거주 확인서 임대인·사업자번호 고치기",
      "lane": "yujin",
-     "kind": "마감",
-     "source": "대장 10.21. 09:49"
+     "kind": "할 일",
+     "source": "통합일정 · calendar:유진님(기본)"
     }
    ],
    "group": "OJNT"
