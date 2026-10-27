@@ -66,6 +66,11 @@
     { id: 'flow', label: '업무순서관리', code: 'CMRS039', stub: '하위 미확장. 긁기에서 본문은 제목·새로고침·즐겨찾기·도움말만 보였습니다.', chrome: ['새로고침', '즐겨찾기', '도움말'] }
   ];
 
+  /* 긁기 메뉴가 아님. 학사·일반행정 등 모든 #/haksa 화면 상단에 두고, 학교 LMS만 새 창으로 연다. */
+  var EXTERNALS = [
+    { label: 'LMS', href: 'https://lms.namhae.ac.kr/' }
+  ];
+
   var SCREENS = {
     bach810: {
       title: '강좌별수강인원', code: 'BACH810', aka: '강좌개설검증',
@@ -384,6 +389,9 @@
     TOPS.forEach(function (t) {
       var on = t.id === route.top.id;
       h += '<button type="button" data-top="' + api.esc(t.id) + '"' + (on ? ' aria-current="page"' : '') + '>' + api.esc(t.label) + '</button>';
+    });
+    EXTERNALS.forEach(function (x) {
+      h += '<a href="' + api.esc(x.href) + '" target="_blank" rel="noopener" data-ext="1" aria-label="' + api.esc(x.label) + ', 새 창">' + api.esc(x.label) + '<span aria-hidden="true"> ↗</span></a>';
     });
     h += '</nav><div class="hk-body">';
     h += '<nav class="hk-side" aria-label="메뉴 트리"><p class="hk-side-label">' + api.esc(route.top.label) + '</p>';
