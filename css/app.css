@@ -897,7 +897,16 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
   padding: 12px;
   min-width: 0;
 }
-.hk-side { position: sticky; top: 72px; max-height: calc(100vh - 96px); overflow: auto; }
+.hk-side { overflow: auto; }
+@media (min-width: 861px) {
+  .hk {
+    height: calc(100vh - 144px - var(--tab) - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+  }
+  .hk-body { flex: 1 1 auto; min-height: 0; }
+  .hk-side, .hk-main { max-height: 100%; overflow: auto; }
+}
 .hk-side-label { margin: 2px 8px 8px; font-weight: 800; color: #333D4B; font-size: .86rem; }
 .hk-branch, .hk-leaf, .hk-pick {
   width: 100%;

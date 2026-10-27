@@ -1,9 +1,9 @@
 /* 항상 새 버전 먼저(네트워크 우선). 인터넷이 없을 때만 저장본을 보여 줘요. 잠금 없음. */
-var CACHE = 'hj-v44';
+var CACHE = 'hj-v45';
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(function (c) {
-    return c.addAll(['./', './index.html', './css/app.css?v=27', './js/app.js?v=27']).catch(function () {});
+    return c.addAll(['./', './index.html', './css/app.css?v=31', './js/app.js?v=27']).catch(function () {});
   }));
 });
 self.addEventListener('activate', function (e) {
