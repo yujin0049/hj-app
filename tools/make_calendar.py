@@ -9,6 +9,17 @@ import argparse, csv, io, json, os, re, sys, datetime as dt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hjpii
 
+def safe_bot(bot, hjpii_mod=None):
+    """담당 1봇: 역할어만. 이름 의심(사람)이면 빈칸. ALLOW의 문서봇 등은 유지."""
+    mod = hjpii_mod or hjpii
+    b = (bot or "").strip()
+    if not b:
+        return ""
+    if mod.suspicious(b):
+        return ""
+    return b
+
+
 KST = dt.timezone(dt.timedelta(hours=9))
 DONE = {'완료', '취소', '끝남'}
 
@@ -148,13 +159,13 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
         removed |= rm
         due = norm_date(x['due_raw'], year)
         task = {'t': x['t'], 'title': title, 'area': x['area'], 'status': x['status'], 'due': due,
-                'bot': x['bot'] or '', 'yujin': yujin_tags(x, waits)}
+                'bot': safe_bot(x.get('bot')), 'yujin': yujin_tags(x, waits)}
         if x['due_raw'] and not due:
             task['check'] = '마감일 모양 이상'
         tasks.append(task)
         if due:
             events.append({'id': x['t'], 't': x['t'], 'title': title, 'date': due, 'kind': '마감', 'lane': 'yujin',
-                           'status': x['status'], 'area': x['area'], 'bot': x['bot'] or '', 'src': 'sheet',
+                           'status': x['status'], 'area': x['area'], 'bot': safe_bot(x.get('bot')), 'src': 'sheet',
                            'yujin': task['yujin'], 'check': task.get('check', '')})
             end = end_from_title(title, due)  # 현황판엔 끝 날짜 칸이 없어 업무명 속 「11.3.(화)~11.4.(수)」로 읽음
             if end:
@@ -199,7 +210,7 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
             if d2 and d2 != tt['due']:
                 t2, rm = hjpii.scrub(ex.get('title', ''), names); removed |= rm
                 events.append({'id': 'I%02d' % (i + 1), 't': ref, 'title': t2, 'date': d2, 'kind': '할 일', 'lane': ex.get('lane', 'yujin'),
-                               'status': tt['status'], 'area': tt['area'], 'bot': tt['bot'], 'src': 'ingest', 'source': ex['source'],
+                               'status': tt['status'], 'area': tt['area'], 'bot': safe_bot(tt.get('bot')), 'src': 'ingest', 'source': ex['source'],
                                'yujin': [], 'check': ''})
                 n['ingest'] += 1
             if ex.get('status') and ex['status'] != tt['status']:
@@ -228,7 +239,7 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
             if e and e['date'] != date and master_rep.get(ref, 0) > 1:
                 # 매주 반복(예: 목요일 성과보고): 반복 날짜를 일정으로 넣음, 충돌 아님
                 events.append({'id': 'R%02d' % (i + 1), 't': ref, 'title': e['title'], 'date': date, 'kind': '반복', 'lane': 'yujin',
-                               'status': e['status'], 'area': e['area'], 'bot': e['bot'], 'src': 'master', 'source': '일정총괄 · 반복',
+                               'status': e['status'], 'area': e['area'], 'bot': safe_bot(e.get('bot')), 'src': 'master', 'source': '일정총괄 · 반복',
                                'yujin': e['yujin'], 'check': ''})
                 n['master'] += 1
                 continue
@@ -288,11 +299,8 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
               'kind': ex.get('kind', '일정'), 'lane': lane,
               'status': ex.get('status') or (task_t[ref]['status'] if ref in task_t else '할 일'),
               'area': ex.get('area') or (task_t[ref]['area'] if ref in task_t else '기타'),
-              'bot': task_t[ref]['bot'] if ref in task_t else '', 'src': origin, 'source': src_note,
+              'bot': safe_bot(task_t[ref].get('bot')) if ref in task_t else '', 'src': origin, 'source': src_note,
               'yujin': [], 'check': ex.get('check', ''), '_mk': ex.get('mkind', '')}
-        # 현황판이 정본: 현황판에서 끝난 T번호(완료·취소)는 일정총괄·통합 자료가 「할 일·열림」이어도 끝난 일로(목록·오늘 할 일에서 빠지고 완료 기록에만)
-        if ref in task_t and is_done(task_t[ref]['status']) and not is_done(ev['status']):
-            ev['status'] = task_t[ref]['status']
         if ex.get('end'):
             ev['end'] = norm_date(ex['end'], year)
         if not ev.get('end'):
@@ -393,7 +401,7 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
            'groups': GROUPS, 'rule': '날짜 정본 = 현황판. 같은 T번호의 다른 날짜는 「T번호 하위: 단계명」(대장 결정 261021)',
            'lanes': {'yujin': '유진님 할 일', 'prof': '교수님 일정', 'ref': '참고(유진님 일 아님)'},
            'prof_note': extra.get('prof_note', ''), 'events': events, 'checks': checks}
-    st = {'version': 1, 'source': '춘식이 (현황판 시트 「업무」 탭)',
+    st = {'version': 1, 'source': '인수인계봇 현황판 시트 「업무」 탭',
           'counts': {'tasks': len(tasks), 'yujin': sum(1 for t in tasks if t['yujin']),
                      'active': sum(1 for t in tasks if not is_done(t['status']))},
           'groups': GROUPS, 'tasks': tasks, 'others': others}
