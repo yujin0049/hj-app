@@ -334,7 +334,7 @@
     var route = parseHash();
     var id = route.name;
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' ? 'study' : id)));
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' || id === 'haksa' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' ? 'study' : id)));
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
@@ -377,7 +377,7 @@
       var id = list[i++];
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
-        s.src = new URL('js/modules/' + id + '.js?v=28', base).href;
+        s.src = new URL('js/modules/' + id + '.js?v=29', base).href;
         s.onload = function () { res(); };
         s.onerror = function () { rej(new Error(id)); };
         document.body.appendChild(s);
