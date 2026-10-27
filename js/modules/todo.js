@@ -45,7 +45,9 @@
     var dateLabel = fmtDate(data && data.date);
     var h = '<div class="td-wrap"><section class="td-head"><h1>' + esc(title) + '</h1>' +
       (dateLabel ? '<div class="td-date">' + esc(dateLabel) + ' 시드 · ' + items.length + '건</div>' : '') +
-      '<p class="td-note">한 장 체크리스트. 자료는 data/todo.json (봇이 갈아끼움).</p></section>';
+      '<p class="td-note">한 장 체크리스트. 자료는 data/todo.json (봇이 갈아끼움)' +
+      ((data && data.note) ? ' · ' + esc(data.note) : '') +
+      '.</p></section>';
     if (!items.length) {
       h += '<section class="card td-empty">할 일이 없어요.</section></div>';
       el.innerHTML = h;
