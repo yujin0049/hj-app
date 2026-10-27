@@ -69,6 +69,7 @@
       menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
       menuBtn('filefind', '파일 찾기', '낱말로 옵시디언·PC 파일 찾기, 내려받은 파일 정리') +
       menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
+      menuBtn('ot-attach', '원인행위 붙임 만들기', '10월 시간외근무수당 서류 확인 · 한 권 PDF') +
       menuGroup('계획·현황') +
       menuBtn('calendar', '계획 달력', '월·주 보기, 유진님 할 일·교수님 일정, D-day') +
       menuBtn('regular-docs', '정례 문서 달력', '달 격자 · 분류 고르기 · 다가오는 달 예상') +
@@ -99,7 +100,7 @@
         if (id === 'practice') api.go('#/practice');
         else if (id === 'study-must') api.go('#/study/must');
         else if (id === 'changelog') api.go('#/study/changelog');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });
