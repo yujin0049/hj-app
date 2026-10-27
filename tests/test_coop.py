@@ -46,7 +46,7 @@ class Coop(unittest.TestCase):
         self.assertIn("menuBtn('coop'", read('js', 'modules', 'more.js'))
         self.assertIn("id === 'coop'", read('js', 'app.js'))
         self.assertIn('ShellModules.coop', read('js', 'modules', 'coop.js'))
-        self.assertIn('hj-v47', read('sw.js'))
+        self.assertIn('hj-v48', read('sw.js'))
 
     def test_regression_others(self):
         home = read('js', 'modules', 'home.js')
