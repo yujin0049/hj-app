@@ -7,3 +7,4 @@
 범위 밖: haksa.namhae.ac.kr 호출, 로그인, 조회 결과의 실데이터.
 
 상단 「LMS」는 모든 `#/haksa` 화면(일반행정 `#/haksa/top/ilban` 포함)에서 [lms.namhae.ac.kr](https://lms.namhae.ac.kr/) 을 새 창으로만 연다. 이 앱은 로그인하지 않고 학번·이름을 저장하지 않는다.
+- 참고: 조사/261027_학사사이트_긁기_v01.md (261027 긁기 원본)
