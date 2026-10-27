@@ -10,8 +10,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hjpii
 from make_calendar import read_table
 
-# 사이트에 원래 있는 공개 대표번호 등은 여기 「파일:종류」로 허용(지금은 없음)
-SITE_ALLOW = set()
+# 사이트에 원래 있는 공개 대표번호·협조 성명 등은 여기 「파일:종류」로 허용
+# 261027 유진님「허용목록에 협조 성명 넣기」: coop.json 협조용 성명(실명상세/who_names 원본은 계속 금지)
+SITE_ALLOW = {
+    '/data/coop.json:사람 이름',
+}
 
 
 def names_from_raws(paths):
