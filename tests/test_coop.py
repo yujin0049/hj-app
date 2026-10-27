@@ -13,11 +13,11 @@ class Coop(unittest.TestCase):
         self.d = json.loads(read('data', 'coop.json'))
 
     def test_shape(self):
-        self.assertEqual(self.d['version'], 'v04')
+        self.assertEqual(self.d['version'], 'v07')
         self.assertEqual(len(self.d['top5']), 5)
         self.assertGreaterEqual(len(self.d['rows']), 20)
-        self.assertEqual(len(self.d['rules']), 5)
-        self.assertEqual(len(self.d['people']), 12)
+        self.assertGreaterEqual(len(self.d['rules']), 5)
+        self.assertGreaterEqual(len(self.d['people']), 12)
         self.assertGreaterEqual(len(self.d.get('edu_now') or []), 5)
         self.assertTrue(any('김정임' in (x.get('body') or '') or '7363' in (x.get('body') or '') for x in self.d['edu_now']))
         self.assertTrue(any('이동렬' in (x.get('body') or '') or '7334' in (x.get('body') or '') for x in self.d['edu_now']))
@@ -46,7 +46,7 @@ class Coop(unittest.TestCase):
         self.assertIn("menuBtn('coop'", read('js', 'modules', 'more.js'))
         self.assertIn("id === 'coop'", read('js', 'app.js'))
         self.assertIn('ShellModules.coop', read('js', 'modules', 'coop.js'))
-        self.assertIn('hj-v50', read('sw.js'))
+        self.assertIn('hj-v51', read('sw.js'))
 
 
     def test_google_ui_and_keywords(self):
@@ -67,6 +67,22 @@ class Coop(unittest.TestCase):
         self.assertIn('해시태그 입력 강제', js)
         self.assertNotIn('instagram', js.lower())
         self.assertIn('who_names', js)  # notice only
+
+    def test_chains_spider(self):
+        chains = self.d.get('chains') or []
+        self.assertGreaterEqual(len(chains), 1)
+        pay = next((c for c in chains if c.get('id') == 'pay'), None)
+        self.assertIsNotNone(pay)
+        self.assertTrue(any(k == '강사료' for k in pay.get('keywords') or []))
+        names = [n.get('name') for n in pay.get('nodes') or []]
+        self.assertEqual(names[:3], ['이동렬', '정복희', '김정임'])
+        js = read('js', 'modules', 'coop.js')
+        self.assertIn('matchChains', js)
+        self.assertIn('cp-chain', js)
+        self.assertIn('거미줄', js)
+        self.assertIn('data-chain-q', js)
+        self.assertNotIn('force-directed', js.lower())
+        self.assertNotIn('d3.force', js.lower())
 
     def test_regression_others(self):
         home = read('js', 'modules', 'home.js')

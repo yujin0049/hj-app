@@ -1,5 +1,5 @@
-/* 원큐 협조리스트 (#/coop): 구글형 자연어 검색(중간 위치) → 선택 칩 제안 → 한 장 결과.
-   해시태그 입력 강제 없음. 인스타피드·긴 표 나열 금지. who_names·90_개인정보 원본 깃금지. */
+/* 원큐 협조리스트 (#/coop): 구글형 자연어 검색(중간 위치) → 선택 칩 제안 → 한 장 결과 + 체인 거미줄.
+   해시태그 입력 강제 없음. 인스타피드·전체그래프·긴 표 나열 금지. who_names·90_개인정보 원본 깃금지. */
 (function (root) {
   'use strict';
   var data = null;
@@ -46,7 +46,13 @@
     '.cp-item{border-radius:10px;padding:8px 10px;background:var(--soft);margin:0 0 4px}.cp-item b{display:block;font-size:.86rem}.cp-item span{font-size:.8rem;color:var(--ink-2);line-height:1.4}',
     '.cp-path{border-top:1px solid var(--line);padding:6px 0}.cp-path:first-of-type{border-top:0}.cp-path b{font-size:.84rem}.cp-path p{margin:2px 0 0;font-size:.8rem;color:var(--ink-2);line-height:1.4}',
     '.cp-rule{padding:6px 0;border-top:1px solid var(--line)}.cp-rule:first-of-type{border-top:0}.cp-rule b{font-size:.82rem}.cp-rule span{display:block;font-size:.8rem;color:var(--ink-2);margin-top:2px}',
-    '.cp-p{border-radius:10px;padding:8px 10px;background:var(--soft);margin:0 0 4px}.cp-p b{font-size:.86rem}'
+    '.cp-p{border-radius:10px;padding:8px 10px;background:var(--soft);margin:0 0 4px}.cp-p b{font-size:.86rem}',
+    '.cp-chain{margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}',
+    '.cp-chain-title{font-size:.78rem;font-weight:700;color:var(--muted);margin:0 0 8px}',
+    '.cp-chain-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}',
+    '.cp-node{font-size:.82rem;font-weight:700;border-radius:999px;padding:7px 12px;border:1px solid #c9b6e8;background:#f3e8ff;color:#5b2d8e;cursor:pointer}',
+    '.cp-node .ext{font-weight:600;opacity:.75;margin-left:4px;font-size:.76rem}',
+    '.cp-arrow{color:var(--muted);font-weight:700;font-size:.9rem;padding:0 2px}'
   ].join('\n');
 
   function style() {
@@ -108,6 +114,49 @@
     if (/결재|전결|센터장/.test(blob)) return row.line || row.who || '—';
     if (/결의/.test(blob)) return '결의 창구 포함 · ' + (row.phone || '');
     return row.line || '—';
+  }
+  function chainList() { return (data && data.chains) || []; }
+  function matchChains(needle, chips) {
+    var n = (needle || '').trim().toLowerCase();
+    var chipQs = (chips || []).map(function (c) { return (c.q || c.label || '').toLowerCase().replace(/^#/, ''); });
+    var out = [];
+    chainList().forEach(function (ch) {
+      var hit = false;
+      var kws = ch.keywords || [];
+      var nodes = ch.nodes || [];
+      for (var i = 0; i < kws.length; i++) {
+        var kw = String(kws[i] || '').toLowerCase();
+        if (!kw) continue;
+        if (n && n.indexOf(kw) >= 0) { hit = true; break; }
+        if (chipQs.some(function (cq) { return cq && (cq.indexOf(kw) >= 0 || kw.indexOf(cq) >= 0); })) { hit = true; break; }
+      }
+      if (!hit) {
+        for (var j = 0; j < nodes.length; j++) {
+          var nm = String((nodes[j] && nodes[j].name) || '').toLowerCase();
+          if (!nm) continue;
+          if (n && n.indexOf(nm) >= 0) { hit = true; break; }
+          if (chipQs.some(function (cq) { return cq && cq.indexOf(nm) >= 0; })) { hit = true; break; }
+        }
+      }
+      if (hit) out.push(ch);
+    });
+    return out;
+  }
+  function renderChainBlock(esc, chains) {
+    if (!chains || !chains.length) return '';
+    return chains.map(function (ch) {
+      var nodes = (ch.nodes || []).filter(function (n) { return n && n.name && !n.optional; });
+      if (!nodes.length) nodes = (ch.nodes || []).filter(function (n) { return n && n.name; });
+      var row = nodes.map(function (n, i) {
+        var lab = n.name + (n.ext ? ' ' + n.ext : '');
+        var btn = '<button type="button" class="cp-node" data-chain-q="' + esc(n.name) + '">' +
+          esc(n.name) + (n.ext ? '<span class="ext">' + esc(n.ext) + '</span>' : '') + '</button>';
+        return (i ? '<span class="cp-arrow" aria-hidden="true">→</span>' : '') + btn;
+      }).join('');
+      return '<div class="cp-chain" data-chain="' + esc(ch.id || '') + '">' +
+        '<p class="cp-chain-title">거미줄 · ' + esc(ch.label || ch.id || '흐름') + '</p>' +
+        '<div class="cp-chain-row">' + row + '</div></div>';
+    }).join('');
   }
   function buildSuggest(needle) {
     var out = [];
@@ -188,6 +237,10 @@
             '</div></details></article>';
         }).join('') + '</div>';
     }
+
+    var chainHtml = hasQuery ? renderChainBlock(esc, matchChains(needle, active)) : '';
+    if (chainHtml && results) results = results + chainHtml;
+    else if (chainHtml) results = chainHtml;
 
     var edu = (data.edu_now || []).map(function (t) {
       return '<div class="cp-item"><b>' + esc(t.title) + '</b><span>' + inline(esc, t.body) + '</span></div>';
@@ -283,6 +336,17 @@
       d.ontoggle = function () {
         if (d.open) openId = d.getAttribute('data-oid') || '';
         else if (openId === d.getAttribute('data-oid')) openId = '';
+      };
+    });
+    el.querySelectorAll('[data-chain-q]').forEach(function (btn) {
+      btn.onclick = function () {
+        var qq = btn.getAttribute('data-chain-q') || '';
+        if (!qq) return;
+        q = qq;
+        active = [];
+        home(el, api);
+        var again = el.querySelector('#cp-q');
+        if (again) again.focus();
       };
     });
     var det = el.querySelector('#cp-more');
