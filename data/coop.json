@@ -1,5 +1,5 @@
 {
-  "version": "v03",
+  "version": "v04",
   "updated": "2026-10-27",
   "source": "조사/261027_유진님업무_협조리스트_v02.md",
   "notice": "공문 자동발송·상신 금지. 협조 걸기는 유진님. 휴대전화 없음·내선만. 저장 없음. 실명상세·who_names는 90_개인정보만. 구글식 검색 UI. Top5·표·규칙·번호부는 접힘.",
@@ -658,5 +658,148 @@
       "hint": "학사·보안·공시 창구"
     }
   ],
-  "ui": "google-search"
+  "ui": "google-mid",
+  "shortcuts": [
+    {
+      "label": "강사료",
+      "q": "강사료",
+      "kw": "pay"
+    },
+    {
+      "label": "휴보강",
+      "q": "휴보강",
+      "kw": "leave"
+    },
+    {
+      "label": "재료·T020",
+      "q": "재료",
+      "kw": "material"
+    },
+    {
+      "label": "기숙사",
+      "q": "기숙사",
+      "kw": "ojnt"
+    },
+    {
+      "label": "특강",
+      "q": "특강",
+      "kw": "lecture"
+    }
+  ],
+  "suggest_people": [
+    {
+      "label": "이동렬",
+      "kind": "person",
+      "q": "이동렬"
+    },
+    {
+      "label": "송인호",
+      "kind": "person",
+      "q": "송인호"
+    },
+    {
+      "label": "김현근",
+      "kind": "person",
+      "q": "김현근"
+    },
+    {
+      "label": "서환주",
+      "kind": "person",
+      "q": "서환주"
+    },
+    {
+      "label": "정경남",
+      "kind": "person",
+      "q": "정경남"
+    },
+    {
+      "label": "김주현",
+      "kind": "person",
+      "q": "김주현"
+    },
+    {
+      "label": "최병필",
+      "kind": "person",
+      "q": "최병필"
+    },
+    {
+      "label": "장이순",
+      "kind": "person",
+      "q": "장이순"
+    },
+    {
+      "label": "박후휘",
+      "kind": "person",
+      "q": "박후휘"
+    },
+    {
+      "label": "임영옥",
+      "kind": "person",
+      "q": "임영옥"
+    },
+    {
+      "label": "조영미",
+      "kind": "person",
+      "q": "조영미"
+    },
+    {
+      "label": "최자연",
+      "kind": "person",
+      "q": "최자연"
+    }
+  ],
+  "suggest_depts": [
+    {
+      "label": "대학운영실",
+      "kind": "dept",
+      "q": "대학운영실"
+    },
+    {
+      "label": "행정지원",
+      "kind": "dept",
+      "q": "행정지원"
+    },
+    {
+      "label": "글로컬",
+      "kind": "dept",
+      "q": "글로컬"
+    },
+    {
+      "label": "항정",
+      "kind": "dept",
+      "q": "항정"
+    },
+    {
+      "label": "정보화",
+      "kind": "dept",
+      "q": "정보화"
+    },
+    {
+      "label": "학생생활관",
+      "kind": "dept",
+      "q": "학생생활관"
+    },
+    {
+      "label": "국제",
+      "kind": "dept",
+      "q": "국제"
+    }
+  ],
+  "suggest_periods": [
+    {
+      "label": "10월",
+      "kind": "period",
+      "q": "10월"
+    },
+    {
+      "label": "11.5.",
+      "kind": "period",
+      "q": "11.5"
+    },
+    {
+      "label": "오늘",
+      "kind": "period",
+      "q": "오늘"
+    }
+  ]
 }
