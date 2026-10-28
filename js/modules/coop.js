@@ -52,7 +52,8 @@
     '.cp-chain-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}',
     '.cp-node{font-size:.82rem;font-weight:700;border-radius:999px;padding:7px 12px;border:1px solid #c9b6e8;background:#f3e8ff;color:#5b2d8e;cursor:pointer}',
     '.cp-node .ext{font-weight:600;opacity:.75;margin-left:4px;font-size:.76rem}',
-    '.cp-arrow{color:var(--muted);font-weight:700;font-size:.9rem;padding:0 2px}'
+    '.cp-arrow{color:var(--muted);font-weight:700;font-size:.9rem;padding:0 2px}',
+    '.cp-chain-note{font-size:.76rem;color:var(--muted);margin:6px 0 0;line-height:1.35}'
   ].join('\n');
 
   function style() {
@@ -142,20 +143,52 @@
     });
     return out;
   }
+
+  function isLeaveQuery(needle, chips) {
+    var blob = String(needle || '').toLowerCase();
+    (chips || []).forEach(function (c) {
+      blob += ' ' + String(c.q || c.label || c.kw || '').toLowerCase();
+    });
+    return /휴보강|휴강|보강|leave/.test(blob);
+  }
+  function prepareChainsForRender(chains, needle, chips) {
+    var leaveQ = isLeaveQuery(needle, chips);
+    return (chains || []).map(function (ch) {
+      var nodes = (ch.nodes || []).map(function (n) {
+        var o = {};
+        for (var k in n) if (Object.prototype.hasOwnProperty.call(n, k)) o[k] = n[k];
+        if (leaveQ && o && (o.name === '한혜연' || String(o.ext || '') === '7333')) {
+          o.demote = true;
+          o.optional = true;
+        }
+        return o;
+      });
+      return { id: ch.id, label: ch.label, keywords: ch.keywords, nodes: nodes };
+    });
+  }
+
   function renderChainBlock(esc, chains) {
     if (!chains || !chains.length) return '';
     return chains.map(function (ch) {
-      var nodes = (ch.nodes || []).filter(function (n) { return n && n.name && !n.optional; });
-      if (!nodes.length) nodes = (ch.nodes || []).filter(function (n) { return n && n.name; });
+      var all = (ch.nodes || []).filter(function (n) { return n && n.name; });
+      var nodes = all.filter(function (n) { return !n.optional && !n.demote; });
+      if (!nodes.length) nodes = all.filter(function (n) { return !n.demote; });
+      if (!nodes.length) nodes = all;
+      var demoted = all.filter(function (n) { return n.demote; });
       var row = nodes.map(function (n, i) {
-        var lab = n.name + (n.ext ? ' ' + n.ext : '');
         var btn = '<button type="button" class="cp-node" data-chain-q="' + esc(n.name) + '">' +
           esc(n.name) + (n.ext ? '<span class="ext">' + esc(n.ext) + '</span>' : '') + '</button>';
         return (i ? '<span class="cp-arrow" aria-hidden="true">→</span>' : '') + btn;
       }).join('');
+      var note = '';
+      if (demoted.length) {
+        note = '<p class="cp-chain-note">참고(담당아님): ' + demoted.map(function (n) {
+          return esc(n.name) + (n.ext ? ' ' + esc(n.ext) : '');
+        }).join(' · ') + '</p>';
+      }
       return '<div class="cp-chain" data-chain="' + esc(ch.id || '') + '">' +
         '<p class="cp-chain-title">거미줄 · ' + esc(ch.label || ch.id || '흐름') + '</p>' +
-        '<div class="cp-chain-row">' + row + '</div></div>';
+        '<div class="cp-chain-row">' + row + '</div>' + note + '</div>';
     }).join('');
   }
   function buildSuggest(needle) {
@@ -179,7 +212,10 @@
     kwList().forEach(function (k) {
       push({ kind: 'kw', label: '#' + k.label, q: k.label, kw: k.id });
     });
+    var leaveQ = isLeaveQuery(n, active);
     (data.suggest_people || []).forEach(function (p) {
+      var lab = p.label || p.q || '';
+      if (leaveQ && (lab === '한혜연' || String(p.q || '') === '한혜연')) return;
       push({ kind: 'person', label: '#' + p.label, q: p.q || p.label });
     });
     (data.suggest_depts || []).forEach(function (p) {
@@ -238,7 +274,7 @@
         }).join('') + '</div>';
     }
 
-    var chainHtml = hasQuery ? renderChainBlock(esc, matchChains(needle, active)) : '';
+    var chainHtml = hasQuery ? renderChainBlock(esc, prepareChainsForRender(matchChains(needle, active), needle, active)) : '';
     if (chainHtml && results) results = results + chainHtml;
     else if (chainHtml) results = chainHtml;
 
