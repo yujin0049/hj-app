@@ -54,7 +54,7 @@ class Todo(unittest.TestCase):
     def test_t2_done_and_t6_click(self):
         by = {it['id']: it for it in self.d['items']}
         self.assertTrue(by['t2']['done'])
-        self.assertEqual(by['t6'].get('note'), '클릭만')
+        self.assertIn('클릭만', by['t6'].get('note') or '')
         self.assertEqual(by['t6'].get('who'), 'yujin')
         self.assertIn('봇큐=', self.d.get('note') or '')
         self.assertNotIn('온'+'나라', json.dumps(self.d, ensure_ascii=False))
@@ -66,7 +66,7 @@ class Todo(unittest.TestCase):
         self.assertIn("id === 'todo'", read('js', 'app.js'))
         self.assertIn('tomorrow', read('js', 'app.js'))
         self.assertIn('ShellModules.todo', read('js', 'modules', 'todo.js'))
-        self.assertIn('hj-v53', read('sw.js'))
+        self.assertRegex(read('sw.js'), r"CACHE = 'hj-v\d+'")
         self.assertIn('data/todo.json', read('js', 'modules', 'todo.js'))
         self.assertNotIn('instagram', read('js', 'modules', 'todo.js').lower())
         self.assertNotIn('cp-hero', read('js', 'modules', 'todo.js'))

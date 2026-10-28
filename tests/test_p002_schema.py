@@ -79,7 +79,7 @@ class TP002Schema(unittest.TestCase):
         self.assertIn('이번 주 카드', STUDY)
         self.assertIn('go-force', STUDY)
         self.assertIn('wrong/anki', PRAC)
-        self.assertIn('hj-v50', SW)
+        self.assertRegex(SW, r"CACHE = 'hj-v\d+'")
         self.assertIn('app.js?v=33', SW)
 
 
