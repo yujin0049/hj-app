@@ -2,19 +2,19 @@
  "version": 1,
  "tz": "Asia/Seoul",
  "stale_hours": 24,
- "last_try": "2026-10-28 10:08",
+ "last_try": "2026-10-28 10:31",
  "last_try_ok": true,
  "steps": {
   "현황판": {
    "ok": true,
-   "read_at": "2026-10-28 10:08",
+   "read_at": "2026-10-28 10:31",
    "old_raw": false,
    "why": ""
   },
   "OJNT": {
    "ok": true,
    "read_at": "2026-10-28 08:18",
-   "old_raw": false,
+   "old_raw": true,
    "why": ""
   },
   "개인정보 검사": {
@@ -24,6 +24,6 @@
    "ok": true
   }
  },
- "refreshed_at": "2026-10-28 10:08",
- "refreshed_iso": "2026-10-28T10:08+09:00"
+ "refreshed_at": "2026-10-28 10:31",
+ "refreshed_iso": "2026-10-28T10:31+09:00"
 }
