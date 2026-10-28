@@ -1,9 +1,9 @@
 {
 "version": 2,
 "key": "(파일, 종류, 걸린 낱말) sha256 16자 → a~p",
-"count": 791,
-"note": "coop word v06: 브리프 성명(장보석·김민수·이선미·윤현아·권정민·강신실·이현정·박주희) + 브리프 문구 오탐(주의칩·고치고·지원금)",
-"saved_at": "2026-10-27 18:55 KST",
+"count": 792,
+"note": "Q206 baseline_add: todo.json 한*진=전임자명·업무PC경로명 keep원본PII깃금지 (대장 10.28.11:10)",
+"saved_at": "2026-10-28 11:10 KST",
 "keys": {
 "aagiokckfonggjda": 2,
 "aaiohcbbmplaijnm": 1,
@@ -166,6 +166,7 @@
 "dbpdfnhdepmelcho": 1,
 "dcbbhhjokccajbom": 1,
 "dclhcpecddckkbjh": 1,
+"dcmobpidncfblecc": 1,
 "ddcchjodgcbdkhjo": 2,
 "ddponfcpjhhbegll": 2,
 "defddlhmlokoaoij": 1,
