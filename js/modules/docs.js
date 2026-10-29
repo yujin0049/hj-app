@@ -18,7 +18,7 @@
     '.dc-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}',
     '.dc-chip b{font-weight:800;margin-left:3px;opacity:.7}',
     '.dc-count{font-size:.82rem;color:var(--muted);margin:6px 2px 8px}',
-    '.dc-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin:0 0 10px}',
+    '.dc-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:9px 13px;margin:0 0 6px}',
     '.dc-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--ink-2);margin:0 0 5px}',
     '.dc-org{font-weight:800;color:var(--ink)}',
     '.dc-tag{border-radius:6px;padding:2px 6px;font-weight:700;background:var(--soft)}',
