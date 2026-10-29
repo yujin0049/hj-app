@@ -22,6 +22,17 @@
         ],
         "createdAt": "2026-10-25T12:06:46.677Z",
         "reason": "Soft Glow Squircle intentional"
+      },
+      {
+        "rule": "repeating-stripes-gradient",
+        "value": "*",
+        "files": [
+          "js/modules/charts.js",
+          "css/app.css",
+          "index.html"
+        ],
+        "createdAt": "2026-10-29T12:50:00.000Z",
+        "reason": "빗금은 데이터 뜻(차트 예정·추정, 기숙사 빈방)이라 장식 아님"
       }
     ]
   }

@@ -3,31 +3,31 @@
    예시 데이터 금지: empty 이면 「데이터 없음」. 돈 주머니(어학연수·글로컬·대학회계)는 주머니마다 따로 그리고(쌓지 않음) 합계 숫자는 안 씀. 집행=진한 칸, 예정·추정=옅은 빗금. 대장 kv 261029 19:05. */
 (function (root) {
   'use strict';
-  var C = { ink: '#191F28', ink2: '#4E5968', muted: '#8B95A1', line: '#E5E8EB', blue: '#3182F6', pockets: { '어학연수': '#3182F6', '글로컬': '#00A0A0', '대학회계': '#8B95A1' },
+  var C = { ink: '#191F28', ink2: '#4E5968', muted: '#8B95A1', axis: '#646F7C', line: '#E5E8EB', blue: '#3182F6', pockets: { '어학연수': '#3182F6', '글로컬': '#00A0A0', '대학회계': '#8B95A1' },
     dark: { '어학연수': '#1B64DA', '글로컬': '#007A7A', '대학회계': '#4E5968' } };
   var HEAT = ['#F2F4F6', '#D6E7FD', '#A9CCFB', '#6AA8F8', '#3182F6', '#1B64DA'];
   var CSS = [
-    '.ch-wrap{max-width:760px;margin:0 auto;padding:0 12px 48px;box-sizing:border-box}',
+    '.ch-wrap{max-width:760px;margin:0 auto;padding:0 0 48px;box-sizing:border-box}',
     '.ch-head{padding:8px 2px 6px}.ch-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
-    '.ch-head p{margin:0;font-size:.8rem;color:var(--muted);line-height:1.45}',
+    '.ch-head p{margin:0;font-size:.86rem;color:var(--muted);line-height:1.45}',
     '.ch-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 14px 12px;margin:0 0 12px}',
     '.ch-card h2{margin:0 0 2px;font-size:1rem;letter-spacing:-.01em;display:flex;gap:6px;align-items:baseline}',
-    '.ch-card h2 small{font-size:.72rem;color:var(--muted);font-weight:600}',
-    '.ch-sub{font-size:.78rem;color:var(--ink-2);margin:0 0 10px;line-height:1.4}',
-    '.ch-src{font-size:.72rem;color:var(--muted);margin:8px 0 0;line-height:1.4;word-break:keep-all}',
+    '.ch-card h2 small{font-size:.8rem;color:var(--muted);font-weight:600}',
+    '.ch-sub{font-size:.84rem;color:var(--ink-2);margin:0 0 10px;line-height:1.4}',
+    '.ch-src{font-size:.8rem;color:var(--muted);margin:8px 0 0;line-height:1.4;word-break:keep-all}',
     '.ch-svg{width:100%;height:auto;display:block;overflow:visible}',
     '.ch-empty{padding:22px 8px;text-align:center;color:var(--muted);font-weight:700;background:var(--soft);border-radius:12px}',
-    '.ch-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.75rem;color:var(--ink-2);margin:6px 0 0}',
+    '.ch-legend{display:flex;flex-wrap:wrap;gap:10px;font-size:.8rem;color:var(--ink-2);margin:6px 0 0}',
     '.ch-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}',
     '.ch-tip{font-size:.8rem;color:var(--ink);min-height:1.2em;margin:6px 0 0;font-weight:600}',
     '.ch-tbl{width:100%;border-collapse:collapse;font-size:.82rem}',
     '.ch-tbl td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:middle}',
     '.ch-tbl td.n{white-space:nowrap;max-width:9.5rem;overflow:hidden;text-overflow:ellipsis}',
     '.ch-tbl td.v{text-align:right;font-variant-numeric:tabular-nums;font-weight:700;white-space:nowrap}',
-    '.ch-tbl td.d{text-align:right;font-size:.74rem;white-space:nowrap}',
+    '.ch-tbl td.d{text-align:right;font-size:.8rem;white-space:nowrap}',
     '.ch-pk{margin:10px 0 0}.ch-pk h3{margin:0 0 4px;font-size:.86rem;display:flex;align-items:center;gap:6px}.ch-pk h3 i{display:inline-block;width:10px;height:10px;border-radius:3px}',
     '.ch-pk .ch-empty{padding:12px 8px}.ch-pk .ch-sub{margin:4px 0 0}',
-    '.ch-up{color:#F04452}.ch-dn{color:#3182F6}.ch-eq{color:var(--muted)}'
+    '.ch-up{color:var(--no)}.ch-dn{color:var(--navy)}.ch-eq{color:var(--muted)}'
   ].join('\n');
 
   function style() {
@@ -54,7 +54,7 @@
     var max = Math.max(1, h.max || 1);
     var todayIso = new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
     var out = '<svg class="ch-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="날짜별 일정 건수">';
-    ['월', '', '수', '', '금', '', ''].forEach(function (t, i) { if (t) out += '<text x="0" y="' + (top + i * (cell + gap) + 11) + '" font-size="12" fill="' + C.muted + '">' + t + '</text>'; });
+    ['월', '', '수', '', '금', '', ''].forEach(function (t, i) { if (t) out += '<text x="0" y="' + (top + i * (cell + gap) + 11) + '" font-size="12" fill="' + C.axis + '">' + t + '</text>'; });
     var lastM = -1;
     for (var w = 0; w < weeks; w++) {
       for (var d = 0; d < 7; d++) {
@@ -84,7 +84,7 @@
     var X = function (d) { return L + (new Date(d).getTime() - x0) / (x1 - x0) * (W - L - R); };
     var Y = function (v) { return T + (1 - v / s.start) * (H - T - B); };
     var o = '<svg class="ch-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="글로컬 잔액 계단 그래프">';
-    [0, 0.5, 1].forEach(function (f) { var v = s.start * f; o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + C.line + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 3) + '" font-size="9" text-anchor="end" fill="' + C.muted + '">' + man(v) + '</text>'; });
+    [0, 0.5, 1].forEach(function (f) { var v = s.start * f; o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + C.line + '"/><text x="' + (L - 6) + '" y="' + (Y(v) + 3) + '" font-size="9" text-anchor="end" fill="' + C.axis + '">' + man(v) + '</text>'; });
     var p = 'M' + X(s.points[0].d) + ' ' + Y(s.points[0].bal);
     for (var i = 1; i < s.points.length; i++) p += ' H' + X(s.points[i].d) + ' V' + Y(s.points[i].bal);
     p += ' H' + X(s.today);
@@ -94,7 +94,7 @@
       o += '<circle cx="' + X(pt.d) + '" cy="' + Y(pt.bal) + '" r="3.5" fill="#fff" stroke="' + C.pockets['글로컬'] + '" stroke-width="2"><title>' + md(pt.d) + ' ' + esc(pt.what) + ' → 잔액 ' + won(pt.bal) + '</title></circle>';
       o += '<text x="' + X(pt.d) + '" y="' + (H - 8) + '" font-size="9" text-anchor="' + (i ? 'middle' : 'start') + '" fill="' + C.ink2 + '">' + md(pt.d) + '</text>';
     });
-    o += '<text x="' + X(s.today) + '" y="' + (H - 8) + '" font-size="9" text-anchor="end" fill="' + C.muted + '">오늘</text>';
+    o += '<text x="' + X(s.today) + '" y="' + (H - 8) + '" font-size="9" text-anchor="end" fill="' + C.axis + '">오늘</text>';
     o += '</svg>';
     var last = s.points[s.points.length - 1];
     var list = s.points.slice(1).map(function (pt) { return md(pt.d) + ' −' + won(pt.amt) + ' (' + esc(pt.what) + ')'; }).join('<br>');
@@ -135,7 +135,7 @@
     var col = C.pockets[se.pocket] || C.muted, dk = C.dark[se.pocket] || C.ink2, pid = 'ch-hatch-' + idx;
     var o = '<svg class="ch-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(se.pocket) + ' 강사료 월별">' +
       '<defs><pattern id="' + pid + '" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="6" height="6" fill="' + col + '" opacity=".22"/><line x1="0" y1="0" x2="0" y2="6" stroke="' + dk + '" stroke-width="1.6" opacity=".55"/></pattern></defs>';
-    [0, 1].forEach(function (f) { o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(mx * f) + '" y2="' + Y(mx * f) + '" stroke="' + C.line + '"/><text x="' + (L - 5) + '" y="' + (Y(mx * f) + 3) + '" font-size="9" text-anchor="end" fill="' + C.muted + '">' + man(mx * f) + '</text>'; });
+    [0, 1].forEach(function (f) { o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(mx * f) + '" y2="' + Y(mx * f) + '" stroke="' + C.line + '"/><text x="' + (L - 5) + '" y="' + (Y(mx * f) + 3) + '" font-size="9" text-anchor="end" fill="' + C.axis + '">' + man(mx * f) + '</text>'; });
     months.forEach(function (m, i) {
       var v = ys[i] || 0, k = (se.kind || [])[i] || '', cx = L + slot * (i + 0.5);
       if (v > 0) {
