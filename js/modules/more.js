@@ -74,6 +74,8 @@
       menuBtn('calendar', '계획 달력', '월·주 보기, 유진님 할 일·교수님 일정, D-day') +
       menuBtn('regular-docs', '정례 문서 달력', '달 격자 · 분류 고르기 · 다가오는 달 예상') +
       menuBtn('status', '현황표', '유진님 할 일 먼저, 상태·마감·담당 봇, OJNT 진행률') +
+      menuBtn('charts', '그래프', '일정 달력 · 글로컬 잔액 · 추세 · 강사료 구성') +
+      menuBtn('docs', '중요문서', '국토교통부·산업인력공단 등 외부기관 · 웹으로만') +
       menuBtn('bots', '봇 작업 현황', '지금 도는 일 한 줄씩 · 유진님 몫 · 마감 임박 · 감사 위험') +
       menuGroup('공부·규정') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
@@ -100,7 +102,7 @@
         if (id === 'practice') api.go('#/practice');
         else if (id === 'study-must') api.go('#/study/must');
         else if (id === 'changelog') api.go('#/study/changelog');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach') api.go('#/' + id);
+        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });
