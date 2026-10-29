@@ -3,7 +3,7 @@
 - 08 캘린더 히트맵: data/calendar.json 날짜별 건수(유진님 할 일·교수님 일정 = 업무량, 참고는 따로)
 - 04 계단형: data/budget_events.json glocal_balance (글로컬 교육원 몫 배정 확인분 - 집행)
 - 05 스파크라인 표: git 기록의 data/todo.json(남은 일·끝낸 일) + data/docreg.json 월별 상대부서 건수 + data/docs_important.json 월별 외부기관
-- 03 누적 영역: data/budget_events.json monthly_lecture_fee (주머니별 따로, 합계 표시 안 함)
+- 03 강사료 월별: data/budget_events.json monthly_lecture_fee (주머니마다 작은 막대 차트 따로, 합치지 않음)
 대장 kv T=hjapp_차트+중요문서(261029 19:05)."""
 import collections, datetime as dt, json, os, subprocess, sys
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -85,23 +85,27 @@ def step(be):
     g = (be or {}).get('glocal_balance')
     if not g or not g.get('lines'):
         return {'empty': True, 'src': 'data/budget_events.json glocal_balance 없음'}
-    start = sum(l['amt'] for l in g['lines'])
+    start = sum(l.get('amt') or 0 for l in g['lines'])
+    if start <= 0 or not g.get('start_date'):
+        return {'empty': True, 'src': 'data/budget_events.json glocal_balance 배정 확인분 0원'}
     pts, bal = [{'d': g['start_date'], 'bal': start, 'what': '배정 확인분'}], start
     for s in sorted(g.get('spend', []), key=lambda x: x['d']):
         bal -= s['amt']
         pts.append({'d': s['d'], 'bal': bal, 'amt': s['amt'], 'what': s['what']})
+    note = ' · '.join(x for x in (g.get('start_note'), g.get('excluded_note'), g.get('spend_note')) if x)
     return {'empty': False, 'label': g['label'], 'start': start, 'points': pts, 'today': dt.datetime.now(KST).date().isoformat(),
-            'note': g.get('start_note', '') + ' · ' + g.get('excluded_note', ''), 'src': '; '.join(l['src'] for l in g['lines'])}
+            'note': note, 'src': '; '.join(l['src'] for l in g['lines'])}
 
 
 def stacked(be):
+    """주머니별 작은 차트(small multiples). 주머니끼리 더하지 않음. kind: 집행=진한 칸, 그 밖(예정·추정)=옅은 빗금."""
     m = (be or {}).get('monthly_lecture_fee')
     pockets = (be or {}).get('pockets') or ['어학연수', '글로컬', '대학회계']
-    if not m or not m.get('rows'):
+    if not m or not m.get('rows') or not m.get('months'):
         return {'empty': True, 'src': 'data/budget_events.json monthly_lecture_fee 없음'}
     series = []
     for p in pockets:
-        vals = {r['m']: r for r in m['rows'] if r['pocket'] == p}
+        vals = {r['m']: r for r in m['rows'] if r['pocket'] == p and (r.get('amt') or 0) > 0}
         series.append({'pocket': p, 'empty': not vals, 'y': [vals[x]['amt'] if x in vals else 0 for x in m['months']],
                        'kind': [vals[x]['kind'] if x in vals else '' for x in m['months']]})
     return {'empty': all(s['empty'] for s in series), 'label': m['label'], 'months': m['months'], 'series': series,
