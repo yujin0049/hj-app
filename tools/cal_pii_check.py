@@ -14,6 +14,8 @@ from make_calendar import read_table
 # 261027 유진님「허용목록에 협조 성명 넣기」: coop.json 협조용 성명(실명상세/who_names 원본은 계속 금지)
 SITE_ALLOW = {
     '/data/coop.json:사람 이름',
+    # 261029 질문목록L210-294 답: 교직원 이름=거미줄 결재라인용 → 기준선·워커 허용(실명상세/who_names·학생 원본 금지 유지)
+    '/data/dept_spider.json:사람 이름',
 }
 
 
