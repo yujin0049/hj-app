@@ -100,7 +100,8 @@ class T실무기준(unittest.TestCase):
         self.assertIn('남해캠퍼스부총장 전결(별표1)', c['summary'])
         for k in ('제3조', '제4조', '제5조', '제9조', '별표1', '별표2'):
             self.assertIn(k, c['articles'])
-        self.assertIn('국립창원대_위임전결규정.md', c['source'])
+        self.assertIn('국립창원대_위임전결규정', c['source'])  # 261029 공개 JSON 은 노트 이름만(폴더·.md 없음, tools/vaultpath.py)
+        self.assertNotIn('.md', c['source'])
         self.assertNotIn('넣지 않아요', OV['_설명'])
         self.assertIn('1,000만원 이상 부총장', OV['_설명'])
 

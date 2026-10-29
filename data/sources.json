@@ -4,17 +4,17 @@
    "candidates": [
     {
      "matched_by": "r코드(r036)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r036_260422_국립창원대학교글로컬대학사업사업비집행및관리지침_문서_v01.md",
+     "path": "r036_260422_국립창원대학교글로컬대학사업사업비집행및관리지침_문서_v01",
      "score": 0.97
     },
     {
      "matched_by": "r코드(r038)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r038_260715_국립창원대학교글로컬대학사업사업비집행및관리지침2차개정_문서_v01.md",
+     "path": "r038_260715_국립창원대학교글로컬대학사업사업비집행및관리지침2차개정_문서_v01",
      "score": 0.95
     },
     {
      "matched_by": "r코드(r037)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r037_260527_붙임1.2026년글로컬대학사업비관리매뉴얼_붙임_v01.md",
+     "path": "r037_260527_붙임1.2026년글로컬대학사업비관리매뉴얼_붙임_v01",
      "score": 0.93
     }
    ],
@@ -29,8 +29,8 @@
    },
    "matched_by": "r코드(r036)",
    "modified": "2026-10-21 09:19",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F50%20%EC%9E%90%EB%A3%8C%EC%83%89%EC%9D%B8%2F%EB%B0%95%EC%8A%A4%EC%A0%84%ED%99%98%EB%B3%B8%2Fregs%2Fsrc%2Fr036_260422_%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80%ED%95%99%EA%B5%90%EA%B8%80%EB%A1%9C%EC%BB%AC%EB%8C%80%ED%95%99%EC%82%AC%EC%97%85%EC%82%AC%EC%97%85%EB%B9%84%EC%A7%91%ED%96%89%EB%B0%8F%EA%B4%80%EB%A6%AC%EC%A7%80%EC%B9%A8_%EB%AC%B8%EC%84%9C_v01",
-   "path": "봇공유/50 자료색인/박스전환본/regs/src/r036_260422_국립창원대학교글로컬대학사업사업비집행및관리지침_문서_v01.md",
+   "obsidian": "",
+   "path": "r036_260422_국립창원대학교글로컬대학사업사업비집행및관리지침_문서_v01",
    "score": 0.97,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -39,7 +39,7 @@
    "candidates": [
     {
      "matched_by": "r코드(r045)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r045__25.12.17_ 2025 행정업무운영 편람(최종).md",
+     "path": "r045__25.12.17_ 2025 행정업무운영 편람(최종)",
      "score": 0.97
     }
    ],
@@ -59,8 +59,8 @@
    },
    "matched_by": "r코드(r045)",
    "modified": "2026-10-21 09:19",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F50%20%EC%9E%90%EB%A3%8C%EC%83%89%EC%9D%B8%2F%EB%B0%95%EC%8A%A4%EC%A0%84%ED%99%98%EB%B3%B8%2Fregs%2Fsrc%2Fr045__25.12.17_%202025%20%ED%96%89%EC%A0%95%EC%97%85%EB%AC%B4%EC%9A%B4%EC%98%81%20%ED%8E%B8%EB%9E%8C%28%EC%B5%9C%EC%A2%85%29",
-   "path": "봇공유/50 자료색인/박스전환본/regs/src/r045__25.12.17_ 2025 행정업무운영 편람(최종).md",
+   "obsidian": "",
+   "path": "r045__25.12.17_ 2025 행정업무운영 편람(최종)",
    "score": 0.97,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -69,17 +69,17 @@
    "candidates": [
     {
      "matched_by": "title",
-     "path": "봇공유/20 규정·지침/국립창원대_경남항공교육원운영규정_제141호.md",
+     "path": "국립창원대_경남항공교육원운영규정_제141호",
      "score": 1.0
     },
     {
      "matched_by": "파일 이름",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r007_붙임4. 경남항공교육원 교육규정.md",
+     "path": "r007_붙임4. 경남항공교육원 교육규정",
      "score": 0.401
     },
     {
      "matched_by": "파일 이름",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r002_붙임4. 경남항공교육원_훈련운영기준.md",
+     "path": "r002_붙임4. 경남항공교육원_훈련운영기준",
      "score": 0.391
     }
    ],
@@ -100,8 +100,8 @@
    },
    "matched_by": "title",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80_%EA%B2%BD%EB%82%A8%ED%95%AD%EA%B3%B5%EA%B5%90%EC%9C%A1%EC%9B%90%EC%9A%B4%EC%98%81%EA%B7%9C%EC%A0%95_%EC%A0%9C141%ED%98%B8",
-   "path": "봇공유/20 규정·지침/국립창원대_경남항공교육원운영규정_제141호.md",
+   "obsidian": "",
+   "path": "국립창원대_경남항공교육원운영규정_제141호",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -110,17 +110,17 @@
    "candidates": [
     {
      "matched_by": "r코드(r022)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r022_260907_국립창원대학교남해캠퍼스항공기술교육원운영규정20260301제정_규정_v01.md",
+     "path": "r022_260907_국립창원대학교남해캠퍼스항공기술교육원운영규정20260301제정_규정_v01",
      "score": 0.97
     },
     {
      "matched_by": "title",
-     "path": "봇공유/20 규정·지침/국립창원대_경남항공교육원운영규정_제141호.md",
+     "path": "국립창원대_경남항공교육원운영규정_제141호",
      "score": 0.47
     },
     {
      "matched_by": "파일 이름",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r004_붙임7. 항공기술교육원 교육규정.md",
+     "path": "r004_붙임7. 항공기술교육원 교육규정",
      "score": 0.401
     }
    ],
@@ -138,8 +138,8 @@
    },
    "matched_by": "r코드(r022)",
    "modified": "2026-10-21 09:19",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F50%20%EC%9E%90%EB%A3%8C%EC%83%89%EC%9D%B8%2F%EB%B0%95%EC%8A%A4%EC%A0%84%ED%99%98%EB%B3%B8%2Fregs%2Fsrc%2Fr022_260907_%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80%ED%95%99%EA%B5%90%EB%82%A8%ED%95%B4%EC%BA%A0%ED%8D%BC%EC%8A%A4%ED%95%AD%EA%B3%B5%EA%B8%B0%EC%88%A0%EA%B5%90%EC%9C%A1%EC%9B%90%EC%9A%B4%EC%98%81%EA%B7%9C%EC%A0%9520260301%EC%A0%9C%EC%A0%95_%EA%B7%9C%EC%A0%95_v01",
-   "path": "봇공유/50 자료색인/박스전환본/regs/src/r022_260907_국립창원대학교남해캠퍼스항공기술교육원운영규정20260301제정_규정_v01.md",
+   "obsidian": "",
+   "path": "r022_260907_국립창원대학교남해캠퍼스항공기술교육원운영규정20260301제정_규정_v01",
    "score": 0.97,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -148,17 +148,17 @@
    "candidates": [
     {
      "matched_by": "r코드(r001)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r001_붙임10. 창원대학교 항공기술교육원 교육규정 변경(260526).md",
+     "path": "r001_붙임10. 창원대학교 항공기술교육원 교육규정 변경(260526)",
      "score": 0.97
     },
     {
      "matched_by": "r코드(r029)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r029_261008_전문교육기관경남항공교육원교육규정안_규정_v01.md",
+     "path": "r029_261008_전문교육기관경남항공교육원교육규정안_규정_v01",
      "score": 0.95
     },
     {
      "matched_by": "r코드(r043)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r043_4. 창원대학교 경남항공교육원 교육규정_20260330.md",
+     "path": "r043_4. 창원대학교 경남항공교육원 교육규정_20260330",
      "score": 0.93
     }
    ],
@@ -178,8 +178,8 @@
    },
    "matched_by": "r코드(r001)",
    "modified": "2026-10-21 09:19",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F50%20%EC%9E%90%EB%A3%8C%EC%83%89%EC%9D%B8%2F%EB%B0%95%EC%8A%A4%EC%A0%84%ED%99%98%EB%B3%B8%2Fregs%2Fsrc%2Fr001_%EB%B6%99%EC%9E%8410.%20%EC%B0%BD%EC%9B%90%EB%8C%80%ED%95%99%EA%B5%90%20%ED%95%AD%EA%B3%B5%EA%B8%B0%EC%88%A0%EA%B5%90%EC%9C%A1%EC%9B%90%20%EA%B5%90%EC%9C%A1%EA%B7%9C%EC%A0%95%20%EB%B3%80%EA%B2%BD%28260526%29",
-   "path": "봇공유/50 자료색인/박스전환본/regs/src/r001_붙임10. 창원대학교 항공기술교육원 교육규정 변경(260526).md",
+   "obsidian": "",
+   "path": "r001_붙임10. 창원대학교 항공기술교육원 교육규정 변경(260526)",
    "score": 0.97,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -188,7 +188,7 @@
    "candidates": [
     {
      "matched_by": "title",
-     "path": "봇공유/20 규정·지침/항공안전법_발췌.md",
+     "path": "항공안전법_발췌",
      "score": 1.0
     }
    ],
@@ -205,8 +205,8 @@
    },
    "matched_by": "title",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%ED%95%AD%EA%B3%B5%EC%95%88%EC%A0%84%EB%B2%95_%EB%B0%9C%EC%B7%8C",
-   "path": "봇공유/20 규정·지침/항공안전법_발췌.md",
+   "obsidian": "",
+   "path": "항공안전법_발췌",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -215,7 +215,7 @@
    "candidates": [
     {
      "matched_by": "문서 첫 줄",
-     "path": "봇공유/50 자료색인/박스전환본/cwnu_regs/glocal_op_20250715.md",
+     "path": "glocal_op_20250715",
      "score": 1.0
     }
    ],
@@ -233,8 +233,8 @@
    },
    "matched_by": "문서 첫 줄",
    "modified": "2026-10-21 09:19",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F50%20%EC%9E%90%EB%A3%8C%EC%83%89%EC%9D%B8%2F%EB%B0%95%EC%8A%A4%EC%A0%84%ED%99%98%EB%B3%B8%2Fcwnu_regs%2Fglocal_op_20250715",
-   "path": "봇공유/50 자료색인/박스전환본/cwnu_regs/glocal_op_20250715.md",
+   "obsidian": "",
+   "path": "glocal_op_20250715",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -243,7 +243,7 @@
    "candidates": [
     {
      "matched_by": "title",
-     "path": "봇공유/20 규정·지침/개인정보보호법_발췌.md",
+     "path": "개인정보보호법_발췌",
      "score": 1.0
     }
    ],
@@ -260,8 +260,8 @@
    },
    "matched_by": "title",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B0%9C%EC%9D%B8%EC%A0%95%EB%B3%B4%EB%B3%B4%ED%98%B8%EB%B2%95_%EB%B0%9C%EC%B7%8C",
-   "path": "봇공유/20 규정·지침/개인정보보호법_발췌.md",
+   "obsidian": "",
+   "path": "개인정보보호법_발췌",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -277,17 +277,17 @@
    "candidates": [
     {
      "matched_by": "파일 이름",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r031_250908_RISE사업비집행및관리지침개정_문서_v01.md",
+     "path": "r031_250908_RISE사업비집행및관리지침개정_문서_v01",
      "score": 0.972
     },
     {
      "matched_by": "r코드(r033)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r033_260305_붙임2RISE사업비집행및관리지침FAQ개정_붙임_v01.md",
+     "path": "r033_260305_붙임2RISE사업비집행및관리지침FAQ개정_붙임_v01",
      "score": 0.95
     },
     {
      "matched_by": "r코드(r032)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r032_251126_경상남도RISE사업비집행및관리기준_문서_v01.md",
+     "path": "r032_251126_경상남도RISE사업비집행및관리기준_문서_v01",
      "score": 0.93
     }
    ],
@@ -302,8 +302,8 @@
    },
    "matched_by": "파일 이름",
    "modified": "2026-10-21 09:19",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F50%20%EC%9E%90%EB%A3%8C%EC%83%89%EC%9D%B8%2F%EB%B0%95%EC%8A%A4%EC%A0%84%ED%99%98%EB%B3%B8%2Fregs%2Fsrc%2Fr031_250908_RISE%EC%82%AC%EC%97%85%EB%B9%84%EC%A7%91%ED%96%89%EB%B0%8F%EA%B4%80%EB%A6%AC%EC%A7%80%EC%B9%A8%EA%B0%9C%EC%A0%95_%EB%AC%B8%EC%84%9C_v01",
-   "path": "봇공유/50 자료색인/박스전환본/regs/src/r031_250908_RISE사업비집행및관리지침개정_문서_v01.md",
+   "obsidian": "",
+   "path": "r031_250908_RISE사업비집행및관리지침개정_문서_v01",
    "score": 0.972,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -312,12 +312,12 @@
    "candidates": [
     {
      "matched_by": "파일 이름",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r035_260317_2026학년도국립창원대학교예산집행기본지침_문서_v01.md",
+     "path": "r035_260317_2026학년도국립창원대학교예산집행기본지침_문서_v01",
      "score": 1.0
     },
     {
      "matched_by": "r코드(r034)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r034_260317_2026학년도국립창원대학교대학회계예산집행기본지침주요개정사항_문서_v01.md",
+     "path": "r034_260317_2026학년도국립창원대학교대학회계예산집행기본지침주요개정사항_문서_v01",
      "score": 0.97
     }
    ],
@@ -332,8 +332,8 @@
    },
    "matched_by": "파일 이름",
    "modified": "2026-10-21 09:19",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F50%20%EC%9E%90%EB%A3%8C%EC%83%89%EC%9D%B8%2F%EB%B0%95%EC%8A%A4%EC%A0%84%ED%99%98%EB%B3%B8%2Fregs%2Fsrc%2Fr035_260317_2026%ED%95%99%EB%85%84%EB%8F%84%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80%ED%95%99%EA%B5%90%EC%98%88%EC%82%B0%EC%A7%91%ED%96%89%EA%B8%B0%EB%B3%B8%EC%A7%80%EC%B9%A8_%EB%AC%B8%EC%84%9C_v01",
-   "path": "봇공유/50 자료색인/박스전환본/regs/src/r035_260317_2026학년도국립창원대학교예산집행기본지침_문서_v01.md",
+   "obsidian": "",
+   "path": "r035_260317_2026학년도국립창원대학교예산집행기본지침_문서_v01",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -342,7 +342,7 @@
    "candidates": [
     {
      "matched_by": "title",
-     "path": "봇공유/20 규정·지침/국가계약법시행령_발췌.md",
+     "path": "국가계약법시행령_발췌",
      "score": 1.0
     }
    ],
@@ -361,8 +361,8 @@
    },
    "matched_by": "title",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B5%AD%EA%B0%80%EA%B3%84%EC%95%BD%EB%B2%95%EC%8B%9C%ED%96%89%EB%A0%B9_%EB%B0%9C%EC%B7%8C",
-   "path": "봇공유/20 규정·지침/국가계약법시행령_발췌.md",
+   "obsidian": "",
+   "path": "국가계약법시행령_발췌",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -371,12 +371,12 @@
    "candidates": [
     {
      "matched_by": "title",
-     "path": "봇공유/20 규정·지침/국고금관리법_발췌.md",
+     "path": "국고금관리법_발췌",
      "score": 1.0
     },
     {
      "matched_by": "r코드(인용 위치 r035)",
-     "path": "봇공유/50 자료색인/박스전환본/regs/src/r035_260317_2026학년도국립창원대학교예산집행기본지침_문서_v01.md",
+     "path": "r035_260317_2026학년도국립창원대학교예산집행기본지침_문서_v01",
      "score": 0.6
     }
    ],
@@ -391,8 +391,8 @@
    },
    "matched_by": "title",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B5%AD%EA%B3%A0%EA%B8%88%EA%B4%80%EB%A6%AC%EB%B2%95_%EB%B0%9C%EC%B7%8C",
-   "path": "봇공유/20 규정·지침/국고금관리법_발췌.md",
+   "obsidian": "",
+   "path": "국고금관리법_발췌",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -401,12 +401,12 @@
    "candidates": [
     {
      "matched_by": "title",
-     "path": "봇공유/20 규정·지침/국립창원대_강사료지급규정_제49호.md",
+     "path": "국립창원대_강사료지급규정_제49호",
      "score": 1.0
     },
     {
      "matched_by": "제목줄",
-     "path": "봇공유/20 규정·지침/국립창원대_거창남해캠퍼스_강사료특례지침_예규제137호.md",
+     "path": "국립창원대_거창남해캠퍼스_강사료특례지침_예규제137호",
      "score": 0.39
     }
    ],
@@ -424,8 +424,8 @@
    },
    "matched_by": "title",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80_%EA%B0%95%EC%82%AC%EB%A3%8C%EC%A7%80%EA%B8%89%EA%B7%9C%EC%A0%95_%EC%A0%9C49%ED%98%B8",
-   "path": "봇공유/20 규정·지침/국립창원대_강사료지급규정_제49호.md",
+   "obsidian": "",
+   "path": "국립창원대_강사료지급규정_제49호",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -434,7 +434,7 @@
    "candidates": [
     {
      "matched_by": "alias",
-     "path": "봇공유/20 규정·지침/국립창원대_거창남해캠퍼스_강사료특례지침_예규제137호.md",
+     "path": "국립창원대_거창남해캠퍼스_강사료특례지침_예규제137호",
      "score": 1.0
     }
    ],
@@ -452,8 +452,8 @@
    },
    "matched_by": "alias",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80_%EA%B1%B0%EC%B0%BD%EB%82%A8%ED%95%B4%EC%BA%A0%ED%8D%BC%EC%8A%A4_%EA%B0%95%EC%82%AC%EB%A3%8C%ED%8A%B9%EB%A1%80%EC%A7%80%EC%B9%A8_%EC%98%88%EA%B7%9C%EC%A0%9C137%ED%98%B8",
-   "path": "봇공유/20 규정·지침/국립창원대_거창남해캠퍼스_강사료특례지침_예규제137호.md",
+   "obsidian": "",
+   "path": "국립창원대_거창남해캠퍼스_강사료특례지침_예규제137호",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -462,17 +462,17 @@
    "candidates": [
     {
      "matched_by": "원문 칸 파일 이름",
-     "path": "봇공유/20 규정·지침/국립창원대_위임전결규정.md",
+     "path": "국립창원대_위임전결규정",
      "score": 1.0
     },
     {
      "matched_by": "원문 칸 파일 이름",
-     "path": "봇공유/조사/규정원문/국립창원대_위임전결규정.md",
+     "path": "국립창원대_위임전결규정",
      "score": 0.95
     },
     {
      "matched_by": "원문 칸 파일 이름",
-     "path": "봇공유/조사/위임전결규정_꼭알조문.md",
+     "path": "위임전결규정_꼭알조문",
      "score": 0.95
     }
    ],
@@ -492,8 +492,8 @@
    },
    "matched_by": "원문 칸 파일 이름",
    "modified": "2026-10-21 10:16",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80_%EC%9C%84%EC%9E%84%EC%A0%84%EA%B2%B0%EA%B7%9C%EC%A0%95",
-   "path": "봇공유/20 규정·지침/국립창원대_위임전결규정.md",
+   "obsidian": "",
+   "path": "국립창원대_위임전결규정",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"
@@ -502,7 +502,7 @@
    "candidates": [
     {
      "matched_by": "alias",
-     "path": "봇공유/20 규정·지침/국립창원대_학생생활관규정.md",
+     "path": "국립창원대_학생생활관규정",
      "score": 1.0
     }
    ],
@@ -521,8 +521,8 @@
    },
    "matched_by": "alias",
    "modified": "2026-10-21 10:26",
-   "obsidian": "obsidian://open?vault=%EC%98%B5%EC%8B%9C%EB%94%94%EC%96%B8&file=%EB%B4%87%EA%B3%B5%EC%9C%A0%2F20%20%EA%B7%9C%EC%A0%95%C2%B7%EC%A7%80%EC%B9%A8%2F%EA%B5%AD%EB%A6%BD%EC%B0%BD%EC%9B%90%EB%8C%80_%ED%95%99%EC%83%9D%EC%83%9D%ED%99%9C%EA%B4%80%EA%B7%9C%EC%A0%95",
-   "path": "봇공유/20 규정·지침/국립창원대_학생생활관규정.md",
+   "obsidian": "",
+   "path": "국립창원대_학생생활관규정",
    "score": 1.0,
    "section": "공부 > 알아야 할 규정",
    "status": "연결"

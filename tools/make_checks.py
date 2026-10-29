@@ -10,6 +10,8 @@
       [--paths path_check_dryrun.txt --paths-at 2026-10-21T08:38+09:00] [--out data/checks.json]
 """
 import argparse, datetime as dt, json, os, re, sys
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import vaultpath  # 공개 JSON 에 볼트 경로 안 씀(261029)
 
 KST = dt.timezone(dt.timedelta(hours=9))
 BAD_KEYS = re.compile(r"(^|_)(이름|성명|성함|name|전화|연락처|휴대폰|phone|tel|계좌|account|bank|주민|rrn|생년월일|birth|주소|address|email|이메일)($|_)", re.I)
@@ -121,6 +123,7 @@ def main():
     except PiiError as e:
         print("실패: " + str(e) + " — 아무것도 쓰지 않았어요.", file=sys.stderr)
         return 2
+    items = vaultpath.scrub_obj(items)
     tmp = a.out + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(items, f, ensure_ascii=False, indent=1)
