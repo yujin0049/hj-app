@@ -29,7 +29,11 @@
     '.ch-legend{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:.8rem;color:var(--ink-2);margin:8px 0 0;align-items:center}',
     '.ch-legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:4px;vertical-align:-1px}',
     '.ch-tip{font-size:.84rem;color:var(--ink);min-height:1.2em;margin:6px 0 0;font-weight:600}',
-    '.ch-tbl{width:100%;border-collapse:collapse;font-size:.82rem}',
+    /* 고정 표 배치: 칸 너비를 카드 안쪽 폭에 맞춰 나눔(스파크라인은 남는 폭만, 최대 92px) → 카드 밖으로 안 넘침 */
+    '.ch-tbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.82rem}',
+    '.ch-tbl col.cn{width:38%}.ch-tbl col.cv{width:5.6rem}.ch-tbl col.cd{width:2.3rem}',
+    '.ch-tbl td.s svg{display:block;width:100%;max-width:92px;height:26px}',
+    '.ch-leg2{font-size:.78rem;color:var(--ink-2);margin:6px 0 0;line-height:1.45}',
     '.ch-tbl td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:middle}',
     '.ch-tbl tr:first-child td{border-top:0}',
     '.ch-tbl td.n{white-space:nowrap;max-width:9.5rem;overflow:hidden;text-overflow:ellipsis}',
@@ -181,14 +185,14 @@
   }
   function sparks(s, esc) {
     if (!s || s.empty || !s.rows || !s.rows.length) return empty();
-    var h = '<table class="ch-tbl"><tbody>';
+    var h = '<table class="ch-tbl"><colgroup><col class="cn"><col><col class="cv"><col class="cd"></colgroup><tbody>';
     var srcs = {}, cut = null;
     s.rows.forEach(function (r) {
       var y = r.y || [], last = y[y.length - 1], prev = y.length > 1 ? y[y.length - 2] : null, pt = partial(r, s.rows);
       /* 덜 찬 달(예: 10월 21일까지)과 꽉 찬 달을 비교한 ▲▼ 는 안 보여 줌 */
       var df = (prev == null || pt) ? '' : (last > prev ? '<span class="ch-up">▲' + (last - prev) + '</span>' : (last < prev ? '<span class="ch-dn">▼' + (prev - last) + '</span>' : '<span class="ch-eq">–</span>'));
       if (pt) cut = pt;
-      h += '<tr><td class="n" title="' + esc(r.name) + '">' + esc(r.name) + '</td><td>' + spark(r.x, y) + '</td><td class="v">' + last + '<small style="color:var(--muted);font-weight:500"> ' + esc(r.unit) + '</small>' +
+      h += '<tr><td class="n" title="' + esc(r.name) + '">' + esc(r.name) + '</td><td class="s">' + spark(r.x, y) + '</td><td class="v">' + last + '<small style="color:var(--muted);font-weight:500"> ' + esc(r.unit) + '</small>' +
         (pt ? '<br><small style="color:var(--muted);font-weight:500">' + esc(pt.label) + '</small>' : '') + '</td><td class="d">' + df + '</td></tr>';
       srcs[r.src] = 1;
     });
@@ -214,6 +218,13 @@
     var m = rows.length, W = 340, L = 18, R = 112, T = 10, B = 20, H = T + B + (m - 1) * 22 + 8;
     var X = function (i) { return L + i * (W - L - R) / (n - 1); }, Y = function (r) { return T + 4 + (r - 1) * 22; };
     var top = rank.map(function (r) { return r[n - 1]; }).indexOf(1);
+    /* 오른쪽 이름표: 7자 넘으면 6자+…(전체 이름은 <title> 과 아래 범례). 같은/가까운 줄이면 11px씩 아래로 비켜 겹치지 않게. */
+    var short = function (nm) { nm = String(nm); return nm.length > 7 ? nm.slice(0, 6) + '…' : nm; };
+    var ly = [], prevY = -1e9;
+    rows.map(function (r0, k) { return k; }).sort(function (a, b) { return (rank[a][n - 1] - rank[b][n - 1]) || (a - b); }).forEach(function (k) {
+      var y = Math.max(Y(rank[k][n - 1]) + 3, prevY + 11); ly[k] = y; prevY = y;
+    });
+    H = Math.max(H, prevY + B);
     var o = '<svg class="ch-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="부서별 문서 건수 순위 범프 차트">';
     for (var r = 1; r <= m; r++) o += '<text x="0" y="' + (Y(r) + 3) + '" font-size="9" fill="' + C.axis + '">' + r + '위</text>';
     var draw = function (k) {
@@ -221,7 +232,7 @@
       var d = rank[k].map(function (rk, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(rk); }).join(' ');
       var g = '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + (hi ? 2.6 : 1.6) + '" stroke-linejoin="round"/>';
       rank[k].forEach(function (rk, i) { g += '<circle cx="' + X(i) + '" cy="' + Y(rk) + '" r="' + (hi ? 3.4 : 2.6) + '" fill="' + col + '"><title>' + esc(rows[k].name) + ' ' + esc(xs[i]) + ' ' + rows[k].y[i] + '건 · ' + rk + '위</title></circle>'; });
-      g += '<text x="' + (X(n - 1) + 7) + '" y="' + (Y(rank[k][n - 1]) + 3) + '" font-size="9.5"' + (hi ? ' font-weight="700"' : '') + ' fill="' + (hi ? A : C.ink2) + '">' + esc(rows[k].name) + '</text>';
+      g += '<text x="' + (X(n - 1) + 7) + '" y="' + ly[k] + '" font-size="9.5"' + (hi ? ' font-weight="700"' : '') + ' fill="' + (hi ? A : C.ink2) + '">' + esc(short(rows[k].name)) + '<title>' + esc(rows[k].name) + '</title></text>';
       return g;
     };
     rows.forEach(function (r0, k) { if (k !== top) o += draw(k); });
@@ -229,6 +240,8 @@
     var pt = partial(rows[0]);
     xs.forEach(function (x, i) { o += '<text x="' + X(i) + '" y="' + (H - 4) + '" font-size="9" text-anchor="middle" fill="' + C.ink2 + '">' + esc(String(x).replace(/^0/, '')) + (pt && i === pt.i ? '*' : '') + '</text>'; });
     o += '</svg>';
+    var cut = rows.filter(function (r0) { return short(r0.name) !== String(r0.name); });
+    if (cut.length) o += '<p class="ch-leg2">줄인 이름: ' + cut.map(function (r0) { return esc(short(r0.name)) + ' = ' + esc(r0.name); }).join(' · ') + '</p>';
     return o + '<p class="ch-src">출처: ' + esc(rows[0].src) + (pt ? ' · *' + esc(pt.label) + ': 덜 찬 달(순위만 같은 기간끼리 비교)' : '') + ' · 건수가 같으면 이름순</p>';
   }
 
