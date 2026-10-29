@@ -53,6 +53,7 @@
     '.cp-node{font-size:.82rem;font-weight:700;border-radius:999px;padding:7px 12px;border:1px solid #c9b6e8;background:#f3e8ff;color:#5b2d8e;cursor:pointer}',
     '.cp-node .ext{font-weight:600;opacity:.75;margin-left:4px;font-size:.76rem}',
     '.cp-arrow{color:var(--muted);font-weight:700;font-size:.9rem;padding:0 2px}',
+    '.cp-pname{font:inherit;font-size:.86rem;font-weight:700;border:0;background:transparent;padding:0;color:#5b2d8e;cursor:pointer;text-decoration:underline dotted}',
     '.cp-chain-note{font-size:.76rem;color:var(--muted);margin:6px 0 0;line-height:1.35}'
   ].join('\n');
 
@@ -291,7 +292,7 @@
       return '<div class="cp-rule"><b>언제: ' + esc(r.when) + '</b><span>→ ' + esc(r.then) + '</span></div>';
     }).join('');
     var people = (data.people || []).map(function (p) {
-      return '<div class="cp-p"><b>' + esc(p.name) + '</b>' +
+      return '<div class="cp-p"><button type="button" class="cp-pname" data-person="' + esc(p.name) + '">' + esc(p.name) + '</button>' +
         (p.listed ? '' : ' <span class="cp-chip kind-period">미등재</span>') +
         '<p class="cp-m">' + esc(p.phone_note || '') + '</p>' +
         '<p class="cp-m">주업무: ' + esc(p.job || '') + '</p></div>';
@@ -374,15 +375,28 @@
         else if (openId === d.getAttribute('data-oid')) openId = '';
       };
     });
+    function searchFor(qq) {
+      q = qq;
+      active = [];
+      home(el, api);
+      var again = el.querySelector('#cp-q');
+      if (again) again.focus();
+    }
+    /* 261029: 사람을 누르면 하는 일 팝업(js/people-roles.js). 예전 동작(이 사람으로 검색)은 팝업 버튼으로 */
+    function personTap(name) {
+      if (root.HJPeopleRoles) root.HJPeopleRoles.open(name, [{ label: '「' + name + '」로 검색', run: function () { searchFor(name); } }]);
+      else searchFor(name);
+    }
     el.querySelectorAll('[data-chain-q]').forEach(function (btn) {
       btn.onclick = function () {
         var qq = btn.getAttribute('data-chain-q') || '';
-        if (!qq) return;
-        q = qq;
-        active = [];
-        home(el, api);
-        var again = el.querySelector('#cp-q');
-        if (again) again.focus();
+        if (qq) personTap(qq);
+      };
+    });
+    el.querySelectorAll('[data-person]').forEach(function (btn) {
+      btn.onclick = function () {
+        var qq = btn.getAttribute('data-person') || '';
+        if (qq) personTap(qq);
       };
     });
     var det = el.querySelector('#cp-more');

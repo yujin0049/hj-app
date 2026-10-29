@@ -25,8 +25,12 @@
     '결재라인': '#e07a5f',
     'person-dept': '#e07a5f',
     'word-제목부서': '#4fb3bf',
-    'word-업무추정': '#b0b8c4'
+    'word-업무추정': '#b0b8c4',
+    'person-협조': '#d98fb0'
   };
+  function openPerson(name) {
+    if (root.HJPeopleRoles && name) root.HJPeopleRoles.open(name);
+  }
   var HUB_HINT = ['행정지원과', '대학운영실', '글로컬대학사업센터', '글로컬국제협력센터', '경남항공교육원', 'RISE본부'];
 
   var CSS = [
@@ -60,6 +64,8 @@
     '.sp-kind{display:flex;flex-wrap:wrap;gap:4px;margin:0 0 8px}',
     '.sp-kind button{font-size:.72rem;padding:5px 9px;border-radius:999px;border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink-2)}',
     '.sp-kind button.on{background:#1a2332;color:#e7ecf3;border-color:#1a2332}',
+    '.sp-pname{font:inherit;font-size:.9rem;font-weight:700;border:0;background:transparent;padding:0;color:#b4532f;cursor:pointer;text-decoration:underline dotted}',
+    '.sp-info .sp-pname{font-size:.8rem}',
     '.sp-note{font-size:.76rem;color:var(--muted);line-height:1.4;margin:8px 0 0}'
   ].join('\n');
 
@@ -230,7 +236,7 @@
         var conf = typeof info === 'object' ? (info.rank_confidence || info.confidence || '') : '';
         var ev = typeof info === 'object' ? (info.rank_evidence || info.evidence || '') : '';
         if (!label) return;
-        h += '<div class="sp-row"><div><b>' + esc(api, name) + '</b>' +
+        h += '<div class="sp-row"><div><button type="button" class="sp-pname" data-person="' + esc(api, name) + '">' + esc(api, name) + '</button>' +
           '<div class="sp-meta">' + esc(api, label) +
           (conf ? ' · ' + esc(api, conf) : '') +
           (ev ? ' · ' + esc(api, ev) : '') +
@@ -352,7 +358,9 @@
         info.style.display = 'block';
         info.innerHTML = '<div class="t">' + esc(api, head) + '</div>' +
           (n && n.role_summary ? '<div>' + esc(api, n.role_summary) + '</div>' : '') +
+          (n && n.type === 'person' ? '<div><button type="button" class="sp-pname" data-person="' + esc(api, n.label || '') + '">하는 일 보기</button></div>' : '') +
           '<div style="margin-top:6px">' + body + '</div>';
+        if (n && n.type === 'person') openPerson(n.label || '');
       });
       graphReady = true;
       var kindBar = document.getElementById('sp-kind');
@@ -438,6 +446,12 @@
     h += '</div><div id="sp-body">' + body(api) + '</div>' +
       '<p class="sp-note">직급 원본 없음(rank=null). inferred 직위는 공식 공문 기입 금지.</p></div>';
     el.innerHTML = h;
+    /* 261029: 사람 이름을 누르면 하는 일 팝업(js/people-roles.js) */
+    var wrap = el.querySelector('.sp-wrap');
+    if (wrap) wrap.onclick = function (ev) {
+      var t = ev.target.closest && ev.target.closest('[data-person]');
+      if (t) openPerson(t.getAttribute('data-person') || '');
+    };
     el.querySelectorAll('.sp-tab').forEach(function (btn) {
       btn.onclick = function () {
         tab = btn.getAttribute('data-tab') || 'role';
