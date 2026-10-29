@@ -1,0 +1,31 @@
+{
+ "version": 1,
+ "note": "차트(#/charts) 돈 자료. 실제 문서·장부에 있는 금액만, 주머니(어학연수·글로컬·대학회계)별로 따로. 추정·계획은 kind로 구분. 출처 없는 숫자 금지.",
+ "pockets": ["어학연수", "글로컬", "대학회계"],
+ "glocal_balance": {
+  "label": "글로컬(교육원 몫) 배정 확인분 잔액",
+  "start_date": "2026-09-01",
+  "start_note": "배정일 미상 → 2학기 시작일(9.1.)부터 그림",
+  "lines": [
+   {"what": "비정규 초과강사료(2학기) 강사료", "amt": 13725000, "src": "public-pack budget_lines bl-1f7d1b2e (345h 기준)"},
+   {"what": "실습재료(719 용호기공) 재료비", "amt": 15180000, "src": "public-pack budget_lines (T020)"}
+  ],
+  "excluded_note": "배정액 확인 필요 7줄(자격증 특강·사천 에어쇼 등)은 뺌",
+  "spend": [
+   {"d": "2026-10-07", "amt": 3580000, "what": "9월분 초과강사료 지출결의(글로컬센터-2604)", "src": "10 업무/13 글로컬 지출/프로세스/P03_초과강사료.md"}
+  ]
+ },
+ "monthly_lecture_fee": {
+  "label": "강사료 월별(원) · 주머니별",
+  "months": ["2026-09", "2026-10", "2026-11", "2026-12", "2027-01", "2027-02"],
+  "rows": [
+   {"pocket": "글로컬", "m": "2026-09", "amt": 3580000, "kind": "집행", "src": "지출결의 글로컬센터-2604(10.7.)"},
+   {"pocket": "글로컬", "m": "2026-10", "amt": 3540000, "kind": "의뢰예정", "src": "public-pack budget_lines memo 「10월분 3,540,000원(89h) 의뢰 예정」"},
+   {"pocket": "어학연수", "m": "2026-10", "amt": 6180000, "kind": "추정", "src": "public-pack budget_lines OJNT 강사료 월별 추정"},
+   {"pocket": "어학연수", "m": "2026-11", "amt": 9885000, "kind": "추정", "src": "public-pack budget_lines OJNT 강사료 월별 추정"},
+   {"pocket": "어학연수", "m": "2026-12", "amt": 9975000, "kind": "추정", "src": "public-pack budget_lines OJNT 강사료 월별 추정"},
+   {"pocket": "어학연수", "m": "2027-01", "amt": 7930000, "kind": "추정", "src": "public-pack budget_lines OJNT 강사료 월별 추정"},
+   {"pocket": "어학연수", "m": "2027-02", "amt": 1705000, "kind": "추정", "src": "public-pack budget_lines OJNT 강사료 월별 추정"}
+  ]
+ }
+}

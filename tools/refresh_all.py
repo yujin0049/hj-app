@@ -16,6 +16,7 @@ BUILD = '/workspace/hj_audit/preview/build_preview.py'
 SKIP = {'.git', 'dl', 'node_modules', 'tests', 'tools', 'docs'}
 # 미리보기 워커에서 뺄 파일: main 에 있는 dorm.json 은 연수생 이름 칸이 있어 새 주소로 더 퍼뜨리지 않음(기숙사 화면은 미리보기에서 안 열림)
 SKIP_TOP = {'dorm.json'}
+# 261029 대장 kv T=hjapp_차트+중요문서: #/charts 차트 자료(tools/make_charts.py)
 
 
 def stamp(t):
@@ -53,6 +54,11 @@ def main(argv=None):
         if rc == 2:
             return finish(meta_p, old, now, steps, False, 2)
         ok = ok and rc == 0
+    try:
+        import make_charts
+        steps['차트'] = {'ok': make_charts.main() == 0, 'why': ''}
+    except Exception as e:
+        steps['차트'] = {'ok': False, 'why': type(e).__name__}
     rc = cal_pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
     if rc:
         steps['개인정보 검사'] = {'ok': False, 'why': '실패'}

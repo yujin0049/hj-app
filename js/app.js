@@ -335,7 +335,7 @@
     var id = route.name;
     if (id === 'tomorrow') id = 'todo';
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'spider' || id === 'todo' || id === 'ot-attach' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' ? 'study' : id)));
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'spider' || id === 'todo' || id === 'ot-attach' || id === 'charts' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' ? 'study' : id)));
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
@@ -378,7 +378,7 @@
       var id = list[i++];
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
-        s.src = new URL('js/modules/' + id + '.js?v=31', base).href;
+        s.src = new URL('js/modules/' + id + '.js?v=32', base).href;
         s.onload = function () { res(); };
         s.onerror = function () { rej(new Error(id)); };
         document.body.appendChild(s);
