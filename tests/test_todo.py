@@ -10,11 +10,16 @@ def read(*p):
 
 SEED_TITLES = [
     '코러스 문서대장 뽑기',
-    'OJNT 기숙사 입사·장단기 12명 생활관 제출',
     '휴보강(미완시)',
     'T081 국토부 1431·1285·627·772 본문 PC',
     'T018 강의실·실습실·명단 확인',
     'T054 회신·출석부 이미지 OK',
+    'T017 강사 서류 받아 글로컬센터 제출',
+    'T018 2차 작업형 공개문제 출력(10.30 배부)',
+    'T018 입고·검수(납품서·검수조서)',
+    'T020 실습재료 납품·검수 → 지출결의',
+    'T065 OJNT 실거주 확인서 도장·제출',
+    'T017 [자격취득반] 운영계획 결재·개강 전 서류·성범죄 경력조회 확인',
 ]
 
 class Todo(unittest.TestCase):
@@ -23,9 +28,9 @@ class Todo(unittest.TestCase):
 
     def test_shape(self):
         self.assertEqual(self.d['version'], 'v01')
-        self.assertEqual(self.d['date'], '2026-10-28')
+        self.assertEqual(self.d['date'], '2026-10-29')
         self.assertEqual(self.d['title'], '내일 할 일')
-        self.assertEqual(len(self.d['items']), 6)
+        self.assertEqual(len(self.d['items']), 11)
         for it in self.d['items']:
             self.assertIn('id', it)
             self.assertIn('title', it)
@@ -40,7 +45,7 @@ class Todo(unittest.TestCase):
         self.assertIn('문서등록대장_코러스뽑기_대기', p)
         self.assertIn('11_업무기타', p)
         self.assertIn('코러스', self.d['items'][0]['title'])
-        self.assertIn('코러스', self.d['items'][3].get('note') or '')
+        self.assertIn('코러스', self.d['items'][2].get('note') or '')
 
     def test_no_onnara_and_no_mobile(self):
         blob = read('data', 'todo.json') + read('js', 'modules', 'todo.js')
@@ -51,11 +56,13 @@ class Todo(unittest.TestCase):
             hits = [h for h in hjpii.find_pii(text) if h not in ('이름 의심',)]
             self.assertEqual(hits, [], path)
 
-    def test_t2_done_and_t6_click(self):
+    def test_carryover_and_t065(self):
         by = {it['id']: it for it in self.d['items']}
-        self.assertTrue(by['t2']['done'])
-        self.assertIn('클릭만', by['t6'].get('note') or '')
-        self.assertEqual(by['t6'].get('who'), 'yujin')
+        self.assertFalse(any(it['done'] for it in self.d['items']))
+        self.assertIn('클릭만', by['t5'].get('note') or '')
+        self.assertEqual(by['t5'].get('who'), 'yujin')
+        self.assertIn('T065', by['t10']['title'])
+        self.assertIn('10.30', by['t10'].get('note') or '')
         self.assertIn('봇큐=', self.d.get('note') or '')
         self.assertNotIn('온'+'나라', json.dumps(self.d, ensure_ascii=False))
 
