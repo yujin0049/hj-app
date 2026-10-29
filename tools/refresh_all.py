@@ -80,6 +80,13 @@ def main(argv=None):
         finish(meta_p, old, now, steps, False, 1)
         return 1
     steps['새 의심 검사'] = {'ok': True}
+    # 261029: 공개 JSON 의 볼트·박스·PC 경로 → 노트 이름만(tools/vaultpath.py). 다른 봇이 쓴 파일도 여기서 한 번 더 걸러짐. 남으면 배포 중단
+    import vaultpath
+    if vaultpath.main([]):
+        steps['볼트 경로 검사'] = {'ok': False, 'why': '공개 JSON 에 경로가 남음(tools/vaultpath.py --check)'}
+        finish(meta_p, old, now, steps, False, 1)
+        return 1
+    steps['볼트 경로 검사'] = {'ok': True}
     finish(meta_p, old, now, steps, ok, 0)
     if a.no_worker:
         return 0 if ok else 1

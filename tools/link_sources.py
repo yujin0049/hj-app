@@ -16,6 +16,8 @@ public-pack.json 카드(기본: regulations)의 이름·원문 칸·r코드와 �
         [--out data/sources.json] [--no-pii-gate] [--today 2026-10-21]
 """
 import argparse, datetime, hashlib, json, os, re, subprocess, sys, tempfile, urllib.parse
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import vaultpath  # 공개 sources.json 에 볼트 경로·obsidian://open 주소 안 씀 → 노트 이름만(앱이 옵시디언 검색으로 엶, 261029)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
@@ -426,6 +428,7 @@ def main(argv=None):
         with open(a.out, encoding='utf-8') as f:
             out = json.load(f)
         add_obsidian_links(out, *obsidian_config())
+        out = vaultpath.scrub_obj(out)
         with open(a.out, 'w', encoding='utf-8', newline='\n') as f:
             f.write(json.dumps(out, ensure_ascii=False, indent=1, sort_keys=True) + '\n')
         print('옵시디언 주소만 고침: %d개 → %s' % (sum(1 for r in out['cards'].values() if r.get('obsidian')), a.out))
@@ -445,6 +448,7 @@ def main(argv=None):
                 ex['text'] = ''          # 원문 글은 잠긴 볼트 문서(앱 「볼트 문서」)에서 봄
                 ex['in_vault_doc'] = True
             rec.pop('heading', None)     # 제목줄도 볼트 글 → 저장소에 안 씀
+    out = vaultpath.scrub_obj(out)
     data = json.dumps(out, ensure_ascii=False, indent=1, sort_keys=True) + '\n'
     fd, tmp = tempfile.mkstemp(suffix='.json')
     with os.fdopen(fd, 'w', encoding='utf-8') as f:

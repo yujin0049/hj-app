@@ -46,7 +46,7 @@ class T(unittest.TestCase):
     def test_title_alias_link(self):
         r = self.c['regulations:a1']
         self.assertEqual(r['status'], '연결')
-        self.assertTrue(r['path'].endswith('20 규정·지침/위임전결규정.md'))
+        self.assertEqual(r['path'], '위임전결규정')   # 261029: 공개 JSON 엔 볼트 경로 대신 노트 제목만(tools/vaultpath.py)
         self.assertEqual(r['excerpt']['articles_found'], ['제5조'])
         self.assertIn('전결권자', r['excerpt']['text'])
 
@@ -132,7 +132,7 @@ class T위임전결카드(unittest.TestCase):
 
     def test_linked_to_original(self):
         self.assertEqual(self.rec.get('status'), '연결')
-        self.assertEqual(self.rec.get('path'), '봇공유/20 규정·지침/국립창원대_위임전결규정.md')
+        self.assertEqual(self.rec.get('path'), '국립창원대_위임전결규정')   # 261029: 노트 제목만
         self.assertEqual(self.rec['excerpt']['articles_missing'], [])
 
 
