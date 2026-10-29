@@ -16,7 +16,8 @@ BUILD = '/workspace/hj_audit/preview/build_preview.py'
 SKIP = {'.git', 'dl', 'node_modules', 'tests', 'tools', 'docs'}
 # 미리보기 워커에서 뺄 파일: main 에 있는 dorm.json 은 연수생 이름 칸이 있어 새 주소로 더 퍼뜨리지 않음(기숙사 화면은 미리보기에서 안 열림)
 SKIP_TOP = {'dorm.json'}
-# 261029 대장 kv T=hjapp_차트+중요문서: #/charts 차트 자료(tools/make_charts.py)
+# 261029 대장 kv T=hjapp_차트+중요문서: #/docs 중요문서 추출(볼트 스크립트, 메타데이터만) + #/charts 차트 자료
+DOCS_SCRIPT = '/home/box/obsidian_vault/봇공유/99 봇/스크립트/hj_docs_extract.py'
 
 
 def stamp(t):
@@ -54,6 +55,14 @@ def main(argv=None):
         if rc == 2:
             return finish(meta_p, old, now, steps, False, 2)
         ok = ok and rc == 0
+    # 중요문서(#/docs): 원자료 없으면(1) 예전 파일 그대로 두고 표시만, 가림 실패(2)면 멈춤
+    if os.path.exists(DOCS_SCRIPT):
+        drc = subprocess.run([sys.executable, DOCS_SCRIPT, '--out', os.path.join(data, 'docs_important.json')]).returncode
+        steps['중요문서'] = {'ok': drc == 0, 'why': {0: '', 1: '문서대장 원자료 없음(예전 목록 유지)', 2: '이름 가림 실패'}.get(drc, '추출 실패')}
+        if drc == 2:
+            return finish(meta_p, old, now, steps, False, 2)
+    else:
+        steps['중요문서'] = {'ok': False, 'why': '추출 스크립트 없음(예전 목록 유지)'}
     try:
         import make_charts
         steps['차트'] = {'ok': make_charts.main() == 0, 'why': ''}
