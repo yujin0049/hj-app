@@ -95,13 +95,15 @@
       menuBtn('records', '내 기록', '점수와 자주 틀린 규칙') +
       menuBtn('rules', '규칙 목록', '문장과 근거를 고칠 수 있어요') +
       menuBtn('month', '매달 할 일', '알림 문구 수정') +
-      menuBtn('settings', '설정', '백업, 초기화');
+      menuBtn('settings', '설정', '백업, 초기화') +
+      menuBtn('floor3d', '층별 3D 도면', '1·2·3층 켜고 끄기 · 돌리고 확대');
     el.querySelectorAll('[data-page]').forEach(function (b) {
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
         else if (id === 'study-must') api.go('#/study/must');
         else if (id === 'changelog') api.go('#/study/changelog');
+        else if (id === 'floor3d') api.go('#/floor3d');
         else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
@@ -339,4 +341,16 @@
   }
 
   ShellModules.more = { id: 'more', tab: '더보기', icon: icon, render: render };
+  /* #/floor3d 층별 3D 도면: 이 화면을 열 때만 js/floor3d.js 와 three.js 를 불러옴(홈·처음 열기에는 안 실림). 탭은 더보기에 불 켬 */
+  ShellModules.floor3d = { id: 'floor3d', render: function (el, api) {
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
+    document.querySelectorAll('.tabs button').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-tab') === 'more'); });
+    var go = function () { if (el.isConnected && /^#\/floor3d/.test(location.hash)) window.HJFloor3D.mount(el, api); };
+    if (window.HJFloor3D) return go();
+    var s = document.createElement('script');
+    s.src = new URL('js/floor3d.js?v=1', document.baseURI).href;
+    s.onload = go;
+    s.onerror = function () { el.innerHTML = '<section class="card"><p class="muted">층별 3D 도면을 불러오지 못했어요.</p></section>'; };
+    document.body.appendChild(s);
+  } };
 })();
