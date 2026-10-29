@@ -24,4 +24,4 @@ class Nav(unittest.TestCase):
 
     def test_docs_stay_network_only(self):
         self.assertIn("var NO_STORE = ['/data/docs_important.json', '/js/modules/docs.js'];", read('sw.js'))
-        self.assertRegex(read('sw.js'), r"CACHE = 'hj-v66'")
+        self.assertIn("var CACHE = 'hj-v67';", read('sw.js'))

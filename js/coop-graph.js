@@ -286,7 +286,7 @@
     '[data-cg-person] .cg-kind{background:#f3e8ff;color:#5b2d8e}.cg-guide h3{color:#1a4d9e}',
     '.cg-grid{display:grid;grid-template-columns:5.2rem 1fr;gap:5px 8px}.cg-grid .k{color:var(--muted);font-weight:700;font-size:.8rem}.cg-grid .v{color:var(--ink-2);min-width:0}',
     '.cg-c{display:inline-block;margin:0 5px 4px 0;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:var(--soft);font-size:.8rem;color:var(--ink);cursor:pointer}',
-    '.cg-c small,.cg-reg small,.cg-ap small{color:var(--muted);font-size:.72rem}',
+    '.cg-c small,.cg-reg small,.cg-ap small{color:var(--muted);font-size:.8rem}',
     '.cg-reg,.cg-ap,.cg-doc{display:inline-block;margin:0 8px 2px 0}.cg-doc{font-weight:700}',
     '.cg-roles{margin:0;padding-left:1.05em}.cg-roles li{margin:1px 0}',
     '.cg-inf{color:var(--muted);opacity:.88}',

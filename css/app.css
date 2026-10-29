@@ -1,17 +1,17 @@
 :root {
   --bg: #F2F4F6;
   --card: #ffffff;
-  --navy: #3182F6;
-  --navy-2: #1B64DA;
+  --navy: #1B64DA;
+  --navy-2: #1550B5;
   --ink: #191F28;
   --ink-2: #333D4B;
-  --muted: #8B95A1;
+  --muted: #646F7C;
   --line: #E5E8EB;
-  --ok: #03B26C;
+  --ok: #027A50;
   --okbg: #E5F8EF;
-  --no: #F04452;
+  --no: #C9283A;
   --nobg: #FEECEE;
-  --warn: #E67700;
+  --warn: #A85400;
   --warnbg: #FFF4E6;
   --soft: #F2F4F6;
   --blue-soft: #E8F3FF;
@@ -40,7 +40,11 @@ a { color: var(--navy); }
 h1 { font-size: 1.6rem; line-height: 1.3; margin: 0 0 .5rem; font-weight: 800; letter-spacing: -0.03em; color: var(--ink); }
 h2 { font-size: 1.2rem; margin: 0 0 .6rem; font-weight: 700; letter-spacing: -0.02em; }
 h3 { font-size: 1.02rem; margin: 0 0 .35rem; }
-p { margin: .35rem 0; }
+p { margin: .35rem 0; text-wrap: pretty; }
+h1, h2, h3 { text-wrap: balance; }
+::placeholder { color: var(--muted); opacity: 1; }
+::selection { background: #D6E4FA; color: var(--ink); }
+:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
 .muted { color: var(--muted); font-size: .92rem; }
 .top {
   display: flex;
@@ -100,7 +104,7 @@ p { margin: .35rem 0; }
   gap: 2px;
 }
 .tabs button.on { color: var(--ink); }
-.tabs button { color: #B0B8C1; }
+.tabs button:not(.on) { font-weight: 600; }
 .tabs svg { width: 22px; height: 22px; }
 .card {
   background: var(--card);
@@ -215,6 +219,15 @@ textarea { min-height: 96px; line-height: 1.5; }
   margin: 8px 0;
   background: #fff;
 }
+.card .doc-card, .card .q-card {
+  border: 0;
+  border-top: 1px solid var(--line);
+  border-radius: 0;
+  padding: 12px 0;
+  margin: 0;
+  background: transparent;
+}
+.card h2 + .doc-card, .card h2 + .q-card { border-top: 0; padding-top: 4px; }
 .order li {
   display: flex;
   gap: 8px;
@@ -247,6 +260,12 @@ table.plain th { color: var(--muted); font-weight: 700; }
 }
 #view.wide { max-width: 1120px; }
 body:has(#view.wide) .tabs { max-width: 1120px; }
+/* 데스크톱: 머리줄·「달력 자료 갱신」 줄을 본문 칸과 같은 너비·같은 왼쪽 선에 맞춤 (폰 390px은 그대로) */
+.top, body #hj-stamp { max-width: 560px; margin-left: auto; margin-right: auto; box-sizing: border-box; }
+body:has(#view.wide) .top, body:has(#view.wide) #hj-stamp { max-width: 1120px; }
+body:has(#view.sched-page) .top, body:has(#view.sched-page) #hj-stamp { max-width: 640px; }
+/* 「달력 자료 갱신」 글자 왼쪽 선을 홈 첫 줄(날짜·제목, hero 4px 안쪽)과 맞춤 */
+body #hj-stamp { padding-left: 20px; padding-right: 20px; }
 .dorm-legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: .82rem; font-weight: 700; color: var(--muted); margin: 8px 0; }
 .dorm-legend .sw { display: inline-block; width: 14px; height: 14px; border: 2px solid var(--ink); border-radius: 4px; vertical-align: -2px; margin-right: 4px; }
 .dorm-legend .occ { background: #A8E6BF; }
@@ -587,9 +606,8 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
   margin: 18px 4px 6px;
   font-size: .78rem;
   font-weight: 800;
-  letter-spacing: .04em;
-  color: var(--navy);
-  opacity: .85;
+  letter-spacing: 0;
+  color: var(--ink-2);
 }
 .must-entry h2 { margin: 4px 0 8px; }
 .must-card h2 { font-size: 1.05rem; margin: 0 0 6px; }
