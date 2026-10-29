@@ -18,7 +18,7 @@ def read(p):
 class T자료(unittest.TestCase):
     def test_two_docs_point_to_vault_notes(self):
         self.assertEqual([d['vault'] for d in DOCS],
-                         ['봇공유/20 규정·지침/국립창원대_위임전결규정.md', '봇공유/조사/위임전결규정_꼭알조문.md'])
+                         ['국립창원대_위임전결규정', '위임전결규정_꼭알조문'])   # 261029: 볼트 경로 대신 노트 제목만
         for d in DOCS:
             self.assertRegex(d['file'], r'^docs/regs/[^/]+\.md$')
             self.assertTrue(os.path.isfile(os.path.join(ROOT, d['file'])), d['file'])

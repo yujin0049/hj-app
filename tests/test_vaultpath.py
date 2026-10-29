@@ -23,3 +23,11 @@ def test_scrub_obj_keeps_repo_copies_and_blanks_obsidian():
          'obsidian': 'obsidian://open?vault=x&file=y', 'path': '봇공유/50 자료색인/r045__25.12.17_ 2025 편람(최종).md'}
     n = vaultpath.scrub_obj(o)
     assert n == {'file': 'docs/regs/위임전결규정.md', 'vault': '국립창원대_위임전결규정', 'obsidian': '', 'path': 'r045__25.12.17_ 2025 편람(최종)'}
+
+
+def test_timestamps_are_not_paths():
+    # 261029 버그: '2026-10-29 19:55 Asia/Seoul' → '2026-10-Seoul' 로 먹힘. 시각(:숫자) 뒤 「NN 글자/」는 폴더가 아님
+    for t in ('2026-10-29 19:55 Asia/Seoul', '생성 2026-10-29 00:39 Asia/Seoul', '10.29. 16:21 Asia/Seoul 반영'):
+        assert vaultpath.find(t) == []
+        assert vaultpath.plain(t) == t
+    assert vaultpath.plain('2026-10-29 19:55 Asia/Seoul · 10 업무/a_v01.md') == '2026-10-29 19:55 Asia/Seoul · a_v01'

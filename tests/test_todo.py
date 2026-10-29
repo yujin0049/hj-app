@@ -51,9 +51,9 @@ class Todo(unittest.TestCase):
         titles = [it['title'] for it in self.d['items']]
         self.assertEqual(titles, SEED_TITLES)
         p = self.d['items'][0].get('path') or ''
-        self.assertTrue(p.startswith('D:'))
-        self.assertIn('문서등록대장_코러스뽑기_대기', p)
-        self.assertIn('11_업무기타', p)
+        # 261029: 공개 JSON 엔 PC 경로(D:\…) 대신 폴더 이름만(tools/vaultpath.py)
+        self.assertEqual(p, '문서등록대장_코러스뽑기_대기')
+        self.assertNotIn(':\\', p)
         self.assertIn('코러스', self.d['items'][0]['title'])
         self.assertIn('코러스', self.d['items'][2].get('note') or '')
 

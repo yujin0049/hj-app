@@ -1,7 +1,7 @@
 {
   "meta": {
     "id": "D261029_dept_organic_v01",
-    "generated": "2026-10-Seoul",
+    "generated": "2026-10-29 00:39 Asia/Seoul",
     "authorized_by": [
       "pt2085u"
     ],
@@ -509,7 +509,7 @@
     },
     "word_v02": {
       "id": "D261029_spider_word_v02",
-      "generated": "2026-10-Seoul",
+      "generated": "2026-10-29 16:21 Asia/Seoul",
       "rule": "수발신칸·제목 낱말 매칭(근거 ≥2행) · 업무키워드만 맞으면 est=true(≥5행, 출발부서마다 상위 4) · 이름·제목원문 없음",
       "zero_before": [
         "국립대학육성사업단",
