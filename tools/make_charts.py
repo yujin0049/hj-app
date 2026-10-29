@@ -64,6 +64,7 @@ def sparks(docreg, docs):
         rows.append({'name': '내일 할 일 · 끝낸 일', 'unit': '건', 'x': [p['t'][5:] for p in pts], 'y': [p['done'] for p in pts], 'src': 'git 기록 data/todo.json %d판' % len(pts)})
     months = ['2026-%02d' % m for m in range(3, 11)]
     if docreg and docreg.get('docs'):
+        thru = max((d.get('d') or '')[:10] for d in docreg['docs'])  # 자료 마지막 날(이 날 뒤 달은 덜 참)
         c = collections.defaultdict(collections.Counter)
         tot = collections.Counter()
         for d in docreg['docs']:
@@ -74,10 +75,15 @@ def sparks(docreg, docs):
             tot[to] += 1
         for name, _ in tot.most_common(6):
             rows.append({'name': name, 'unit': '건/월', 'x': [m[5:] + '월' for m in months], 'y': [c[name].get(m, 0) for m in months],
-                         'src': 'data/docreg.json 공개행(항공정비과 문서대장 ~10.21.)'})
+                         'through': thru, 'src': 'data/docreg.json 공개행(항공정비과 문서대장 ~%d.%d.)' % (int(thru[5:7]), int(thru[8:10]))})
     if docs and docs.get('rows'):
         cm = collections.Counter(r['d'][:7] for r in docs['rows'])
-        rows.append({'name': '외부기관 중요문서', 'unit': '건/월', 'x': [m[5:] + '월' for m in months], 'y': [cm.get(m, 0) for m in months], 'src': 'data/docs_important.json'})
+        # 문서를 뽑은 대장들 중 가장 이른 마지막 날까지만 모두 찼다고 봄
+        tos = [x.get('to') for x in (docs.get('sources') or []) if x.get('picked') and x.get('to')]
+        row = {'name': '외부기관 중요문서', 'unit': '건/월', 'x': [m[5:] + '월' for m in months], 'y': [cm.get(m, 0) for m in months], 'src': 'data/docs_important.json'}
+        if tos:
+            row['through'] = min(tos)[:10]
+        rows.append(row)
     return {'empty': not rows, 'rows': rows}
 
 
