@@ -56,6 +56,21 @@
   }
   function iso(dt) { return dt.getFullYear() + '-' + ('0' + (dt.getMonth() + 1)).slice(-2) + '-' + ('0' + dt.getDate()).slice(-2); }
   function todayIso() { return new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10); }
+  /* 덜 찬 달: 줄의 자료 마지막 날(row.through, 없으면 출처의 「~월.일.」)이 그 달 말일보다 앞이면 마지막 점은 일부만 */
+  function partial(r, rows) {
+    var y, m, d, t = r && r.through, mm, xs0 = (r && r.x) || [];
+    /* 줄에 날짜가 없으면(예: 외부기관 중요문서, through 없는 옛 charts.json) 같은 달 축을 쓰는 옆 줄의 마지막 날을 빌림 */
+    if (!t && !/~\d{1,2}\.\d{1,2}\./.test((r && r.src) || '') && rows) {
+      for (var k = 0; k < rows.length; k++) { var o = rows[k]; if (o !== r && o.unit === r.unit && String((o.x || [])[(o.x || []).length - 1]) === String(xs0[xs0.length - 1])) { var q = partial(o); if (q) return q; } }
+      return null;
+    }
+    if (t && /^\d{4}-\d{2}-\d{2}/.test(t)) { y = +t.slice(0, 4); m = +t.slice(5, 7); d = +t.slice(8, 10); }
+    else if (r && (mm = /~(\d{1,2})\.(\d{1,2})\./.exec(r.src || ''))) { y = new Date().getFullYear(); m = +mm[1]; d = +mm[2]; }
+    else return null;
+    var xs = r.x || [], lastM = parseInt(String(xs[xs.length - 1] || ''), 10);
+    if (lastM !== m || d >= new Date(y, m, 0).getDate()) return null;
+    return { i: xs.length - 1, m: m, d: d, label: m + '월(' + d + '일까지)' };
+  }
 
   /* 08 캘린더 히트맵: 요일(세로) × 주(가로). 칸 색 = 그날 업무 건수(강조색 농도). */
   function heatmap(h, esc) {
@@ -167,14 +182,18 @@
   function sparks(s, esc) {
     if (!s || s.empty || !s.rows || !s.rows.length) return empty();
     var h = '<table class="ch-tbl"><tbody>';
-    var srcs = {};
+    var srcs = {}, cut = null;
     s.rows.forEach(function (r) {
-      var y = r.y || [], last = y[y.length - 1], prev = y.length > 1 ? y[y.length - 2] : null;
-      var df = prev == null ? '' : (last > prev ? '<span class="ch-up">▲' + (last - prev) + '</span>' : (last < prev ? '<span class="ch-dn">▼' + (prev - last) + '</span>' : '<span class="ch-eq">–</span>'));
-      h += '<tr><td class="n" title="' + esc(r.name) + '">' + esc(r.name) + '</td><td>' + spark(r.x, y) + '</td><td class="v">' + last + '<small style="color:var(--muted);font-weight:500"> ' + esc(r.unit) + '</small></td><td class="d">' + df + '</td></tr>';
+      var y = r.y || [], last = y[y.length - 1], prev = y.length > 1 ? y[y.length - 2] : null, pt = partial(r, s.rows);
+      /* 덜 찬 달(예: 10월 21일까지)과 꽉 찬 달을 비교한 ▲▼ 는 안 보여 줌 */
+      var df = (prev == null || pt) ? '' : (last > prev ? '<span class="ch-up">▲' + (last - prev) + '</span>' : (last < prev ? '<span class="ch-dn">▼' + (prev - last) + '</span>' : '<span class="ch-eq">–</span>'));
+      if (pt) cut = pt;
+      h += '<tr><td class="n" title="' + esc(r.name) + '">' + esc(r.name) + '</td><td>' + spark(r.x, y) + '</td><td class="v">' + last + '<small style="color:var(--muted);font-weight:500"> ' + esc(r.unit) + '</small>' +
+        (pt ? '<br><small style="color:var(--muted);font-weight:500">' + esc(pt.label) + '</small>' : '') + '</td><td class="d">' + df + '</td></tr>';
       srcs[r.src] = 1;
     });
-    return h + '</tbody></table><p class="ch-src">출처: ' + esc(Object.keys(srcs).join(' · ')) + ' · 부서는 3~10월(10월은 21일까지)</p>';
+    return h + '</tbody></table><p class="ch-src">출처: ' + esc(Object.keys(srcs).join(' · ')) +
+      (cut ? ' · 월별 줄은 3~' + cut.label + ' · ' + cut.m + '월은 덜 차서 ▲▼ 증감 안 보여 줌' : '') + '</p>';
   }
 
   /* 07 범프: sparks 의 부서 줄(문서대장, 단위 건/월)만 골라 달마다 순위(건수 많은 순, 같으면 이름순). 지금 1위만 강조색. */
@@ -207,9 +226,10 @@
     };
     rows.forEach(function (r0, k) { if (k !== top) o += draw(k); });
     if (top >= 0) o += draw(top);
-    xs.forEach(function (x, i) { o += '<text x="' + X(i) + '" y="' + (H - 4) + '" font-size="9" text-anchor="middle" fill="' + C.ink2 + '">' + esc(String(x).replace(/^0/, '')) + '</text>'; });
+    var pt = partial(rows[0]);
+    xs.forEach(function (x, i) { o += '<text x="' + X(i) + '" y="' + (H - 4) + '" font-size="9" text-anchor="middle" fill="' + C.ink2 + '">' + esc(String(x).replace(/^0/, '')) + (pt && i === pt.i ? '*' : '') + '</text>'; });
     o += '</svg>';
-    return o + '<p class="ch-src">출처: ' + esc(rows[0].src) + ' · 10월은 21일까지 · 건수가 같으면 이름순</p>';
+    return o + '<p class="ch-src">출처: ' + esc(rows[0].src) + (pt ? ' · *' + esc(pt.label) + ': 덜 찬 달(순위만 같은 기간끼리 비교)' : '') + ' · 건수가 같으면 이름순</p>';
   }
 
   /* 02 영역: sparks 의 「외부기관 중요문서」 줄(건/월) 한 개. 강조색 선 + 옅은 면. */
@@ -224,21 +244,23 @@
     var d = ys.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
     o += '<path d="' + d + ' L' + X(n - 1) + ' ' + Y(0) + ' L' + X(0) + ' ' + Y(0) + ' Z" fill="' + A + '" opacity=".12"/>';
     o += '<path d="' + d + '" fill="none" stroke="' + A + '" stroke-width="2" stroke-linejoin="round"/>';
-    var pk = ys.indexOf(mx);
+    var pk = ys.indexOf(mx), pt = partial(r, s.rows);
     ys.forEach(function (v, i) {
       o += '<circle cx="' + X(i) + '" cy="' + Y(v) + '" r="' + (i === pk ? 3.5 : 2.2) + '" fill="' + (i === pk ? A : '#fff') + '" stroke="' + A + '" stroke-width="1.4"><title>' + esc(r.x[i]) + ' ' + v + '건</title></circle>';
-      o += '<text x="' + X(i) + '" y="' + (H - 6) + '" font-size="9" text-anchor="middle" fill="' + C.ink2 + '">' + esc(String(r.x[i]).replace(/^0/, '')) + '</text>';
+      o += '<text x="' + X(i) + '" y="' + (H - 6) + '" font-size="9" text-anchor="middle" fill="' + C.ink2 + '">' + esc(String(r.x[i]).replace(/^0/, '')) + (pt && i === pt.i ? '*' : '') + '</text>';
     });
     o += '<text x="' + X(pk) + '" y="' + (Y(mx) - 7) + '" font-size="10" font-weight="700" text-anchor="middle" fill="' + A + '">' + mx + '건</text>';
     o += '</svg>';
-    return o + '<p class="ch-src">출처: ' + esc(r.src) + '</p>';
+    return o + '<p class="ch-src">출처: ' + esc(r.src) + (pt ? ' · *' + esc(pt.label) + ': 덜 찬 달' : '') + '</p>';
   }
 
   /* 주머니별 강사료: 주머니마다 작은 막대 차트(각자 y축). 쌓거나 더하지 않음. 집행=진한 강조색 칸, 예정·추정=빗금+점선. */
-  function pocketBars(se, months, idx, esc) {
+  function pocketBars(se, months, idx, esc, paid) {
     var ys = se.y || [], n = months.length;
     var mx = Math.max.apply(null, ys.concat([0]));
-    if (se.empty || !n || !(mx > 0) || !isFinite(mx)) return empty();
+    /* 근거: tools/make_charts.py stacked() 는 budget_events.json monthly_lecture_fee.rows 에서 그 주머니 금액(>0) 줄이 없으면 empty=true */
+    if (se.empty || !n || !(mx > 0) || !isFinite(mx)) return empty() + '<p class="ch-sub">강사료 월별 자료(budget_events.json)에 ' + esc(se.pocket) + ' 금액 줄이 아직 없어요.</p>';
+    paid = paid || {};
     var W = 340, H = 118, L = 40, R = 6, T = 10, B = 20, slot = (W - L - R) / n, bw = Math.min(30, slot * 0.62);
     var Y = function (v) { return T + (1 - v / mx) * (H - T - B); };
     var pid = 'ch-hatch-' + idx;
@@ -250,20 +272,30 @@
       if (v > 0) {
         var real = k === '집행';
         o += '<rect x="' + (cx - bw / 2) + '" y="' + Y(v) + '" width="' + bw + '" height="' + (Y(0) - Y(v)) + '" rx="3" fill="' + (real ? A : 'url(#' + pid + ')') + '"' +
-          (real ? '' : ' stroke="' + A + '" stroke-width="1" stroke-dasharray="3 2"') + '><title>' + esc(se.pocket) + ' ' + Number(m.slice(5)) + '월 ' + won(v) + ' (' + esc(k) + ')</title></rect>';
+          (real ? '' : ' stroke="' + A + '" stroke-width="1" stroke-dasharray="3 2"') + '><title>' + esc(se.pocket) + ' ' + Number(m.slice(5)) + '월분 ' + won(v) + ' (' + esc(k) + (k === '집행' && paid[Number(m.slice(5))] ? ' ' + md(paid[Number(m.slice(5))]) : '') + ')</title></rect>';
       }
       o += '<text x="' + cx + '" y="' + (H - 6) + '" font-size="9" text-anchor="middle" fill="' + C.ink2 + '">' + Number(m.slice(5)) + '월</text>';
     });
     o += '</svg>';
-    var list = ys.map(function (v, i) { return v ? Number(months[i].slice(5)) + '월 ' + man(v) + '(' + esc((se.kind || [])[i] || '') + ')' : ''; }).filter(Boolean).join(' · ');
+    var list = ys.map(function (v, i) {
+      var mo = Number(months[i].slice(5)), k = (se.kind || [])[i] || '';
+      return v ? mo + '월분 ' + man(v) + '(' + esc(k) + (k === '집행' && paid[mo] ? ' ' + md(paid[mo]) : '') + ')' : '';
+    }).filter(Boolean).join(' · ');
     return o + '<p class="ch-sub">' + list + '</p>';
   }
-  function stacked(s, esc) {
+  /* 글로컬 집행이 실제 나간 날: 잔액 자료(step.points)의 「N월분」 지출결의 날짜. 막대는 강사료가 생긴 달(N월분)에 둠. */
+  function glocalPaid(st) {
+    var out = {};
+    ((st && !st.empty && st.points) || []).forEach(function (p) { var mm = /(\d{1,2})월분/.exec(p.what || ''); if (mm && p.amt) out[+mm[1]] = p.d; });
+    return out;
+  }
+  function stacked(s, esc, st) {
     if (!s || s.empty || !s.months || !s.months.length || !s.series) return empty(s && s.src);
     var leg = '<div class="ch-legend" style="margin:0 0 4px"><span><i style="background:' + A + '"></i>집행(진한 칸)</span>' +
-      '<span><i style="background:repeating-linear-gradient(45deg,' + A + ' 0 1.5px,#EEF3FC 1.5px 4px);outline:1px dashed ' + A + '"></i>예정·추정(빗금)</span><span>주머니마다 y축 따로 · 더하지 않음</span></div>';
+      '<span><i style="background:repeating-linear-gradient(45deg,' + A + ' 0 1.5px,#EEF3FC 1.5px 4px);outline:1px dashed ' + A + '"></i>예정·추정(빗금)</span><span>주머니마다 y축 따로 · 더하지 않음 · 막대 = 강사료가 생긴 달(○월분), 괄호 = 지출결의 날</span></div>';
+    var gp = glocalPaid(st);
     return leg + s.series.map(function (se, i) {
-      return '<div class="ch-pk"><h3>' + esc(se.pocket) + '</h3>' + pocketBars(se, s.months, i, esc) + '</div>';
+      return '<div class="ch-pk"><h3>' + esc(se.pocket) + '</h3>' + pocketBars(se, s.months, i, esc, se.pocket === '글로컬' ? gp : {}) + '</div>';
     }).join('');
   }
 
@@ -279,7 +311,7 @@
         h += fig('08', '캘린더 히트맵', '요일·주마다 일이 몰리는 때를 한눈에', '일정·업무량 달력', '날짜별 업무 건수 · 9월~2월 · 진할수록 많음', heatmap(c.heatmap, esc), c.heatmap && c.heatmap.src, esc);
         h += fig('01', '라인 그래프', '주마다 일정 건수가 오르내리는 흐름', '주별 일정 건수', '건/주 · 업무와 참고 일정', line(c.heatmap, esc), c.heatmap && !c.heatmap.empty ? '달력 히트맵과 같은 자료를 주마다 더함' : '', esc);
         h += fig('04', '계단형 라인', '지출결의가 나간 날 잔액이 뚝 바뀌는 모양', '글로컬 예산 잔액', c.step && c.step.label, step(c.step, esc), c.step && c.step.src, esc);
-        h += fig('', '막대 그래프', '주머니마다 따로, 집행과 예정·추정을 구분', '강사료 월별 · 주머니별', (c.stacked && c.stacked.label) + ' · 합계 아님', stacked(c.stacked, esc), c.stacked && c.stacked.src, esc);
+        h += fig('', '막대 그래프', '주머니마다 따로, 집행과 예정·추정을 구분', '강사료 월별 · 주머니별', (c.stacked && c.stacked.label) + ' · 합계 아님', stacked(c.stacked, esc, c.step), c.stacked && c.stacked.src, esc);
         h += fig('05', '스파크라인', '표 안의 작은 추세와 바로 앞 대비 증감', '할 일·부서 추세', '마지막 값 · 바로 앞 대비', sparks(c.sparks, esc), '', esc);
         h += fig('07', '범프 차트', '부서별 문서 건수 순위가 달마다 바뀌는 흐름', '부서별 문서 순위', '월별 순위 · 지금 1위만 강조', bump(c.sparks, esc), '', esc);
         h += fig('02', '영역 그래프', '외부기관 문서가 달마다 얼마나 오는지', '외부기관 중요문서', '건/월', area(c.sparks, esc), '', esc);
