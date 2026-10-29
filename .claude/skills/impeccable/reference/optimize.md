@@ -38,7 +38,6 @@ Create systematic improvement plan:
   src="hero.webp"
   srcset="hero-400.webp 400w, hero-800.webp 800w, hero-1200.webp 1200w"
   sizes="(max-width: 400px) 400px, (max-width: 800px) 800px, 1200px"
-  loading="lazy"
   alt="Hero image"
 />
 ```
@@ -255,4 +254,4 @@ Test that optimizations worked:
 - **No regressions**: Ensure functionality still works
 - **User perception**: Does it *feel* faster?
 
-When the user-facing numbers move, hand off to `/impeccable polish` for the final pass.
+When the user-facing numbers move, hand off to `$impeccable polish` for the final pass.
