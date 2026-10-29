@@ -34,7 +34,8 @@ class Coop(unittest.TestCase):
         self.assertNotIn('localStorage.getItem', js)
         self.assertNotIn('navigator.sendBeacon', js)
         self.assertNotIn('mailto:', js)
-        self.assertNotIn('fetch(', js.replace("fetch(new URL('data/coop.json'", 'LOADJSON('))
+        # 261030: 읽기 전용 정적 자료 2개(coop.json, 검색할 때만 coop_graphify.json)만 허용
+        self.assertNotIn('fetch(', js.replace("fetch(new URL('data/coop.json'", 'LOADJSON(').replace("fetch(new URL('data/coop_graphify.json'", 'LOADJSON('))
         # 휴대전화·주민·이메일만 거름(성명·내선은 업무용 허용)
         for path, text in hjpii.walk_strings(self.d):
             hits = [h for h in hjpii.find_pii(text) if h not in ('이름 의심',)]
