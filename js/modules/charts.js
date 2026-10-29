@@ -11,7 +11,7 @@
   var HEAT = ['#F2F4F6', '#DCE7F8', '#B5CDF1', '#7FA8E6', '#4A83DB', '#1B64DA'];
   var CSS = [
     '.ch-wrap{margin:0 auto;padding:0 0 48px;box-sizing:border-box}',
-    '.ch-head{padding:8px 2px 10px}.ch-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
+    '.ch-head{padding:8px 0 10px}.ch-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
     '.ch-head p{margin:0;font-size:.86rem;color:var(--muted);line-height:1.45}',
     '.ch-grid{display:grid;grid-template-columns:1fr;gap:18px}',
     '@media (min-width:760px){.ch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}',
@@ -319,10 +319,10 @@
     '.ch-tipbox{position:absolute;z-index:3;pointer-events:none;max-width:240px;padding:6px 9px;border-radius:10px;background:var(--ink,#191F28);color:#fff;font-size:.78rem;font-weight:600;line-height:1.35;box-shadow:0 6px 16px -6px rgba(25,31,40,.35);transform-origin:50% 100%;animation:ch-pop .16s cubic-bezier(.23,1,.32,1)}',
     '@keyframes ch-pop{from{opacity:0;transform:translateY(4px) scale(.96)}}',
     '.ch-card{position:relative}.ch-svg [data-tipon]{cursor:pointer}',
-        '.ch-anim .ch-fig.in svg{animation:ch-fade .32s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
-    '.ch-anim .ch-fig.in .ch-draw{stroke-dasharray:1;animation:ch-draw .9s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
-    '.ch-anim .ch-fig.in .ch-grow{transform-box:fill-box;transform-origin:50% 100%;animation:ch-grow .6s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
-    '@keyframes ch-fade{from{opacity:0}}@keyframes ch-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}@keyframes ch-grow{from{transform:scaleY(0)}}',
+        '.ch-anim .ch-fig.in svg{animation:ch-fade .24s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
+    '.ch-anim .ch-fig.in .ch-draw{stroke-dasharray:1;animation:ch-draw .6s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
+    '.ch-anim .ch-fig.in .ch-grow{transform-box:fill-box;transform-origin:50% 100%;animation:ch-grow .42s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
+    '@keyframes ch-fade{from{opacity:0}}@keyframes ch-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}@keyframes ch-grow{from{opacity:0;transform:scaleY(.35)}}',
     '@media (prefers-reduced-motion: reduce){.ch-anim .ch-fig svg,.ch-anim .ch-fig .ch-draw,.ch-anim .ch-fig .ch-grow,.ch-tipbox{animation:none!important}}'
   ].join('\n');
   function motion(el) {

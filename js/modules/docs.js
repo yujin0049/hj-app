@@ -6,7 +6,7 @@
   var URL_JSON = 'data/docs_important.json';
   var CSS = [
     '.dc-wrap{max-width:760px;margin:0 auto;padding:0 0 48px;box-sizing:border-box}',
-    '.dc-head{padding:8px 2px 6px}.dc-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
+    '.dc-head{padding:8px 0 6px}.dc-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
     '.dc-head p{margin:0;font-size:.86rem;color:var(--muted);line-height:1.45}',
     '.dc-bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:8px 0 6px}',
     '.dc-bar input.dc-q{width:100%;box-sizing:border-box;border:1px solid var(--line) !important;border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;background-color:#fff !important}',
@@ -16,8 +16,8 @@
     '.dc-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}',
     '.dc-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:.8rem;font-weight:600;color:var(--ink-2);cursor:pointer}',
     '.dc-chip.on{background:var(--accent,#1B64DA);border-color:var(--accent,#1B64DA);color:#fff}',
-    '.dc-chip b{font-weight:800;margin-left:3px;opacity:.7}',
-    '.dc-count{font-size:.82rem;color:var(--muted);margin:6px 2px 8px}',
+    '.dc-chip b{font-weight:800;margin-left:3px;opacity:.7}.dc-chip.on b{opacity:1}',
+    '.dc-count{font-size:.82rem;color:var(--muted);margin:6px 0 8px}',
     '.dc-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:9px 13px;margin:0 0 6px}',
     '.dc-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--ink-2);margin:0 0 5px}',
     '.dc-org{font-weight:800;color:var(--ink)}',
@@ -29,7 +29,7 @@
     '.dc-g{font-size:.86rem;color:var(--ink-2);line-height:1.4}',
     '.dc-no{font-size:.8rem;color:var(--muted);margin:4px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;overflow-wrap:anywhere}',
     '.dc-empty{text-align:center;padding:24px 8px;color:var(--muted);background:var(--card);border-radius:14px;border:1px solid var(--line)}',
-    '.dc-foot{font-size:.8rem;color:var(--muted);margin:12px 2px 0;line-height:1.5}'
+    '.dc-foot{font-size:.8rem;color:var(--muted);margin:12px 0 0;line-height:1.5}'
   ].join('\n');
   var st = { data: null, org: '', q: '' };
 

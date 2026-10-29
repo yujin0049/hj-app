@@ -1069,7 +1069,7 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
   --shadow-raise: 0 8px 20px -10px rgba(25, 31, 40, .18), 0 1px 2px rgba(25, 31, 40, .04);
   /* 움직임 */
   --ease-out: cubic-bezier(.23, 1, .32, 1);
-  --dur-press: 120ms; --dur-ui: 200ms; --dur-view: 280ms;
+  --dur-press: 120ms; --dur-ui: 180ms; --dur-view: 220ms;
   /* 예전 이름은 새 값으로 잇기 */
   --navy: var(--accent); --navy-2: var(--accent-press); --blue-soft: var(--accent-soft);
   --bg: var(--g-100); --card: var(--g-0); --soft: var(--g-100); --line: var(--g-200);
@@ -1134,3 +1134,11 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
   #view.view-in, .card.sk i { animation: none !important; }
   .btn:active, .btn-ghost:active, .btn-navy:active, .chip:active, .list-btn:active, .tile:active, .bs-entry:active, .stu-tile:active, .card button:active, .tabs button:active svg { transform: none; }
 }
+
+/* Playwright 정렬 점검(390·1280)에서 고친 곳: 카드 밖 글자는 모두 본문 칸 왼쪽 끝(16px)에 맞춤 */
+.hero { padding-left: 0; padding-right: 0; }
+.menu-group { margin-left: 0; margin-right: 0; }
+body #hj-stamp { padding-left: 16px; padding-right: 16px; }
+/* 협조 화면 칩·바로가기: 손가락 누름 영역 40·44px 이상 */
+.cp-chip { min-height: 40px; }
+.cp-sc { min-height: 44px; }

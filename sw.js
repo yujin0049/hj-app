@@ -5,7 +5,7 @@ var NO_STORE = ['/data/docs_important.json', '/js/modules/docs.js'];
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(function (c) {
-    return c.addAll(['./', './index.html', './css/app.css?v=33', './js/app.js?v=33']).catch(function () {});
+    return c.addAll(['./', './index.html', './css/app.css?v=34', './js/app.js?v=33']).catch(function () {});
   }));
 });
 self.addEventListener('activate', function (e) {
