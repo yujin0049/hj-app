@@ -9,7 +9,10 @@
     '.dc-head{padding:8px 2px 6px}.dc-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
     '.dc-head p{margin:0;font-size:.78rem;color:var(--muted);line-height:1.45}',
     '.dc-bar{position:sticky;top:0;z-index:2;background:var(--bg);padding:8px 0 6px}',
-    '.dc-q{width:100%;box-sizing:border-box;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;background:#fff}',
+    '.dc-bar input.dc-q{width:100%;box-sizing:border-box;border:1px solid #B0B8C1 !important;border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;background-color:#fff !important}',
+    '.dc-bar input.dc-q:focus{border-color:var(--ink) !important}',
+    '.dc-chipw{position:relative}',
+    '.dc-chipw::after{content:"";position:absolute;top:0;right:0;bottom:0;width:32px;pointer-events:none;background:linear-gradient(to right,rgba(242,244,246,0),var(--bg))}',
     '.dc-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}',
     '.dc-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:.8rem;font-weight:600;color:var(--ink-2);cursor:pointer}',
     '.dc-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}',
@@ -19,7 +22,7 @@
     '.dc-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.74rem;color:var(--ink-2);margin:0 0 5px}',
     '.dc-org{font-weight:800;color:var(--ink)}',
     '.dc-tag{border-radius:6px;padding:2px 6px;font-weight:700;background:var(--soft)}',
-    '.dc-tag.in{background:#E8F3FF;color:#1B64DA}.dc-tag.out{background:#E5F8EF;color:#03875B}',
+    '.dc-tag.in{background:#E8F3FF;color:#1B64DA}.dc-tag.out{background:#E5F8EF;color:#03875B}.dc-tag.io{background:#F3EDFF;color:#6B3FD6}',
     '.dc-date{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}',
     '.dc-t{font-size:.94rem;font-weight:700;line-height:1.4;margin:0 0 4px;word-break:keep-all;overflow-wrap:anywhere}',
     '.dc-t.hid{color:var(--muted);font-weight:600}',
@@ -46,7 +49,7 @@
     var h = '<p class="dc-count">' + rows.length + '건' + (st.org || st.q ? ' (전체 ' + d.total + '건)' : '') + '</p>';
     if (!rows.length) h += '<div class="dc-empty">맞는 문서가 없어요.</div>';
     rows.forEach(function (r) {
-      var cls = r.dir === '받음' ? 'in' : (r.dir === '보냄' ? 'out' : '');
+      var cls = r.dir === '받음' ? 'in' : (r.dir === '보냄' ? 'out' : (r.dir === '보냄·받음' ? 'io' : ''));
       h += '<article class="dc-item"><div class="dc-top"><span class="dc-org">' + esc(r.org) + '</span><span class="dc-tag ' + cls + '">' + esc(r.dir) + '</span>' +
         (r.basis !== '직접' ? '<span class="dc-tag">' + esc(r.basis === '경유' ? '본부 경유' : '제목 언급') + '</span>' : '') +
         '<span class="dc-date">' + esc(md(r.d)) + '</span></div>' +
@@ -64,9 +67,9 @@
     var span = '항공정비과 문서대장 ~' + md(main.to) + (rest.length ? ' · 다른 부서 ' + rest.length + '곳 ~' + md(restTo) : '');
     var h = '<div class="dc-wrap"><section class="dc-head"><h1>중요문서</h1><p>외부기관과 주고받은 문서 목록(' + esc(span) + '). 제목·번호만 보여 주고 본문·첨부는 없어요. 이 화면은 휴대폰에 저장되지 않아요.</p></section>' +
       '<div class="dc-bar"><input class="dc-q" id="dc-q" type="search" placeholder="제목·번호·요지 검색" autocomplete="off" enterkeyhint="search" value="' + esc(st.q) + '">' +
-      '<div class="dc-chips" id="dc-chips"><button type="button" class="dc-chip' + (st.org ? '' : ' on') + '" data-org="">전체<b>' + d.total + '</b></button>' +
+      '<div class="dc-chipw"><div class="dc-chips" id="dc-chips"><button type="button" class="dc-chip' + (st.org ? '' : ' on') + '" data-org="">전체<b>' + d.total + '</b></button>' +
       orgs.map(function (o) { return '<button type="button" class="dc-chip' + (st.org === o ? ' on' : '') + '" data-org="' + esc(o) + '">' + esc(o) + '<b>' + d.orgs[o] + '</b></button>'; }).join('') +
-      '</div></div><div id="dc-list"></div>' +
+      '</div></div></div><div id="dc-list"></div>' +
       '<p class="dc-foot">' + esc(d.note || '') + ' · 갱신 ' + esc(d.generated || '') + ' (KST) · 출처: ' + esc((d.sources || []).filter(function (s) { return s.picked; }).map(function (s) { return s.dept + ' ' + s.picked + '건'; }).join(', ')) + '</p></div>';
     el.innerHTML = h;
     list(el, api);
