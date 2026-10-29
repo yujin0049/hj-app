@@ -23,7 +23,9 @@
     'dept-reg': '#c9a227',
     'content-dept': '#7dcea0',
     '결재라인': '#e07a5f',
-    'person-dept': '#e07a5f'
+    'person-dept': '#e07a5f',
+    'word-제목부서': '#4fb3bf',
+    'word-업무추정': '#b0b8c4'
   };
   var HUB_HINT = ['행정지원과', '대학운영실', '글로컬대학사업센터', '글로컬국제협력센터', '경남항공교육원', 'RISE본부'];
 
@@ -123,7 +125,8 @@
         '<h3>' + esc(api, r.dept) + ' <span class="sp-meta">· ' + fmtN(r.doc_n) + '건</span></h3>' +
         '<div>' + badges + '</div>' +
         '<p class="sp-role">' + esc(api, r.role_summary || '—') + '</p>' +
-        '<p class="sp-meta">발신 ' + fmtN(r.send_out) + ' · 수신 ' + fmtN(r.recv_in) + '</p>';
+        '<p class="sp-meta">발신 ' + fmtN(r.send_out) + ' · 수신 ' + fmtN(r.recv_in) +
+        (r.link_n != null ? ' · 연결부서 ' + fmtN(r.link_n) + ' (근거 ' + fmtN(r.link_ev) + (r.link_est ? ' · 추정 ' + fmtN(r.link_est) : '') + ')' : '') + '</p>';
       if ((r.missed_links || []).length) {
         h += '<p class="sp-miss">놓친연결: ' + r.missed_links.map(function (x) { return esc(api, x); }).join(' · ') + '</p>';
       }
@@ -271,7 +274,8 @@
       directed: !!e.directed,
       width: width,
       color: { color: col, opacity: 0.55 },
-      title: (e.kind || '') + ' · ' + w,
+      dashes: !!e.est,
+      title: (e.kind || '') + ' · ' + w + (e.est ? ' · 추정' : '') + ((e.samples || []).length ? ' · ' + e.samples.slice(0, 3).join(', ') : ''),
       from_rank_inferred: e.from_rank_inferred || null,
       to_rank_inferred: e.to_rank_inferred || null
     };
@@ -342,7 +346,8 @@
           var other = e.from === id ? e.to : e.from;
           var on = (data.nodes || []).find(function (x) { return x.id === other; });
           var arrow = e.directed ? (e.from === id ? ' → ' : ' ← ') : ' ↔ ';
-          return esc(api, (on && on.label) || other) + arrow + esc(api, e.kind || '') + ' (' + fmtN(e.weight) + ')';
+          return esc(api, (on && on.label) || other) + arrow + esc(api, e.kind || '') + ' (' + fmtN(e.weight) + ')' +
+            (e.est ? ' <span class="sp-badge inf">추정</span>' : '');
         }).join('<br>');
         info.style.display = 'block';
         info.innerHTML = '<div class="t">' + esc(api, head) + '</div>' +
@@ -400,7 +405,7 @@
     h += '<div class="sp-net" id="sp-net"></div><div class="sp-info" id="sp-info"></div>';
     h += '<p class="sp-note">노드 ' + fmtN(meta().n_nodes || (data.nodes || []).length) +
       ' · 간선 ' + fmtN(meta().n_edges || (data.edges || []).length) +
-      ' · 드래그·확대 가능. 사람 직급은 rank=null, rank_inferred만 툴팁.</p>';
+      ' · 드래그·확대 가능. 사람 직급은 rank=null, rank_inferred만 툴팁. 점선=추정(업무키워드만).</p>';
     return h;
   }
 
