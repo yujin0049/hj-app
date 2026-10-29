@@ -1142,3 +1142,35 @@ body #hj-stamp { padding-left: 16px; padding-right: 16px; }
 /* 협조 화면 칩·바로가기: 손가락 누름 영역 40·44px 이상 */
 .cp-chip { min-height: 40px; }
 .cp-sc { min-height: 44px; }
+
+/* 폰(390px) 누름 영역·입력 글자.
+   이동은 하단 탭이라 왼쪽 메뉴를 햄버거로 바꾸지 않음.
+   모듈이 주입하는 스타일보다 나중에 와도 크기가 남도록 최소값만 !important.
+   1280px 데스크톱은 이 구간 밖이라 그대로. */
+@media (max-width: 480px) {
+  button,
+  a[href],
+  summary,
+  [role="button"],
+  [role="tab"],
+  [role="link"],
+  [role="menuitem"],
+  input:not([type="hidden"]),
+  select,
+  textarea {
+    min-width: 40px !important;
+    min-height: 40px !important;
+  }
+  /* 문장 안 링크는 inline 이라 min-height 가 안 먹음 → 박스로 */
+  p > a[href]:not([class]) {
+    display: inline-block;
+    box-sizing: border-box;
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+  textarea,
+  select,
+  input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]):not([type="button"]):not([type="submit"]):not([type="reset"]):not([type="file"]):not([type="image"]):not([type="range"]):not([type="color"]) {
+    font-size: 16px !important;
+  }
+}
