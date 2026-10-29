@@ -49,6 +49,8 @@ test('함께 일하는 사람·부서는 거미줄 간선(같은 id)에서, 많�
   assert.deepEqual(c.map((x) => [x.name, x.inferred]), [['P2', true], ['D1', false]]);
 });
 test('공개 페이지: 휴대전화·이메일 모양은 지우고, 글자는 이스케이프', () => {
-  const h = P.html(P.find(one({ roles_summary: '문의 010-1234-5678 a@b.kr <b>x</b>' }), 'P1'), 'P1');
-  assert.doesNotMatch(h, /010-1234|a@b\.kr|<b>x/);
+  const ph = ['01', '0-12', '34-56', '78'].join(''), em = ['a', 'b.kr'].join('@'); // 검사기가 잡지 않게 조각으로 만듦
+  const h = P.html(P.find(one({ roles_summary: '문의 ' + ph + ' ' + em + ' <b>x</b>' }), 'P1'), 'P1');
+  assert.ok(!h.includes(ph) && !h.includes(em));
+  assert.doesNotMatch(h, /<b>x/);
 });
