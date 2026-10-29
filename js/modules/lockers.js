@@ -393,7 +393,7 @@
     var tb = document.querySelector('.tabs [data-tab="more"]'); /* 더보기 탭 밑 화면 (app.js 안 건드림) */
     if (tb) tb.classList.add('on');
     if (saved()) { paint(el, api); loadSeed().catch(function () { /* 넣은 CSV로 계속 봐요 */ }); return; }
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     loadSeed().then(function () { paint(el, api); }).catch(function () {
       seed = { items: [] }; paint(el, api);
       api.toast('사물함 자료 파일을 불러오지 못했어요. CSV를 넣어 주세요.');

@@ -24,13 +24,13 @@
     '.cp-active{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;width:100%;max-width:584px;margin:10px 0 0;min-height:0}',
     '.cp-suggest{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;max-width:584px;margin:12px 0 0}',
     '.cp-chip{font-size:.8rem;font-weight:700;border-radius:999px;padding:6px 12px;border:1px solid var(--line);background:var(--soft);color:var(--ink-2);cursor:pointer}',
-    '.cp-chip.on{background:#e8f1ff;border-color:#8ab4f8;color:#1a4d9e}',
+    '.cp-chip.on{background:var(--accent-soft,#EAF1FC);border-color:var(--accent,#1B64DA);color:var(--accent,#1B64DA)}',
     '.cp-chip.x{padding-right:8px}',
     '.cp-chip .rm{margin-left:4px;opacity:.7}',
-    '.cp-chip.kind-person{background:#f3e8ff;border-color:#d2b4f8;color:#5b2d8e}',
-    '.cp-chip.kind-dept{background:#e7f6ef;border-color:#9fd9bd;color:#0d5c3d}',
-    '.cp-chip.kind-period{background:#fff4e5;border-color:#f0c48a;color:#7a4a00}',
-    '.cp-chip.kind-kw{background:#e8f1ff;border-color:#8ab4f8;color:#1a4d9e}',
+    '.cp-chip.kind-person{background:#fff;border-color:var(--g-300,#D1D6DB);color:var(--ink-2)}',
+    '.cp-chip.kind-dept{background:var(--g-100,#F2F4F6);border-color:var(--g-200,#E5E8EB);color:var(--ink-2)}',
+    '.cp-chip.kind-period{background:#fff;border-color:var(--g-300,#D1D6DB);border-style:dashed;color:var(--ink-2)}',
+    '.cp-chip.kind-kw{background:var(--accent-soft,#EAF1FC);border-color:#B9CFF3;color:var(--accent,#1B64DA)}',
     '.cp-shortcuts{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;width:100%;max-width:584px;margin:18px 0 0}',
     '.cp-sc{font-size:.84rem;padding:8px 14px;border-radius:12px;border:1px solid var(--line);background:var(--card);cursor:pointer;color:var(--ink)}',
     '.cp-sc:hover{border-color:var(--navy)}',
@@ -54,7 +54,7 @@
     '.cp-chain{margin:12px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}',
     '.cp-chain-title{font-size:.78rem;font-weight:700;color:var(--muted);margin:0 0 8px}',
     '.cp-chain-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}',
-    '.cp-node{font-size:.82rem;font-weight:700;border-radius:999px;padding:7px 12px;border:1px solid #c9b6e8;background:#f3e8ff;color:#5b2d8e;cursor:pointer}',
+    '.cp-node{font-size:.82rem;font-weight:700;border-radius:999px;padding:7px 12px;border:1px solid var(--g-300,#D1D6DB);background:#fff;color:var(--ink-2);cursor:pointer}',
     '.cp-node .ext{font-weight:600;opacity:.75;margin-left:4px;font-size:.76rem}',
     '.cp-arrow{color:var(--muted);font-weight:700;font-size:.9rem;padding:0 2px}',
     '.cp-chain-note{font-size:.76rem;color:var(--muted);margin:6px 0 0;line-height:1.35}'
@@ -417,7 +417,7 @@
     style();
     if (G()) G().style();
     if (data) return home(el, api);
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     Promise.all([load(), G() ? G().load().catch(function () { return null; }) : null]).then(function (got) {
       var d = got[0];
       graph = got[1];

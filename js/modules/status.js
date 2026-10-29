@@ -119,7 +119,7 @@
     el.classList.add('wide');
     var tb = document.querySelector('.tabs [data-tab="more"]'); if (tb) tb.classList.add('on');
     if (root.HJStamp) root.HJStamp();
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     if (!root.HJCalData) { el.innerHTML = '<section class="card"><div class="cl-stale">⚠ 달력 모듈이 없어 현황표를 열지 못했어요.</div></section>'; return; }
     root.HJCalData().then(function () { paint(el, api); return loadPeople(); }).then(function (p) { if (p) paint(el, api); }).catch(function () {
       el.innerHTML = '<section class="card"><div class="cl-stale" id="cl-stale">⚠ 현황표 자료를 불러오지 못했어요. 갱신 스크립트(tools/refresh_all.py)를 다시 돌려 주세요.</div></section>';

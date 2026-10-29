@@ -1038,3 +1038,107 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
 @media (prefers-reduced-motion: reduce) {
   .hk-branch .chev, .hk-leaf, .hk-branch, .hk-pick, .hk-nav button, .hk-nav a { transition: none; }
 }
+
+/* ===== 디자인 토큰 · 인터랙션 층 (feat/design-interaction) =====
+   한 벌의 값(간격·글자·카드·색·움직임)을 여기서만 정하고, 위쪽 규칙들은 이 값을 빌려 씀.
+   강조색은 #1B64DA 하나, 나머지는 회색. 움직임은 transform·opacity 만(차트 선 그리기만 stroke-dashoffset). */
+:root {
+  /* 색: 강조 하나 + 회색 단계 */
+  --accent: #1B64DA;
+  --accent-press: #1550B5;
+  --accent-soft: #EAF1FC;
+  --g-0: #FFFFFF;
+  --g-50: #F9FAFB;
+  --g-100: #F2F4F6;
+  --g-200: #E5E8EB;
+  --g-300: #D1D6DB;
+  --g-400: #B0B8C1;
+  --g-500: #8B95A1;
+  --g-600: #646F7C;
+  --g-700: #4E5968;
+  --g-800: #333D4B;
+  --g-900: #191F28;
+  /* 간격 4px 단위 */
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px; --sp-8: 32px;
+  /* 글자 크기(본문 17px 기준) */
+  --fs-xs: .72rem; --fs-sm: .82rem; --fs-md: .92rem; --fs-base: 1rem; --fs-lg: 1.06rem; --fs-xl: 1.2rem; --fs-2xl: 1.6rem;
+  /* 카드 */
+  --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-pill: 999px;
+  --bd: 1px solid var(--g-200);
+  --shadow-card: 0 1px 2px rgba(25, 31, 40, .04);
+  --shadow-raise: 0 8px 20px -10px rgba(25, 31, 40, .18), 0 1px 2px rgba(25, 31, 40, .04);
+  /* 움직임 */
+  --ease-out: cubic-bezier(.23, 1, .32, 1);
+  --dur-press: 120ms; --dur-ui: 180ms; --dur-view: 220ms;
+  /* 예전 이름은 새 값으로 잇기 */
+  --navy: var(--accent); --navy-2: var(--accent-press); --blue-soft: var(--accent-soft);
+  --bg: var(--g-100); --card: var(--g-0); --soft: var(--g-100); --line: var(--g-200);
+  --ink: var(--g-900); --ink-2: var(--g-800); --muted: var(--g-600);
+  --radius: var(--r-lg); --shadow: var(--shadow-card);
+}
+
+/* 카드 한 모양: 흰 바탕 · 20px 모서리 · 아주 옅은 그림자 */
+.card, .bs-entry, .tile, .stu-tile { border-radius: var(--r-lg); box-shadow: var(--shadow-card); }
+.card { padding: var(--sp-5) var(--sp-5); margin: var(--sp-3) 0; }
+.list-btn { border-radius: var(--r-md); }
+.btn, .btn-ghost, .btn-navy { border-radius: var(--r-md); }
+.btn.small, .btn-ghost.small { border-radius: var(--r-sm); }
+.bs-entry { padding: var(--sp-4); gap: var(--sp-3); margin: var(--sp-2) 0 0; }
+.bs-entry-tx b, .stu-tile-tx b, .tile b { font-size: var(--fs-lg); }
+.tile-sub { font-size: var(--fs-sm); }
+.muted { font-size: var(--fs-md); }
+.menu-group { letter-spacing: 0; }
+/* 아이콘 바탕: 여러 색 대신 회색 한 가지(파랑은 강조 연한 색) */
+.tile-ic, .tile-ic.green, .tile-ic.orange, .tile-ic.purple, .tile-ic.teal { background: var(--g-100); }
+.tile-ic.blue { background: var(--accent-soft); color: var(--accent); }
+
+/* 누르는 느낌: 모든 버튼·카드형 버튼 */
+.btn, .btn-ghost, .btn-navy, .chip, .list-btn, .tile, .bs-entry, .stu-tile, .stu-back, .linkish, .tabs button, .card button, .card a.btn {
+  transition: transform var(--dur-press) var(--ease-out), opacity var(--dur-press) var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+.btn:active, .btn-ghost:active, .btn-navy:active, .chip:active, .list-btn:active, .tile:active, .bs-entry:active, .stu-tile:active, .card button:active { transform: scale(.97); }
+.linkish:active, .stu-back:active { opacity: .6; }
+.tabs button:active svg { transform: scale(.88); }
+.tabs svg { transition: transform var(--dur-press) var(--ease-out); }
+.tabs button.on { color: var(--accent); }
+/* 마우스가 있을 때만 hover(손가락 화면에 hover 가 남는 것 방지) */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { background: var(--accent-press); }
+  .btn-ghost:hover, .btn-navy:hover { background: #DCE8FA; }
+  .chip:not(.on):hover { background: var(--g-50); box-shadow: inset 0 0 0 1px var(--g-300); }
+  .list-btn:hover, .bs-entry:hover, .tile:hover, .stu-tile:hover { box-shadow: var(--shadow-raise); }
+  .card .list-btn:hover { background: var(--g-200); box-shadow: none; }
+  .bs-entry:hover .bs-entry-go, .stu-tile:hover .stu-tile-go { transform: translateX(2px); color: var(--accent); }
+  .tabs button:not(.on):hover { color: var(--g-800); }
+}
+.bs-entry-go, .stu-tile-go { transition: transform var(--dur-ui) var(--ease-out); }
+/* 키보드 초점: 강조색 테두리 하나 */
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn:focus-visible, .btn-ghost:focus-visible, .list-btn:focus-visible, .bs-entry:focus-visible, .tile:focus-visible, .chip:focus-visible { outline-offset: 3px; }
+
+/* 화면 넘어갈 때: 6px 아래에서 떠오르며 나타남 */
+@keyframes view-in { from { opacity: 0; transform: translateY(6px); } }
+#view.view-in { animation: view-in var(--dur-view) var(--ease-out); }
+
+/* 목록 읽는 동안 회색 뼈대(글자 「불러오는 중…」은 화면 읽기용으로만) */
+.card.sk { display: grid; gap: var(--sp-3); padding: var(--sp-5); }
+.card.sk p.muted { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; margin: 0; }
+.card.sk i { display: block; height: 14px; border-radius: var(--r-pill); background: var(--g-100); animation: sk-pulse 1.2s ease-in-out infinite; }
+.card.sk i:nth-of-type(1) { width: 46%; height: 18px; }
+.card.sk i:nth-of-type(2) { width: 92%; animation-delay: .1s; }
+.card.sk i:nth-of-type(3) { width: 70%; animation-delay: .2s; }
+@keyframes sk-pulse { 50% { opacity: .45; } }
+
+@media (prefers-reduced-motion: reduce) {
+  #view.view-in, .card.sk i { animation: none !important; }
+  .btn:active, .btn-ghost:active, .btn-navy:active, .chip:active, .list-btn:active, .tile:active, .bs-entry:active, .stu-tile:active, .card button:active, .tabs button:active svg { transform: none; }
+}
+
+/* Playwright 정렬 점검(390·1280)에서 고친 곳: 카드 밖 글자는 모두 본문 칸 왼쪽 끝(16px)에 맞춤 */
+.hero { padding-left: 0; padding-right: 0; }
+.menu-group { margin-left: 0; margin-right: 0; }
+body #hj-stamp { padding-left: 16px; padding-right: 16px; }
+/* 협조 화면 칩·바로가기: 손가락 누름 영역 40·44px 이상 */
+.cp-chip { min-height: 40px; }
+.cp-sc { min-height: 44px; }

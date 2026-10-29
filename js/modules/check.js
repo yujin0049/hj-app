@@ -91,7 +91,7 @@
   function render(el, api) {
     var tb = document.querySelector('.tabs [data-tab="board"]'); /* 업무 탭 밑 화면 (app.js 안 건드림) */
     if (tb) tb.classList.add('on');
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     load().then(function (list) { paint(el, api, list); }).catch(function () {
       el.innerHTML = '<section class="card"><h1>확인 필요</h1><p>대조 결과 파일을 불러오지 못했어요.</p></section>';
     });

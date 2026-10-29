@@ -69,7 +69,7 @@
     style();
     var tb = document.querySelector('.tabs [data-tab="more"]');
     if (tb) tb.classList.add('on');
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     cfg().then(function (c) { paint(el, api, c || {}); });
   }
   if (root.ShellModules) root.ShellModules.filefind = { id: 'filefind', tab: '', render: render };

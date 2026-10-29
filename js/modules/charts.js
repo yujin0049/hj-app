@@ -11,7 +11,7 @@
   var HEAT = ['#F2F4F6', '#DCE7F8', '#B5CDF1', '#7FA8E6', '#4A83DB', '#1B64DA'];
   var CSS = [
     '.ch-wrap{margin:0 auto;padding:0 0 48px;box-sizing:border-box}',
-    '.ch-head{padding:8px 2px 10px}.ch-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
+    '.ch-head{padding:8px 0 10px}.ch-head h1{margin:0 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
     '.ch-head p{margin:0;font-size:.86rem;color:var(--muted);line-height:1.45}',
     '.ch-grid{display:grid;grid-template-columns:1fr;gap:18px}',
     '@media (min-width:760px){.ch-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}',
@@ -86,7 +86,7 @@
     var W = left + weeks * (cell + gap), H = top + 7 * (cell + gap);
     var max = Math.max(1, h.max || 1), today = todayIso();
     var out = '<svg class="ch-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="날짜별 일정 건수">';
-    ['월', '', '수', '', '금', '', ''].forEach(function (t, i) { if (t) out += '<text x="0" y="' + (top + i * (cell + gap) + 11) + '" font-size="11" fill="' + C.axis + '">' + t + '</text>'; });
+    ['월', '', '수', '', '금', '', ''].forEach(function (t, i) { if (t) out += '<text class="ch-wd" x="0" y="' + (top + i * (cell + gap) + 11) + '" font-size="11" fill="' + C.axis + '">' + t + '</text>'; });
     var lastM = -1;
     for (var w = 0; w < weeks; w++) {
       for (var d = 0; d < 7; d++) {
@@ -129,8 +129,8 @@
     var o = '<svg class="ch-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="주별 일정 건수 라인 그래프">';
     [0, 0.5, 1].forEach(function (f) { var v = Math.round(mx * f); o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + C.line + '"/><text x="' + (L - 5) + '" y="' + (Y(v) + 3) + '" font-size="9" text-anchor="end" fill="' + C.axis + '">' + v + '</text>'; });
     var path = function (key) { return ws.map(function (x, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(x[key]).toFixed(1); }).join(' '); };
-    o += '<path d="' + path('r') + '" fill="none" stroke="' + C.gray + '" stroke-width="1.6" stroke-linejoin="round"/>';
-    o += '<path d="' + path('w') + '" fill="none" stroke="' + A + '" stroke-width="2.2" stroke-linejoin="round"/>';
+    o += '<path class="ch-draw" pathLength="1" d="' + path('r') + '" fill="none" stroke="' + C.gray + '" stroke-width="1.6" stroke-linejoin="round"/>';
+    o += '<path class="ch-draw" pathLength="1" d="' + path('w') + '" fill="none" stroke="' + A + '" stroke-width="2.2" stroke-linejoin="round"/>';
     var lastM = -1;
     ws.forEach(function (x, i) {
       var th = new Date(x.d + 'T00:00:00'); th.setDate(th.getDate() + 3); var m = th.getMonth() + 1; /* 그 주 목요일의 달 */
@@ -140,6 +140,8 @@
     ws.forEach(function (x, i) { if (x.d <= today) ti = i; });
     if (ti >= 0) o += '<line x1="' + X(ti) + '" x2="' + X(ti) + '" y1="' + T + '" y2="' + Y(0) + '" stroke="' + C.ink2 + '" stroke-dasharray="2 3"/><text x="' + (X(ti) + 3) + '" y="' + (Y(0) - 4) + '" font-size="9" fill="' + C.ink2 + '">이번 주</text>';
     var pk = 0; ws.forEach(function (x, i) { if (x.w > ws[pk].w) pk = i; });
+    /* 눌러서 값 보기: 주마다 투명한 점(실제 합계만 title 에) */
+    ws.forEach(function (x, i) { o += '<circle class="ch-hit" cx="' + X(i).toFixed(1) + '" cy="' + Y(x.w).toFixed(1) + '" r="5" fill="transparent"><title>' + md(x.d) + ' 주 · 업무 ' + x.w + '건 · 참고 ' + x.r + '건</title></circle>'; });
     o += '<circle cx="' + X(pk) + '" cy="' + Y(ws[pk].w) + '" r="3.5" fill="' + A + '"/><text x="' + Math.min(X(pk) + 6, W - 2) + '" y="' + (Y(ws[pk].w) + 4) + '" font-size="10" font-weight="700" fill="' + A + '">' + ws[pk].w + '건</text>';
     o += '</svg>';
     return o + '<div class="ch-legend"><span><i style="background:' + A + '"></i>업무</span><span><i style="background:' + C.gray + '"></i>참고 일정</span><span>가장 많은 주: ' + md(ws[pk].d) + ' 주 ' + ws[pk].w + '건</span></div>';
@@ -159,7 +161,7 @@
     for (var i = 1; i < s.points.length; i++) p += ' H' + X(s.points[i].d) + ' V' + Y(s.points[i].bal);
     p += ' H' + X(s.today);
     o += '<path d="' + p + ' V' + Y(0) + ' H' + X(s.points[0].d) + ' Z" fill="' + A + '" opacity=".07"/>';
-    o += '<path d="' + p + '" fill="none" stroke="' + A + '" stroke-width="2.2"/>';
+    o += '<path class="ch-draw" pathLength="1" d="' + p + '" fill="none" stroke="' + A + '" stroke-width="2.2"/>';
     s.points.forEach(function (pt, i) {
       o += '<circle cx="' + X(pt.d) + '" cy="' + Y(pt.bal) + '" r="3.5" fill="#fff" stroke="' + A + '" stroke-width="2"><title>' + md(pt.d) + ' ' + esc(pt.what) + ' → 잔액 ' + won(pt.bal) + '</title></circle>';
       o += '<text x="' + X(pt.d) + '" y="' + (H - 8) + '" font-size="9" text-anchor="' + (i ? 'middle' : 'start') + '" fill="' + C.ink2 + '">' + md(pt.d) + '</text>';
@@ -181,7 +183,7 @@
     var pts = ys.map(function (v, i) { return [(n === 1 ? W / 2 : 2 + i * (W - 4) / (n - 1)), 3 + (1 - (v - mn) / rng) * (H - 6)]; });
     var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join(' ');
     var lp = pts[pts.length - 1];
-    return '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true"><path d="' + d + '" fill="none" stroke="' + C.gray + '" stroke-width="1.6" stroke-linejoin="round"/><circle cx="' + lp[0] + '" cy="' + lp[1] + '" r="2.6" fill="' + A + '"/></svg>';
+    return '<svg width="' + W + '" height="' + H + '" viewBox="0 0 ' + W + ' ' + H + '" aria-hidden="true"><path class="ch-draw" pathLength="1" d="' + d + '" fill="none" stroke="' + C.gray + '" stroke-width="1.6" stroke-linejoin="round"/><circle cx="' + lp[0] + '" cy="' + lp[1] + '" r="2.6" fill="' + A + '"/></svg>';
   }
   function sparks(s, esc) {
     if (!s || s.empty || !s.rows || !s.rows.length) return empty();
@@ -230,7 +232,7 @@
     var draw = function (k) {
       var hi = k === top, col = hi ? A : C.gray;
       var d = rank[k].map(function (rk, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(rk); }).join(' ');
-      var g = '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + (hi ? 2.6 : 1.6) + '" stroke-linejoin="round"/>';
+      var g = '<path class="ch-draw" pathLength="1" d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + (hi ? 2.6 : 1.6) + '" stroke-linejoin="round"/>';
       rank[k].forEach(function (rk, i) { g += '<circle cx="' + X(i) + '" cy="' + Y(rk) + '" r="' + (hi ? 3.4 : 2.6) + '" fill="' + col + '"><title>' + esc(rows[k].name) + ' ' + esc(xs[i]) + ' ' + rows[k].y[i] + '건 · ' + rk + '위</title></circle>'; });
       g += '<text x="' + (X(n - 1) + 7) + '" y="' + ly[k] + '" font-size="9.5"' + (hi ? ' font-weight="700"' : '') + ' fill="' + (hi ? A : C.ink2) + '">' + esc(short(rows[k].name)) + '<title>' + esc(rows[k].name) + '</title></text>';
       return g;
@@ -256,7 +258,7 @@
     [0, 1].forEach(function (f) { var v = Math.round(mx * f); o += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(v) + '" y2="' + Y(v) + '" stroke="' + C.line + '"/><text x="' + (L - 5) + '" y="' + (Y(v) + 3) + '" font-size="9" text-anchor="end" fill="' + C.axis + '">' + v + '</text>'; });
     var d = ys.map(function (v, i) { return (i ? 'L' : 'M') + X(i).toFixed(1) + ' ' + Y(v).toFixed(1); }).join(' ');
     o += '<path d="' + d + ' L' + X(n - 1) + ' ' + Y(0) + ' L' + X(0) + ' ' + Y(0) + ' Z" fill="' + A + '" opacity=".12"/>';
-    o += '<path d="' + d + '" fill="none" stroke="' + A + '" stroke-width="2" stroke-linejoin="round"/>';
+    o += '<path class="ch-draw" pathLength="1" d="' + d + '" fill="none" stroke="' + A + '" stroke-width="2" stroke-linejoin="round"/>';
     var pk = ys.indexOf(mx), pt = partial(r, s.rows);
     ys.forEach(function (v, i) {
       o += '<circle cx="' + X(i) + '" cy="' + Y(v) + '" r="' + (i === pk ? 3.5 : 2.2) + '" fill="' + (i === pk ? A : '#fff') + '" stroke="' + A + '" stroke-width="1.4"><title>' + esc(r.x[i]) + ' ' + v + '건</title></circle>';
@@ -284,7 +286,7 @@
       var v = ys[i] || 0, k = (se.kind || [])[i] || '', cx = L + slot * (i + 0.5);
       if (v > 0) {
         var real = k === '집행';
-        o += '<rect x="' + (cx - bw / 2) + '" y="' + Y(v) + '" width="' + bw + '" height="' + (Y(0) - Y(v)) + '" rx="3" fill="' + (real ? A : 'url(#' + pid + ')') + '"' +
+        o += '<rect class="ch-grow" x="' + (cx - bw / 2) + '" y="' + Y(v) + '" width="' + bw + '" height="' + (Y(0) - Y(v)) + '" rx="3" fill="' + (real ? A : 'url(#' + pid + ')') + '"' +
           (real ? '' : ' stroke="' + A + '" stroke-width="1" stroke-dasharray="3 2"') + '><title>' + esc(se.pocket) + ' ' + Number(m.slice(5)) + '월분 ' + won(v) + ' (' + esc(k) + (k === '집행' && paid[Number(m.slice(5))] ? ' ' + md(paid[Number(m.slice(5))]) : '') + ')</title></rect>';
       }
       o += '<text x="' + cx + '" y="' + (H - 6) + '" font-size="9" text-anchor="middle" fill="' + C.ink2 + '">' + Number(m.slice(5)) + '월</text>';
@@ -312,11 +314,61 @@
     }).join('');
   }
 
+  /* 인터랙션: 화면에 들어오면 그리기(선 = stroke-dashoffset, 막대 = scaleY, 그 밖 = opacity) · 눌러서 값(<title> 의 실제 값) */
+  var MOTION_CSS = [
+    '.ch-tipbox{position:absolute;z-index:3;pointer-events:none;max-width:240px;padding:6px 9px;border-radius:10px;background:var(--ink,#191F28);color:#fff;font-size:.78rem;font-weight:600;line-height:1.35;box-shadow:0 6px 16px -6px rgba(25,31,40,.35);transform-origin:50% 100%;animation:ch-pop .16s cubic-bezier(.23,1,.32,1)}',
+    '@keyframes ch-pop{from{opacity:0;transform:translateY(4px) scale(.96)}}',
+    '.ch-card{position:relative}.ch-svg [data-tipon]{cursor:pointer}',
+        '.ch-anim .ch-fig.in svg{animation:ch-fade .24s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
+    '.ch-anim .ch-fig.in .ch-draw{stroke-dasharray:1;animation:ch-draw .6s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
+    '.ch-anim .ch-fig.in .ch-grow{transform-box:fill-box;transform-origin:50% 100%;animation:ch-grow .42s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',
+    '@keyframes ch-fade{from{opacity:0}}@keyframes ch-draw{from{stroke-dashoffset:1}to{stroke-dashoffset:0}}@keyframes ch-grow{from{opacity:0;transform:scaleY(.35)}}',
+    '@media (prefers-reduced-motion: reduce){.ch-anim .ch-fig svg,.ch-anim .ch-fig .ch-draw,.ch-anim .ch-fig .ch-grow,.ch-tipbox{animation:none!important}}'
+  ].join('\n');
+  function motion(el) {
+    if (!document.getElementById('ch-motion')) { var st = document.createElement('style'); st.id = 'ch-motion'; st.textContent = MOTION_CSS; document.head.appendChild(st); }
+    /* 화면이 그려질 때 한 번(카드마다 60ms씩 늦게). 스크롤 감지는 안 씀: 전체 화면 캡처에서 아래 차트가 빈 채로 찍히지 않게 */
+    el.classList.add('ch-anim');
+    el.querySelectorAll('.ch-fig').forEach(function (f, i) { f.style.setProperty('--ch-d', Math.min(i, 6) * 60 + 'ms'); f.classList.add('in'); });
+  }
+  /* 차트 안 아무 데나 누르면 가장 가까운(24px 안) 값 있는 점·막대·칸의 <title> 을 말풍선으로 */
+  function tips(el) {
+    var box = null;
+    function hide() { if (box) { box.remove(); box = null; } }
+    el.querySelectorAll('.ch-svg title').forEach(function (t) { t.parentNode.setAttribute('data-tipon', ''); });
+    el.addEventListener('click', function (ev) {
+      var svg = ev.target.closest && ev.target.closest('.ch-svg');
+      if (!svg) { hide(); return; }
+      var best = null, bd = 24;
+      svg.querySelectorAll('[data-tipon]').forEach(function (n) {
+        var r = n.getBoundingClientRect();
+        var dx = Math.max(r.left - ev.clientX, 0, ev.clientX - r.right), dy = Math.max(r.top - ev.clientY, 0, ev.clientY - r.bottom), d = Math.sqrt(dx * dx + dy * dy);
+        if (d < bd) { bd = d; best = n; }
+      });
+      hide();
+      if (!best) return;
+      var card = svg.closest('.ch-card'), cr = card.getBoundingClientRect(), br = best.getBoundingClientRect();
+      var t = best.querySelector('title');
+      box = document.createElement('div'); box.className = 'ch-tipbox'; box.setAttribute('role', 'status'); box.textContent = t ? t.textContent : '';
+      /* 달력의 요일 글자(월·수·금) 오른쪽부터만 띄워서 글자를 가리지 않게. 카드 안으로 가둠 */
+      var minL = 6;
+      svg.querySelectorAll('.ch-wd').forEach(function (w) { minL = Math.max(minL, w.getBoundingClientRect().right - cr.left + 4); });
+      box.style.maxWidth = Math.min(240, cr.width - minL - 6) + 'px';
+      card.appendChild(box);
+      var bw = box.offsetWidth, bh = box.offsetHeight;
+      var x = br.left + br.width / 2 - cr.left - bw / 2, y = br.top - cr.top - bh - 8, below = y < 4;
+      if (below) y = br.bottom - cr.top + 8;
+      box.style.left = Math.max(minL, Math.min(x, cr.width - bw - 6)) + 'px';
+      box.style.top = Math.max(4, Math.min(y, cr.height - bh - 4)) + 'px';
+      if (below) box.style.transformOrigin = '50% 0';
+    });
+  }
+
   function render(el, api) {
     var esc = api.esc;
     style();
     el.classList.add('wide'); /* 데스크톱에서 카드 2~3열. 폰(390px)은 한 줄. 다른 화면 가면 app.js 가 뗌 */
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     fetch(new URL('data/charts.json', document.baseURI).href, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('charts'); return r.json(); })
       .then(function (c) {
@@ -330,6 +382,7 @@
         h += fig('02', '영역 그래프', '외부기관 문서가 달마다 얼마나 오는지', '외부기관 중요문서', '건/월', area(c.sparks, esc), '', esc);
         h += '</div></div>';
         el.innerHTML = h;
+        motion(el); tips(el);
         var tip = el.querySelector('#hm-tip');
         el.querySelectorAll('rect.hm').forEach(function (r) {
           r.addEventListener('click', function () { if (tip) tip.textContent = md(r.getAttribute('data-d')) + ' 업무 ' + r.getAttribute('data-w') + '건 · 참고 ' + r.getAttribute('data-r') + '건'; });

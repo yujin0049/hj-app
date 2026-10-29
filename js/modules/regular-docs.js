@@ -127,7 +127,7 @@
       return grid(el, api, cat);
     }
     if (data) return go();
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     load().then(function (d) { if (!d) { el.innerHTML = '<section class="card"><p>⚠ 자료(data/regular_docs.json)를 못 불러왔어요. 새로고침해 주세요.</p></section>'; return; } go(); });
   }
   if (root.ShellModules) root.ShellModules['regular-docs'] = { id: 'regular-docs', tab: '정례 문서', render: render };
