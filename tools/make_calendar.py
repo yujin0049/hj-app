@@ -8,6 +8,7 @@
 import argparse, csv, io, json, os, re, sys, datetime as dt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hjpii
+import vaultpath  # 공개 JSON 에 볼트·PC 경로 안 씀(261029)
 
 def safe_bot(bot, hjpii_mod=None):
     """담당 1봇: 역할어만. 이름 의심(사람)이면 빈칸. ALLOW의 문서봇 등은 유지."""
@@ -638,6 +639,7 @@ def main(argv=None):
         return 2
     os.makedirs(a.out, exist_ok=True)
     for fn, obj in (('calendar.json', cal), ('status.json', st)):
+        obj = vaultpath.scrub_obj(obj)
         with open(os.path.join(a.out, fn), 'w', encoding='utf-8') as f:
             json.dump(obj, f, ensure_ascii=False, indent=1)
             f.write('\n')

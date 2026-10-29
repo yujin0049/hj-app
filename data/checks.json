@@ -7,7 +7,7 @@
   "비교값": "불일치 0 · 판단 불가 0",
   "근거": "업무 현황판_v01 '업무' 탭 · 읽은 시각 2026-10-21T08:27+09:00",
   "computed_at": "2026-10-21T08:27+09:00",
-  "source": "봇공유/숫자/ojnt.json (99 봇/스크립트/number_check.py)"
+  "source": "ojnt.json (number_check.py)"
  },
  {
   "id": "ojnt-submit-board",
@@ -17,7 +17,7 @@
   "비교값": "현황판에 숫자 없음",
   "근거": "OJNT 입사서류체크 시트 입사서류체크!A2 · 현황판에 이 숫자가 없어 대조 못 함",
   "computed_at": "2026-10-21T08:27+09:00",
-  "source": "봇공유/숫자/ojnt.json (99 봇/스크립트/number_check.py)"
+  "source": "ojnt.json (number_check.py)"
  },
  {
   "id": "ojnt-room-board",
@@ -27,7 +27,7 @@
   "비교값": "현황판에 숫자 없음",
   "근거": "OJNT 입사서류체크 시트 입사서류체크!N5:N22 · 현황판에 이 숫자가 없어 대조 못 함",
   "computed_at": "2026-10-21T08:27+09:00",
-  "source": "봇공유/숫자/ojnt.json (99 봇/스크립트/number_check.py)"
+  "source": "ojnt.json (number_check.py)"
  },
  {
   "id": "ojnt-submit-a2-j23",
@@ -37,7 +37,7 @@
   "비교값": "J23 0",
   "근거": "OJNT 입사서류체크 시트 A2·J23 (시트 수식)",
   "computed_at": "2026-10-21T08:27+09:00",
-  "source": "봇공유/숫자/ojnt.json (99 봇/스크립트/number_check.py)"
+  "source": "ojnt.json (number_check.py)"
  },
  {
   "id": "ojnt-made-a2-i23",
@@ -47,7 +47,7 @@
   "비교값": "I23 11",
   "근거": "OJNT 입사서류체크 시트 A2·I23 (시트 수식)",
   "computed_at": "2026-10-21T08:27+09:00",
-  "source": "봇공유/숫자/ojnt.json (99 봇/스크립트/number_check.py)"
+  "source": "ojnt.json (number_check.py)"
  },
  {
   "id": "ojnt-in-1021",
@@ -57,7 +57,7 @@
   "비교값": "10 + 1 = 11",
   "근거": "OJNT 입사서류체크 시트 D5:D22 (스크립트 집계)",
   "computed_at": "2026-10-21T08:27+09:00",
-  "source": "봇공유/숫자/ojnt.json (99 봇/스크립트/number_check.py)"
+  "source": "ojnt.json (number_check.py)"
  },
  {
   "id": "ojnt-room-total",
@@ -67,27 +67,27 @@
   "비교값": "대상 14",
   "근거": "OJNT 입사서류체크 시트 N5:N22 · A2",
   "computed_at": "2026-10-21T08:27+09:00",
-  "source": "봇공유/숫자/ojnt.json (99 봇/스크립트/number_check.py)"
+  "source": "ojnt.json (number_check.py)"
  },
  {
   "id": "path-place",
-  "항목": "봇교훈·결정기록 경로 검사 (봇공유 밖에 쓴 파일)",
+  "항목": "봇교훈·결정기록 경로 검사 (공유 폴더 밖에 쓴 파일)",
   "결과": "일치",
   "값": "제자리 아닌 파일 0 · 실패 0",
   "비교값": "0",
-  "근거": "봇공유 밖 /home/box/vault/99 봇/ 등 검사",
+  "근거": "공유 폴더 밖 99 봇 등 검사",
   "computed_at": "2026-10-21T08:38+09:00",
-  "source": "99 봇/스크립트/path_check.py --dry-run"
+  "source": "path_check.py --dry-run"
  },
  {
   "id": "path-name",
-  "항목": "봇공유 파일 이름 규칙 (YYMMDD_제목_v01.md)",
+  "항목": "공유 폴더 파일 이름 규칙 (YYMMDD_제목_v01)",
   "결과": "불일치",
   "값": "규칙 다름 4개",
   "비교값": "0",
-  "근거": "봇공유/10 업무/11 OJNT·기숙사/261020_OJNT호실표대조_10명일치.md · 봇공유/10 업무/12 강사료/261020_10월강사료서류v02_틀린칸0.md · 봇공유/10 업무/13 글로컬 지출/261020_용호기공T020_원인행위만.md · 봇공유/조사/KORUS매뉴얼.md",
+  "근거": "261020_OJNT호실표대조_10명일치 · 261020_10월강사료서류v02_틀린칸0 · 261020_용호기공T020_원인행위만 · KORUS매뉴얼",
   "computed_at": "2026-10-21T08:38+09:00",
-  "source": "99 봇/스크립트/path_check.py --dry-run"
+  "source": "path_check.py --dry-run"
  },
  {
   "id": "ax-entry-gate",
@@ -95,7 +95,7 @@
   "결과": "일치",
   "값": "계획→제반사항→원인행위→지출결의→송금 · 파일명 YYMMDD_제목_v01",
   "비교값": "pii는 외부·학습·공개 직전 관문 · 사후원인행위(납품·검수 후 묶음)=예외·위험(P003) · 옛폴더 이전버전 남김",
-  "근거": "봇교훈/261026_AX_데이터규격_입구_v02.md · 스킬 새 업무 입구 규격",
+  "근거": "261026_AX_데이터규격_입구_v02 · 스킬 새 업무 입구 규격",
   "computed_at": "2026-10-26T10:35+09:00",
   "source": "연습장24h add1→v02"
  },

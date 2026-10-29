@@ -15,12 +15,13 @@
     }
     return cache;
   }
-  /* 볼트 「옵시디언」 안에서 박스 공유 폴더는 봇공유/ → 파일 경로는 봇공유/ 로 시작(한 번만). tools/link_sources.py obsidian_url 과 같음 */
+  /* 공개 자료에는 볼트 경로 대신 노트 이름만 있음(261029) → 이름으로 옵시디언 검색을 엶. 예전 경로(…/…)가 오면 예전처럼 파일로 엶. */
   function obsidianUrl(cfg, path) {
     if (!cfg.obsidianVault || !path) return '';
-    var p = String(path).replace(/\\/g, '/').replace(/^\/+/, ''), pre = (cfg.obsidianVaultRootInBox || '') + '/';
+    var p = String(path).replace(/\\/g, '/').replace(/^\/+/, '').replace(/\.md$/, '');
+    if (p.indexOf('/') < 0) return 'obsidian://search?vault=' + encodeURIComponent(cfg.obsidianVault) + '&query=' + encodeURIComponent(p);
+    var pre = (cfg.obsidianVaultRootInBox || '') + '/';
     if (pre.length > 1 && p.indexOf(pre) !== 0) p = pre + p;
-    p = p.replace(/\.md$/, '');
     return 'obsidian://open?vault=' + encodeURIComponent(cfg.obsidianVault) + '&file=' + encodeURIComponent(p);
   }
   function html(esc, rec, cfg, fallback) {
