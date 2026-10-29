@@ -16,6 +16,7 @@ _DIR = r'(?:\d\d [^/\n"\\]{1,24}?|[^\s/·,;:()「」<>|`"\\+=]+)'
 FIND = [re.compile(p) for p in (
     r'(?<!docs/regs/)(?<![\w/])[^\s/·,;:()「」<>|`"\\+=]*\.md\b',   # 노트 파일 이름(.md)
     r'(?<![\w.])\d\d [가-힣A-Za-z][가-힣A-Za-z0-9·_ ]{0,20}/',                  # 「10 업무/」「99 봇/」 같은 볼트 폴더
+    r'(?<![\w/.\-])[\w.\-]+(?:/[\w.\-]+)*/[\w.\-()]+\.md\b',              # 폴더/…/노트.md (docs/ 사본은 아래에서 뺌)
     r'봇공유|봇교훈/|봇결정기록/|조사/|/home/box|/workspace/|obsidian://|(?<![A-Za-z])[A-Z]:\\',
 )]
 
@@ -26,7 +27,7 @@ def find(s):
     for rx in FIND:
         for m in rx.finditer(s):
             ctx = s[max(0, m.start() - 12):m.start()]
-            if 'http' in ctx or s[max(0, m.start() - 10):m.end()].startswith('docs/'):
+            if 'http' in ctx or m.group(0).startswith('docs/') or s[max(0, m.start() - 10):m.end()].startswith('docs/'):
                 continue
             hits.append(m.group(0))
     return hits
