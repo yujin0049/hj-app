@@ -93,7 +93,7 @@
       collab: []
     };
   }
-  /* 파일 전체 → { id: 사람, 이름: 사람 } */
+  /* 파일 전체 → id·이름으로 찾는 사전 */
   function normalize(j) {
     var out = {};
     if (!j) return out;
