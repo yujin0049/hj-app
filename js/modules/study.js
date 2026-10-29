@@ -185,7 +185,7 @@
   function changelogView(el, api) {
     var parts = api.route().parts;
     var detailId = parts[2] || '';
-    el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     el.querySelector('#back').onclick = function () { api.go('#/study'); };
     loadChangelog().then(function (d) {
       if (!d || !d.items || !d.items.length) {
@@ -350,7 +350,7 @@
     return mustCache;
   }
   function mustView(el, api) {
-    el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<button class="linkish" id="back" type="button">← 공부</button><section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     el.querySelector('#back').onclick = function () { api.go('#/study'); };
     loadMust().then(function (d) {
       if (!d) {

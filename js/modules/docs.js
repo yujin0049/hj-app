@@ -15,14 +15,14 @@
     '.dc-chipw::after{content:"";position:absolute;top:0;right:0;bottom:0;width:32px;pointer-events:none;background:linear-gradient(to right,rgba(242,244,246,0),var(--bg))}',
     '.dc-chips{display:flex;gap:6px;overflow-x:auto;padding:8px 0 2px;-webkit-overflow-scrolling:touch;scrollbar-width:none}',
     '.dc-chip{flex:0 0 auto;border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 11px;font:inherit;font-size:.8rem;font-weight:600;color:var(--ink-2);cursor:pointer}',
-    '.dc-chip.on{background:var(--ink);border-color:var(--ink);color:#fff}',
+    '.dc-chip.on{background:var(--accent,#1B64DA);border-color:var(--accent,#1B64DA);color:#fff}',
     '.dc-chip b{font-weight:800;margin-left:3px;opacity:.7}',
     '.dc-count{font-size:.82rem;color:var(--muted);margin:6px 2px 8px}',
     '.dc-item{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:9px 13px;margin:0 0 6px}',
     '.dc-top{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:.8rem;color:var(--ink-2);margin:0 0 5px}',
     '.dc-org{font-weight:800;color:var(--ink)}',
     '.dc-tag{border-radius:6px;padding:2px 6px;font-weight:700;background:var(--soft)}',
-    '.dc-tag.in{background:#E8F3FF;color:#1B64DA}.dc-tag.out{background:#E5F8EF;color:#027A50}.dc-tag.io{background:#F3EDFF;color:#6B3FD6}',
+    '.dc-tag.in{background:var(--accent-soft,#EAF1FC);color:var(--accent,#1B64DA)}.dc-tag.out{background:var(--g-100,#F2F4F6);color:var(--ink-2)}.dc-tag.io{background:#fff;box-shadow:inset 0 0 0 1px var(--g-300,#D1D6DB);color:var(--ink-2)}',
     '.dc-date{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--muted);font-weight:600}',
     '.dc-t{font-size:.94rem;font-weight:700;line-height:1.4;margin:0 0 4px;word-break:keep-all;overflow-wrap:anywhere}',
     '.dc-t.hid{color:var(--muted);font-weight:600}',
@@ -84,7 +84,7 @@
   }
   function render(el, api) {
     style();
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     fetch(new URL(URL_JSON, document.baseURI).href, { cache: 'no-store' })
       .then(function (r) { if (!r.ok) throw new Error('docs'); return r.json(); })
       .then(function (j) { st.data = j; if (!j || !j.rows) throw new Error('docs'); paint(el, api); })

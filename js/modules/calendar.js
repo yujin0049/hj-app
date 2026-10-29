@@ -254,7 +254,7 @@
     el.classList.add('wide');
     var tb = document.querySelector('.tabs [data-tab="more"]'); if (tb) tb.classList.add('on');
     stamp();
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     loadAll().then(function () { paint(el, api); }).catch(function () {
       el.innerHTML = '<section class="card"><div class="cl-stale" id="cl-stale">⚠ 달력 자료를 불러오지 못했어요. 갱신 스크립트(tools/refresh_all.py)를 다시 돌려 주세요.</div></section>';
     });

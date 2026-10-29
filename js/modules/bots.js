@@ -201,7 +201,7 @@
     if (!root.HJBots) { el.innerHTML = '<section class="card"><div class="bs-stale">⚠ 봇 작업 현황 계산 파일(js/botstatus-core.js)을 못 불러왔어요. 새로고침해 주세요.</div></section>'; return; }
     if (!score) loadScore().then(function (j) { if (j && data && el.querySelector('#bs-kpi')) paint(el, api); });
     if (data) { paint(el, api); return; }
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     load().then(function (d) {
       if (!d) { el.innerHTML = '<section class="card"><div class="bs-stale" id="bs-stale">⚠ 봇 작업 현황 자료(data/bot_status.json)를 불러오지 못했어요. 인터넷을 확인하고 새로고침해 주세요.</div></section>'; return; }
       paint(el, api);

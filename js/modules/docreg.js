@@ -220,7 +220,7 @@
       return home(el, api);
     }
     if (data) return go();
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     load().then(function (d) {
       if (!d) { el.innerHTML = '<section class="card"><div class="dr-err" id="dr-err">⚠ 문서등록대장 자료(data/docreg.json)를 불러오지 못했어요. 인터넷을 확인하고 새로고침해 주세요.</div></section>'; return; }
       go();

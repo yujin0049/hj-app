@@ -70,7 +70,7 @@
   }
   function render(el, api) {
     style();
-    el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     load().then(function (d) {
       if (!d) {
         el.innerHTML = '<section class="card"><p>⚠ 자료(data/todo.json)를 못 불러왔어요. 새로고침해 주세요.</p></section>';
