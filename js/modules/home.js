@@ -171,6 +171,8 @@
     h += '<button class="bs-entry" type="button" data-go="#/spider" id="home-spider"><span class="tile-ic blue">🕸</span><span class="bs-entry-tx"><b>부서 거미줄</b><span class="tile-sub">유기연결 · 역할판 28 · 규정TOP</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 내일 할 일(#/todo): 한 장 체크리스트(유진님 10.27. 「이런건 앱에 못띄워주나」).
     h += '<button class="bs-entry" type="button" data-go="#/todo" id="home-todo"><span class="tile-ic green">✅</span><span class="bs-entry-tx"><b>내일 할 일</b><span class="tile-sub">10.28 시드 · 한 장 리스트</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    // 업무 차트(#/charts): 대장 kv 261029 19:05 (유진님 「앞으로 앱에 이거 적용」).
+    h += '<button class="bs-entry" type="button" data-go="#/charts" id="home-charts"><span class="tile-ic blue">📊</span><span class="bs-entry-tx"><b>업무 차트</b><span class="tile-sub">일정 달력 · 글로컬 잔액 · 추세 · 강사료 구성</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 문서등록대장 학습(#/docreg): 문제 풀며 문서등록대장 익히기(유진님 10.21. 20:47 지시). 진도는 자료를 읽은 뒤 채워요.
     h += '<button class="bs-entry" type="button" data-go="#/docreg" id="home-docreg"><span class="tile-ic teal">📑</span><span class="bs-entry-tx"><b>문서등록대장 학습</b><span class="tile-sub" id="home-docreg-sub">분류별 문제로 문서 익히기</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += card3d();
