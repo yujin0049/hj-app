@@ -55,13 +55,14 @@
     }
     items.forEach(function (it, i) {
       var done = !!it.done;
+      var doing = !done && it.status === 'doing';
       h += '<div class="td-item" data-id="' + esc(it.id || ('t' + (i + 1))) + '">' +
         '<span class="td-num">' + (i + 1) + '</span>' +
         '<div class="td-body"><b>' + esc(it.title || '') + '</b>' +
         (it.note ? '<div class="td-meta">' + esc(it.note) + '</div>' : '') +
         (it.path ? '<div class="td-path">' + esc(it.path) + '</div>' : '') +
         '</div>' +
-        '<span class="td-badge' + (done ? ' ok' : '') + '">' + (done ? '끝' : '할 일') + '</span>' +
+        '<span class="td-badge' + (done ? ' ok' : '') + '">' + (done ? '끝' : (doing ? '작업중' : '할 일')) + '</span>' +
         '</div>';
     });
     h += '</div>';
