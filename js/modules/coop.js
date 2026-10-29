@@ -10,6 +10,10 @@
   var openId = '';
   var moreOpen = false;
   var graph = null; /* HJCoopGraph.build 결과(거미줄+사람별 하는 일). 못 읽으면 null → 데이터 없음 */
+  /* 261030 graphify 후보 연결(data/coop_graphify.json): 문서대장에 같이 나온 문서 2건+ · 일괄공지·총무과 공문 뺌.
+     처음 검색할 때만 불러옴(모바일 첫 화면 무게 그대로). 이름은 이미 협조 검색에 나온 꼴 그대로. */
+  var gx = null, gxWait = null;
+  var GX_MAX = 8;
   function G() { return root.HJCoopGraph || null; }
   var CSS = [
     '.cp-wrap{max-width:680px;margin:0 auto;padding:0 0 48px;box-sizing:border-box}',
@@ -57,7 +61,16 @@
     '.cp-node{font-size:.82rem;font-weight:700;border-radius:999px;padding:7px 12px;border:1px solid var(--g-300,#D1D6DB);background:#fff;color:var(--ink-2);cursor:pointer}',
     '.cp-node .ext{font-weight:600;opacity:.75;margin-left:4px;font-size:.76rem}',
     '.cp-arrow{color:var(--muted);font-weight:700;font-size:.9rem;padding:0 2px}',
-    '.cp-chain-note{font-size:.76rem;color:var(--muted);margin:6px 0 0;line-height:1.35}'
+    '.cp-chain-note{font-size:.76rem;color:var(--muted);margin:6px 0 0;line-height:1.35}',
+    '.cp-gx{margin:14px 0 4px}',
+    '.cp-gx-title{font-size:.8rem;font-weight:800;color:#8a5a00;margin:0 0 4px}',
+    '.cp-gx-note{font-size:.76rem;color:var(--muted);margin:0 0 8px;line-height:1.4}',
+    '.cp-gx-one{display:flex;align-items:center;gap:10px;border:1.5px dashed #E0B562;background:#FFFBF2;border-radius:14px;padding:10px 12px;margin:0 0 8px}',
+    '.cp-gx-n{flex:0 0 auto;min-width:3.4rem;text-align:center;border-radius:10px;background:#FBEBC8;color:#7a4a00;font-weight:800;font-size:.95rem;line-height:1.1;padding:6px 4px}',
+    '.cp-gx-n small{display:block;font-size:.66rem;font-weight:700;opacity:.85}',
+    '.cp-gx-b{min-width:0;font-size:.86rem;line-height:1.45;color:var(--ink-2)}',
+    '.cp-gx-b b{color:var(--ink)}.cp-gx-b .w{display:block;font-size:.76rem;color:var(--muted)}',
+    '.cp-gx-tag{display:inline-block;font-size:.66rem;font-weight:800;border-radius:6px;padding:1px 6px;margin-left:6px;background:#FBEBC8;color:#7a4a00;vertical-align:1px}'
   ].join('\n');
 
   function style() {
@@ -73,6 +86,55 @@
       .then(function (r) { if (!r.ok) throw new Error('coop'); return r.json(); })
       .then(function (j) { data = j; return j; })
       .catch(function () { return null; });
+  }
+  function loadGx() {
+    if (gx) return Promise.resolve(gx);
+    if (!gxWait) {
+      gxWait = fetch(new URL('data/coop_graphify.json', document.baseURI).href)
+        .then(function (r) { if (!r.ok) throw new Error('gx'); return r.json(); })
+        .then(function (j) { gx = j; return j; })
+        .catch(function () { gxWait = null; return null; });
+    }
+    return gxWait;
+  }
+  function gxTerms(needle) {
+    var t = String(needle || '').split(/[\s,?!.]+/);
+    active.forEach(function (c) { t.push(c.q || c.label || ''); });
+    var seen = {};
+    return t.map(function (x) {
+      return String(x).replace(/^[#@]/, '').replace(/(선생님|샘|님|에게|한테|으로|로|은|는|이|가|을|를|과|와)$/, '').trim();
+    }).filter(function (x) { if (x.length < 2 || seen[x]) return false; seen[x] = 1; return true; });
+  }
+  /* 사람·부서·본부서·낱말에 맞는 수가 많은 순 → 근거 문서 많은 순. 최대 GX_MAX개 */
+  function gxMatch(needle) {
+    if (!gx || !gx.rows) return { list: [], total: 0 };
+    var ts = gxTerms(needle);
+    if (!ts.length) return { list: [], total: 0 };
+    var hit = [];
+    gx.rows.forEach(function (r) {
+      var who = String(r[0] || ''), dept = String(r[1] || ''), home = String(r[3] || ''), words = (r[4] || []).join(' ');
+      var sc = 0;
+      ts.forEach(function (t) {
+        if (who.indexOf(t) >= 0 || dept.indexOf(t) >= 0 || home.indexOf(t) >= 0) sc += 2;
+        else if (words.indexOf(t) >= 0) sc += 1;
+      });
+      if (sc) hit.push({ r: r, sc: sc });
+    });
+    hit.sort(function (a, b) { return (b.sc - a.sc) || (b.r[2] - a.r[2]); });
+    var best = hit.length ? hit[0].sc : 0;
+    var top = hit.filter(function (h) { return h.sc === best; });
+    return { list: top.slice(0, GX_MAX).map(function (h) { return h.r; }), total: top.length };
+  }
+  function gxHtml(esc, needle) {
+    var m = gxMatch(needle);
+    if (!m.list.length) return '';
+    return '<p class="cp-gx-title">문서로 찾은 새 연결<span class="cp-gx-tag">후보</span></p>' +
+      '<p class="cp-gx-note">' + esc((gx && gx.notice) || '') + ' ' + m.total + '개 중 근거 많은 ' + m.list.length + '개.</p>' +
+      m.list.map(function (r) {
+        return '<div class="cp-gx-one" data-gx="1"><div class="cp-gx-n">' + esc(r[2]) + '건<small>근거 문서</small></div>' +
+          '<div class="cp-gx-b"><b>' + esc(r[0]) + '</b> (' + esc(r[3] || '—') + ') ↔ <b>' + esc(r[1]) + '</b>' +
+          ((r[4] || []).length ? '<span class="w">주로 ' + esc(r[4].join(' · ')) + '</span>' : '') + '</div></div>';
+      }).join('');
   }
   function inline(esc, s) {
     return esc(s || '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
@@ -292,6 +354,7 @@
     var chainHtml = hasQuery ? renderChainBlock(esc, prepareChainsForRender(matchChains(needle, active), needle, active)) : '';
     if (chainHtml && results) results = results + chainHtml;
     else if (chainHtml) results = chainHtml;
+    if (hasQuery) results += '<section class="cp-gx" id="cp-gx" aria-live="polite">' + (gx ? gxHtml(esc, needle) : '') + '</section>';
 
     var edu = (data.edu_now || []).map(function (t) {
       return '<div class="cp-item"><b>' + esc(t.title) + '</b><span>' + inline(esc, t.body) + '</span></div>';
@@ -412,6 +475,10 @@
     });
     var det = el.querySelector('#cp-more');
     if (det) det.ontoggle = function () { moreOpen = !!det.open; };
+    if (hasQuery && !gx) loadGx().then(function () {
+      var box = el.querySelector('#cp-gx');
+      if (box && gx) box.innerHTML = gxHtml(esc, (q || '').trim().toLowerCase());
+    });
   }
   function render(el, api) {
     style();
