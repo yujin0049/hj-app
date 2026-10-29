@@ -86,7 +86,7 @@
     var W = left + weeks * (cell + gap), H = top + 7 * (cell + gap);
     var max = Math.max(1, h.max || 1), today = todayIso();
     var out = '<svg class="ch-svg" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="날짜별 일정 건수">';
-    ['월', '', '수', '', '금', '', ''].forEach(function (t, i) { if (t) out += '<text x="0" y="' + (top + i * (cell + gap) + 11) + '" font-size="11" fill="' + C.axis + '">' + t + '</text>'; });
+    ['월', '', '수', '', '금', '', ''].forEach(function (t, i) { if (t) out += '<text class="ch-wd" x="0" y="' + (top + i * (cell + gap) + 11) + '" font-size="11" fill="' + C.axis + '">' + t + '</text>'; });
     var lastM = -1;
     for (var w = 0; w < weeks; w++) {
       for (var d = 0; d < 7; d++) {
@@ -350,10 +350,17 @@
       var card = svg.closest('.ch-card'), cr = card.getBoundingClientRect(), br = best.getBoundingClientRect();
       var t = best.querySelector('title');
       box = document.createElement('div'); box.className = 'ch-tipbox'; box.setAttribute('role', 'status'); box.textContent = t ? t.textContent : '';
+      /* 달력의 요일 글자(월·수·금) 오른쪽부터만 띄워서 글자를 가리지 않게. 카드 안으로 가둠 */
+      var minL = 6;
+      svg.querySelectorAll('.ch-wd').forEach(function (w) { minL = Math.max(minL, w.getBoundingClientRect().right - cr.left + 4); });
+      box.style.maxWidth = Math.min(240, cr.width - minL - 6) + 'px';
       card.appendChild(box);
-      var x = br.left + br.width / 2 - cr.left - box.offsetWidth / 2, y = br.top - cr.top - box.offsetHeight - 8;
-      box.style.left = Math.max(6, Math.min(x, cr.width - box.offsetWidth - 6)) + 'px';
-      box.style.top = (y < 4 ? br.bottom - cr.top + 8 : y) + 'px';
+      var bw = box.offsetWidth, bh = box.offsetHeight;
+      var x = br.left + br.width / 2 - cr.left - bw / 2, y = br.top - cr.top - bh - 8, below = y < 4;
+      if (below) y = br.bottom - cr.top + 8;
+      box.style.left = Math.max(minL, Math.min(x, cr.width - bw - 6)) + 'px';
+      box.style.top = Math.max(4, Math.min(y, cr.height - bh - 4)) + 'px';
+      if (below) box.style.transformOrigin = '50% 0';
     });
   }
 
