@@ -1,5 +1,7 @@
 /* 항상 새 버전 먼저(네트워크 우선). 인터넷이 없을 때만 저장본을 보여 줘요. 잠금 없음. */
-var CACHE = 'hj-v60';
+var CACHE = 'hj-v61';
+/* 중요문서(#/docs)는 폰에 저장 금지(유진님 261029 「내 휴대폰에 저장은 싫어」): 캐시에 넣지도, 저장본을 꺼내 주지도 않음(network-only). */
+var NO_STORE = ['/data/docs_important.json', '/js/modules/docs.js'];
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(function (c) {
@@ -18,6 +20,10 @@ self.addEventListener('fetch', function (e) {
   try { url = new URL(req.url); } catch (err) { return; }
   if (url.origin !== self.location.origin) return;
   if (url.pathname.indexOf('/api/') >= 0) return; /* 잠긴 API(사람 정보)는 저장본을 만들지 않음 */
+  if (NO_STORE.some(function (p) { return url.pathname.slice(-p.length) === p; })) {
+    e.respondWith(fetch(req, { cache: 'no-store' }).catch(function () { return new Response('', { status: 504 }); }));
+    return;
+  }
   e.respondWith(fetch(req, { cache: 'no-store' }).then(function (res) {
     if (res && res.ok && res.type === 'basic') {
       var copy = res.clone();
