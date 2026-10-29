@@ -90,3 +90,23 @@ class Coop(unittest.TestCase):
         self.assertIn('data-go="#/who"', home)
         self.assertIn("'haksa'", read('js', 'registry.js'))
         self.assertIn("'who'", read('js', 'registry.js'))
+
+
+class SpiderMerged(unittest.TestCase):
+    """261029 「1번 자료 활용해서 2번에 보충」「1번은 지워」: 거미줄 화면은 보관, 자료는 협조 검색이 읽음"""
+    def test_spider_screen_archived(self):
+        self.assertNotIn("'spider'", read('js', 'registry.js'))
+        self.assertNotIn('#/spider', read('js', 'modules', 'home.js'))
+        self.assertFalse(os.path.exists(os.path.join(R, 'js', 'modules', 'spider.js')))
+        self.assertTrue(os.path.exists(os.path.join(R, '_archive', 'spider', 'spider.js')))
+        self.assertTrue(os.path.exists(os.path.join(R, 'data', 'dept_spider.json')))
+        self.assertIn("id === 'spider') id = 'coop'", read('js', 'app.js'))
+
+    def test_coop_reads_graph(self):
+        self.assertIn('coop-graph.js', read('index.html'))
+        g = read('js', 'coop-graph.js')
+        for k in ('data/dept_spider.json', 'data/people_roles.json', '데이터 없음', '추론', '추정',
+                  '제목에 협조가 들어간 문서 수', '관련 추정 규정', '#부서', '#사람'):
+            self.assertIn(k, g)
+        self.assertIn('HJCoopGraph', read('js', 'coop-graph.js'))
+        self.assertIn('G().search', read('js', 'modules', 'coop.js').replace('cg.search', 'G().search'))

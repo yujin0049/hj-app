@@ -1,4 +1,6 @@
 /* 원큐 협조리스트 (#/coop): 구글형 자연어 검색(중간 위치) → 선택 칩 제안 → 한 장 결과 + 체인 거미줄.
+   261029: 부서 거미줄(#/spider) 자료를 여기로 합침(js/coop-graph.js) — 부서·사람 이름으로 찾으면 하는 일·이어진 부서·규정·결재라인,
+   일 낱말로 찾으면 누구와 협조·어느 규정. #부서 #사람 칩. (유진님 10.29. 「1번 자료 활용해서 2번에 보충」「1번은 지워」)
    해시태그 입력 강제 없음. 인스타피드·전체그래프·긴 표 나열 금지. who_names·90_개인정보 원본 깃금지. */
 (function (root) {
   'use strict';
@@ -7,6 +9,8 @@
   var active = []; /* {kind,label,q,kw?} */
   var openId = '';
   var moreOpen = false;
+  var graph = null; /* HJCoopGraph.build 결과(거미줄+사람별 하는 일). 못 읽으면 null → 데이터 없음 */
+  function G() { return root.HJCoopGraph || null; }
   var CSS = [
     '.cp-wrap{max-width:680px;margin:0 auto;padding:0 12px 48px;box-sizing:border-box}',
     '.cp-hero{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:calc(100vh - 160px);padding:24px 0 40px;transition:min-height .2s ease}',
@@ -224,6 +228,12 @@
     (data.suggest_periods || []).forEach(function (p) {
       push({ kind: 'period', label: '#' + p.label, q: p.q || p.label });
     });
+    /* 거미줄 부서·사람(#부서 #사람): 칠 때만 */
+    if (n && G()) {
+      var seen = {};
+      out.forEach(function (c) { seen[c.label] = 1; });
+      G().suggest(graph, n, 6).forEach(function (c) { if (!seen[c.label] && !hasChip(c)) { seen[c.label] = 1; out.unshift(c); } });
+    }
     return out.slice(0, 12);
   }
   function home(el, api) {
@@ -231,6 +241,9 @@
     var needle = (q || '').trim().toLowerCase();
     var hasQuery = !!(needle || active.length);
     var rows = (data.rows || []).filter(function (r) { return matchRow(r, needle); });
+    var cg = G();
+    var graphHtml = hasQuery && cg ? cg.html(graph, cg.search(graph, needle, active)) : '';
+    var graphNone = hasQuery && (!cg || !graph || (!graph.hasSpider && !graph.hasPeople)) ? '<p class="cp-hint">부서·사람 자료: 데이터 없음</p>' : '';
     var suggest = buildSuggest(q || '');
     var shortcuts = data.shortcuts || [];
 
@@ -252,7 +265,7 @@
     if (!hasQuery) {
       results = '';
     } else if (!rows.length) {
-      results = '<div class="cp-empty">맞는 협조가 없어요. 칩을 빼거나 다른 말을 쳐 보세요.</div>';
+      results = graphHtml ? '' : '<div class="cp-empty">맞는 협조가 없어요. 칩을 빼거나 다른 말을 쳐 보세요.</div>';
     } else {
       results = '<p class="cp-hint">' + rows.length + '건 · 한 장에 일주인·내선·돈처리·결재·한줄만</p><div class="cp-results">' +
         rows.map(function (r, idx) {
@@ -265,6 +278,7 @@
             '<div class="k">돈처리</div><div class="v">' + esc(r.money || '—') + '</div>' +
             '<div class="k">결재</div><div class="v">' + esc(approvalLine(r)) + '</div>' +
             '<div class="k">한줄</div><div class="v">' + esc(r.line || '—') + '</div>' +
+            (cg && graph ? '<div class="k">규정</div><div class="v">' + esc(cg.regsFor(graph, [r.work, (r.tags || []).join(' '), r.line, r.note].join(' ')).join(' · ') || '—') + '</div>' : '') +
             '</div>' +
             '<details' + (open ? ' open' : '') + ' data-oid="' + id + '"><summary>부서·상태·비고</summary>' +
             '<div class="cp-extra">부서: ' + esc(r.dept || '—') +
@@ -274,6 +288,7 @@
         }).join('') + '</div>';
     }
 
+    results = graphNone + graphHtml + results;
     var chainHtml = hasQuery ? renderChainBlock(esc, prepareChainsForRender(matchChains(needle, active), needle, active)) : '';
     if (chainHtml && results) results = results + chainHtml;
     else if (chainHtml) results = chainHtml;
@@ -306,7 +321,7 @@
       '</div>' +
       (activeHtml ? '<div class="cp-active" id="cp-active">' + activeHtml + '</div>' : '') +
       (suggestHtml ? '<div class="cp-suggest" id="cp-suggest">' + suggestHtml + '</div>' : '') +
-      (!hasQuery ? '<div class="cp-shortcuts" id="cp-sc">' + scHtml + '</div><p class="cp-hint">해시태그는 선택이에요. 쳐 보면 #키워드 #사람 #부서 #기간 칩이 따라붙습니다.</p>' : '') +
+      (!hasQuery ? '<div class="cp-shortcuts" id="cp-sc">' + scHtml + '</div><p class="cp-hint">해시태그는 선택이에요. 쳐 보면 #키워드 #사람 #부서 #기간 칩이 따라붙습니다. 부서·사람 이름을 치면 하는 일·이어진 부서·규정이 나와요.</p>' : '') +
       '</div>' +
       results +
       '<details class="cp-more" id="cp-more"' + (moreOpen ? ' open' : '') + '>' +
@@ -374,6 +389,16 @@
         else if (openId === d.getAttribute('data-oid')) openId = '';
       };
     });
+    el.querySelectorAll('[data-cg-q]').forEach(function (btn) {
+      btn.onclick = function () {
+        var name = btn.getAttribute('data-cg-q') || '';
+        if (!name) return;
+        q = '';
+        active = [{ kind: btn.getAttribute('data-cg-kind') === 'person' ? 'person' : 'dept', label: '#' + name, q: name }];
+        home(el, api);
+        el.scrollIntoView && el.scrollIntoView({ block: 'start' });
+      };
+    });
     el.querySelectorAll('[data-chain-q]').forEach(function (btn) {
       btn.onclick = function () {
         var qq = btn.getAttribute('data-chain-q') || '';
@@ -390,9 +415,12 @@
   }
   function render(el, api) {
     style();
+    if (G()) G().style();
     if (data) return home(el, api);
     el.innerHTML = '<section class="card"><p class="muted">불러오는 중…</p></section>';
-    load().then(function (d) {
+    Promise.all([load(), G() ? G().load().catch(function () { return null; }) : null]).then(function (got) {
+      var d = got[0];
+      graph = got[1];
       if (!d) {
         el.innerHTML = '<section class="card"><p>⚠ 자료(data/coop.json)를 못 불러왔어요. 새로고침해 주세요.</p></section>';
         return;

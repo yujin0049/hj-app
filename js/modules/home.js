@@ -166,9 +166,7 @@
     // 학사 연습(#/haksa): 통합학사행정 메뉴 모사. 실서버·저장 없음.
     h += '<button class="bs-entry" type="button" data-go="#/haksa" id="home-haksa"><span class="tile-ic blue">학</span><span class="bs-entry-tx"><b>학사 연습</b><span class="tile-sub">통합학사행정 메뉴 · 저장 없음</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 협조리스트 원큐(#/coop): 업무별 협조처·휴보강 경로·번호부 주업무(유진님 10.27. 「원큐에 협조리스트」).
-    h += '<button class="bs-entry" type="button" data-go="#/coop" id="home-coop"><span class="tile-ic orange">🤝</span><span class="bs-entry-tx"><b>협조리스트 (원큐)</b><span class="tile-sub">오늘 Top5 · 휴보강 경로 · 내선·주업무</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
-    // 부서 거미줄(#/spider): 부서유기연결 역할판·허브·놓친연결·규정TOP.
-    h += '<button class="bs-entry" type="button" data-go="#/spider" id="home-spider"><span class="tile-ic blue">🕸</span><span class="bs-entry-tx"><b>부서 거미줄</b><span class="tile-sub">유기연결 · 역할판 28 · 규정TOP</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    h += '<button class="bs-entry" type="button" data-go="#/coop" id="home-coop"><span class="tile-ic orange">🤝</span><span class="bs-entry-tx"><b>협조리스트 (원큐)</b><span class="tile-sub">오늘 Top5 · 부서·사람 · 규정 · 휴보강 경로</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 내일 할 일(#/todo): 한 장 체크리스트(유진님 10.27. 「이런건 앱에 못띄워주나」).
     h += '<button class="bs-entry" type="button" data-go="#/todo" id="home-todo"><span class="tile-ic green">✅</span><span class="bs-entry-tx"><b>내일 할 일</b><span class="tile-sub">10.28 시드 · 한 장 리스트</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 업무 차트(#/charts)·중요문서(#/docs): 대장 kv 261029 19:05 (유진님 「앞으로 앱에 이거 적용」「국토교통부 등 관련문서 앱에서 보일 수 있게」).
