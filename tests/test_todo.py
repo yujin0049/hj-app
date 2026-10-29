@@ -69,7 +69,7 @@ class Todo(unittest.TestCase):
     def test_carryover_and_t065(self):
         by = {it['id']: it for it in self.d['items']}
         done = {it['id'] for it in self.d['items'] if it['done']}
-        self.assertEqual(done, {'t10', 't12', 't13', 't14', 't15'})
+        self.assertEqual(done, {'t10', 't12', 't13', 't14', 't15', 't16'})
         self.assertIsNone(by['t15'].get('status'))
         self.assertIn('코러스', by['t16'].get('note') or '')
         self.assertIn('❍ 4줄', by['t21'].get('note') or '')
