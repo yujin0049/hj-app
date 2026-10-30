@@ -1,0 +1,14 @@
+# 출석부 서버 (Cloudflare Worker + D1). 배포·명단은 PR 본문의 체크리스트 참고.
+# 링크 열쇠는 D1 tokens 표에 해시로만. 비밀값(secret) 없음. 원래 링크는 상자(box) 파일에만.
+name = "hj-attend"
+main = "src/index.js"
+compatibility_date = "2026-10-01"
+
+[vars]
+# 이 주소(GitHub Pages)에서 오는 브라우저 요청만 받음
+ALLOWED_ORIGIN = "https://yujin0049.github.io"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hj-attend"
+database_id = "REPLACE_WITH_D1_ID" # npx wrangler d1 create hj-attend 결과
