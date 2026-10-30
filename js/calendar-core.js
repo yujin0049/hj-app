@@ -36,9 +36,19 @@
     if (n <= 3) return { cls: 'soon', n: n, label: 'D-' + n };
     return { cls: 'later', n: n, label: 'D-' + n };
   }
-  /* 거르기: f = {bot, status, group, lanes:{yujin:1,...}, showDone} */
+  /* 화면 안 찾기(261030 목록 UX): 띄어 쓴 낱말이 모두 들어 있으면 맞음. 대소문자·띄어쓰기 무시.
+     보는 칸: T번호·제목·단계·봇·분야·상태·종류·조건·유진님 꼬리표 */
+  function normQ(s) { return String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ''); }
+  function matchQ(x, q) {
+    var words = String(q || '').trim().split(/\s+/).map(normQ).filter(Boolean);
+    if (!words.length) return true;
+    var hay = normQ([x.t, x.title, x.step, x.bot, x.group, x.status, x.kind, x.cond].concat(x.yujin || []).join(' '));
+    return words.every(function (w) { return hay.indexOf(w) >= 0; });
+  }
+  /* 거르기: f = {bot, status, group, lanes:{yujin:1,...}, showDone, q} */
   function pass(x, f) {
     f = f || {};
+    if (f.q && !matchQ(x, f.q)) return false;
     if (f.bot && (x.bot || '') !== f.bot) return false;
     if (f.status && x.status !== f.status) return false;
     if (f.group && x.group !== f.group) return false;
@@ -58,6 +68,6 @@
   var WD = ['일', '월', '화', '수', '목', '금', '토'];
   function md(s) { var p = String(s).split('-'); return (+p[1]) + '.' + (+p[2]) + '.(' + WD[weekday(s)] + ')'; }
   return { todayKST: todayKST, addDays: addDays, diffDays: diffDays, weekday: weekday, weekStart: weekStart, weekDays: weekDays,
-    monthGrid: monthGrid, isDone: isDone, dueState: dueState, pass: pass, staleness: staleness, md: md, WD: WD,
+    monthGrid: monthGrid, isDone: isDone, dueState: dueState, pass: pass, matchQ: matchQ, staleness: staleness, md: md, WD: WD,
     PEOPLE_API: 'api/people' };
 });

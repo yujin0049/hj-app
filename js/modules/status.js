@@ -4,6 +4,10 @@
 (function (root) {
   'use strict';
   var view = { bot: '', status: '', group: '', showDone: false, q: '' };
+  /* 261030 목록 UX(근거: 봇공유/조사/261029_hj-app_목록기능검토_v01 제안 2): 표 위 찾기 칸(view.q → HJCal.pass),
+     표는 20개씩 「더 보기」. 찾는 말·고르기가 바뀌면 다시 20개부터. 저장 안 함(메모리만) */
+  var PAGE = 20;
+  var lim = PAGE;
   var people = null; /* {T001: '...'} — 메모리에만, 어디에도 저장 안 함 */
   var peopleTried = false;
   var CSS = [
@@ -19,6 +23,8 @@
     '.b-확인필요{background:#F3EEFF;color:#6D28D9}.b-보류,.b-대기{background:var(--warnbg);color:var(--warn)}',
     '.st-steps{font-size:12px;color:var(--ink-2);margin-top:6px}.st-steps summary{cursor:pointer;color:var(--navy);font-weight:600}',
     '.st-steps li{margin:3px 0}.st-steps .l-prof{color:#6D28D9}.st-steps .l-ref{color:var(--muted)}',
+    '.st-q{display:block;width:100%;min-height:44px;margin:0 0 6px;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink-2);box-sizing:border-box}',
+    '.st-morebtn{display:block;width:100%;min-height:44px;margin:8px 0 0;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer}.st-morebtn small{color:var(--muted);font-weight:600}',
     '.oj-row{margin:10px 0}.oj-row .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}',
     '.oj-bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}.oj-bar i{display:block;height:100%;background:var(--navy);border-radius:5px}',
     '@media (max-width:640px){.st-tbl thead{display:none}.st-tbl tr{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;padding:10px 0;border-bottom:1px solid var(--line)}',
@@ -84,6 +90,7 @@
     var tasks = D.st.tasks.slice().sort(order(C, today));
     var pin = tasks.filter(function (t) { return t.yujin && t.yujin.length && !C.isDone(t.status); });
     var shown = tasks.filter(function (t) { return C.pass(t, view); });
+    var cnt = Math.min(shown.length, Math.max(PAGE, lim)), rest = shown.length - cnt;
     var late = tasks.filter(function (t) { return C.dueState(t.due, today, t.status).cls === 'late'; }).length;
     var soon = tasks.filter(function (t) { var c = C.dueState(t.due, today, t.status).cls; return c === 'soon' || c === 'today'; }).length;
     var html = (st.warn ? '<div class="cl-stale" id="cl-stale">⚠ 자료가 최신이 아닐 수 있어요 — ' + esc(st.why) + '</div>' : '') +
@@ -92,11 +99,15 @@
       '<section class="card"><div class="cl-top"><h2>현황표</h2></div>' +
       '<div class="cl-kpi"><div><b id="s-all">' + D.st.counts.active + '</b><span>진행할 업무</span></div><div class="k-late"><b id="s-late">' + late + '</b><span>지연</span></div>' +
       '<div class="k-soon"><b id="s-soon">' + soon + '</b><span>마감 임박(D-3)</span></div><div class="k-yu"><b>' + pin.length + '</b><span>유진님 할 일</span></div></div>' +
+      '<input type="search" id="sf-q" class="st-q" placeholder="현황표 찾기 (T번호·업무 이름·봇·분야)" aria-label="현황표 찾기" autocomplete="off" value="' + esc(view.q) + '">' +
       '<div class="cl-flt"><select id="sf-bot" aria-label="담당 봇">' + opts(uniq(tasks.map(function (t) { return t.bot; })), view.bot, '담당 봇 전체') + '</select>' +
       '<select id="sf-st" aria-label="상태">' + opts(uniq(tasks.map(function (t) { return t.status; })), view.status, '상태 전체') + '</select>' +
       '<select id="sf-grp" aria-label="업무 분야">' + opts(D.st.groups || uniq(tasks.map(function (t) { return t.group; })), view.group, '업무 분야 전체') + '</select>' +
       '<label><input type="checkbox" id="sf-done"' + (view.showDone ? ' checked' : '') + '> 끝난 일 보기</label></div>' +
-      '<p class="cl-note" id="st-count">' + shown.length + '개 보기</p>' + table(C, shown, today, 'st-tbl') +
+      '<p class="cl-note" id="st-count">' + (rest > 0 ? shown.length + '개 중 ' + cnt + '개 보기' : shown.length + '개 보기') + '</p>' +
+      (shown.length ? table(C, shown.slice(0, cnt), today, 'st-tbl') : table(C, [], today, 'st-tbl') + '<p class="muted" id="st-none">맞는 업무가 없어요. 다른 말이나 「끝난 일 보기」를 써 보세요.</p>') +
+      (rest > 0 ? '<button type="button" class="st-morebtn" id="st-morebtn" aria-controls="st-tbl">' + Math.min(PAGE, rest) + '개 더 보기 <small>(남은 ' + rest + '개)</small></button>'
+        : (shown.length > PAGE ? '<button type="button" class="st-morebtn" id="st-lessbtn" aria-controls="st-tbl">처음 ' + PAGE + '개만 보기</button>' : '')) +
       '<p class="cl-note" id="st-lock">담당·상대(사람) 칸은 사이트 파일에 없어요. 유진님만 들어오는 잠금(Cloudflare Access) 확인 뒤 잠긴 API에서 읽어 보여요.</p></section>';
     if (D.ojnt && D.ojnt.items) {
       html += '<section class="card" id="oj"><h2 style="font-size:18px;margin:0">OJNT 입사 서류 진행률</h2><p class="cl-note">숫자만(이름 없음). ' + esc(D.ojnt.source) + '</p>' +
@@ -109,10 +120,28 @@
         D.st.others.map(function (o) { return '<div class="row"><span class="bar ln-' + esc(o.lane) + '"></span><div class="tx"><b>' + esc(o.title) + '</b><small>' + esc(o.due ? C.md(o.due) : '날짜 없음') + ' · ' + esc(o.group) + ' · ' + esc(o.source) + '</small></div></div>'; }).join('') + '</div></section>';
     }
     el.innerHTML = html;
-    el.querySelector('#sf-bot').onchange = function (e) { view.bot = e.target.value; paint(el, api); };
-    el.querySelector('#sf-st').onchange = function (e) { view.status = e.target.value; paint(el, api); };
-    el.querySelector('#sf-grp').onchange = function (e) { view.group = e.target.value; paint(el, api); };
-    el.querySelector('#sf-done').onchange = function (e) { view.showDone = e.target.checked; paint(el, api); };
+    el.querySelector('#sf-bot').onchange = function (e) { view.bot = e.target.value; lim = PAGE; paint(el, api); };
+    el.querySelector('#sf-st').onchange = function (e) { view.status = e.target.value; lim = PAGE; paint(el, api); };
+    el.querySelector('#sf-grp').onchange = function (e) { view.group = e.target.value; lim = PAGE; paint(el, api); };
+    el.querySelector('#sf-done').onchange = function (e) { view.showDone = e.target.checked; lim = PAGE; paint(el, api); };
+    var q = el.querySelector('#sf-q');
+    var onq = function (e) {
+      if (e && e.isComposing) return; /* 한글 조합 중에는 다시 그리지 않음 */
+      if (q.value === view.q) return;
+      var pos = q.selectionStart;
+      view.q = q.value; lim = PAGE;
+      paint(el, api);
+      var n = el.querySelector('#sf-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) { /* 지원 안 함 */ } }
+    };
+    q.oninput = onq;
+    q.addEventListener('compositionend', function () { setTimeout(onq, 0); });
+    var mb = el.querySelector('#st-morebtn');
+    if (mb) mb.onclick = function () {
+      var from = Math.max(PAGE, lim); lim = from + PAGE; paint(el, api);
+      var nb = el.querySelector('#st-morebtn') || el.querySelector('#st-lessbtn'); if (nb) { try { nb.focus({ preventScroll: true }); } catch (er) { nb.focus(); } }
+    };
+    var lb = el.querySelector('#st-lessbtn');
+    if (lb) lb.onclick = function () { lim = PAGE; paint(el, api); var c = el.querySelector('#st-count'); if (c && c.scrollIntoView) c.scrollIntoView({ block: 'nearest' }); };
   }
   function render(el, api) {
     style();

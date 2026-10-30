@@ -58,3 +58,17 @@ test('오래됨·실패 경고', () => {
   assert.equal(C.staleness({ refreshed_iso: '2026-10-22T09:00+09:00', last_try_ok: false, last_try: 'x', refreshed_at: 'y' }, now).warn, true);
   assert.equal(C.staleness(null, now).warn, true);
 });
+test('화면 안 찾기(q): 낱말 모두·띄어쓰기 무시·T번호·꼬리표', () => {
+  const x = { t: 'T012', title: '글로컬 출장 여비 정산', bot: '규정봇', group: '글로컬', status: '진행 중', yujin: ['결재·상신'] };
+  assert.ok(C.matchQ(x, ''));
+  assert.ok(C.matchQ(x, '  '));
+  assert.ok(C.matchQ(x, '여비'));
+  assert.ok(C.matchQ(x, '출장여비'));
+  assert.ok(C.matchQ(x, '여비 규정봇'));
+  assert.ok(!C.matchQ(x, '여비 교수님'));
+  assert.ok(C.matchQ(x, 't012'));
+  assert.ok(C.matchQ(x, '상신'));
+  assert.ok(C.pass(x, { q: '정산' }));
+  assert.ok(!C.pass(x, { q: '없는말' }));
+  assert.ok(C.pass({ title: '하위', step: '서명 받기', status: '할 일' }, { q: '서명' }));
+});
