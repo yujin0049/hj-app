@@ -121,7 +121,7 @@
   }
   window.HJ3D = { src: function (embed) { return V3D[ver3d()] + (embed ? '?embed=1&v=18' : '?v=18'); }, btns: verBtns };
   function otEntry() {
-    return '<button class="bs-entry" type="button" data-go="#/ot-attach" id="home-otattach"><span class="tile-ic orange">📎</span><span class="bs-entry-tx"><b>원인행위 붙임 만들기</b><span class="tile-sub">10월 시간외근무수당 · 서류 확인 후 한 권</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    return '<button class="bs-entry" type="button" data-go="#/ot-attach" id="home-otattach"><span class="tile-ic orange">📎</span><span class="bs-entry-tx"><b>원인행위 붙임 만들기</b><span class="tile-sub">종류별 붙임 순서 · 10월 시간외근무수당 한 권</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
   }
   function card3d() {
     return '<section class="card home3d"><div class="home3d-head"><h2>교육원 전경 3D</h2>' +

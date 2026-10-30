@@ -8,7 +8,13 @@
   var CSS = '.ot-steps{margin:8px 0 12px;padding-left:1.2em}.ot-steps li{margin:4px 0}' +
     '.ot-slot{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}' +
     '.ot-slot b{display:block}.ot-path{font-weight:700;word-break:break-all}' +
-    '.ot-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}';
+    '.ot-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}' +
+    '.ca-list{list-style:none;margin:8px 0 0;padding:0}.ca-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}' +
+    '.ca-no{flex:0 0 28px;height:28px;border-radius:14px;background:var(--navy);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}' +
+    '.ca-row b{display:block;word-break:keep-all}.ca-ref{margin-top:10px}';
+  /* 원인행위 종류별 붙임 (유진님 10.30. 17:47 「원인행위 종류별마다 다양해서 글로컬문서에서 찾아봐」).
+     자료: data/cause_attach_types.json (글로컬 구비서류 양식 부록 표 그대로). 모르는 칸은 「나중에 업데이트」. */
+  var cause = { data: null, failed: false, pick: 'material' };
   var lastBytes = null;
   var view = null;
 
@@ -177,12 +183,49 @@
       return { id: s.id, label: s.label, state: 'missing', note: '폴더를 고르면 확인해요', file: '' };
     });
   }
+  function loadCause() {
+    if (cause.data || cause.failed) return Promise.resolve(cause.data);
+    return fetch(new URL('data/cause_attach_types.json', document.baseURI).href, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('http'); return r.json(); })
+      .then(function (d) { cause.data = d; return d; }, function () { cause.failed = true; return null; });
+  }
+  function causeRows(esc, items, later) {
+    var h = '<ol class="ca-list">';
+    (items || []).forEach(function (x) {
+      h += '<li class="ca-row"><span class="ca-no">' + esc(x.no) + '</span><div><b>' + esc(x.name) + '</b>';
+      if (x.form) h += '<div class="item-meta">관련 서식: ' + esc(x.form) + '</div>';
+      if (x.note) h += '<div class="item-meta">' + esc(x.note) + '</div>';
+      if (x.later) h += '<div class="item-meta"><span class="badge warn">' + esc(later) + '</span> ' + esc(x.later) + '</div>';
+      h += '</div></li>';
+    });
+    return h + '</ol>';
+  }
+  function causeHtml(esc) {
+    var h = '<section class="card" id="ca-card"><p class="kicker">원인행위 종류별 붙임</p><h2>종류를 고르면 붙임 서류가 순서대로 나와요</h2>';
+    var d = cause.data;
+    if (!d) return h + '<p class="muted">' + (cause.failed ? '목록을 불러오지 못했어요.' : '목록을 불러오는 중이에요…') + '</p></section>';
+    var t = d.types.filter(function (x) { return x.id === cause.pick; })[0] || d.types[0];
+    h += '<label class="field"><span>원인행위 종류</span><select id="ca-type">';
+    d.types.forEach(function (x) {
+      h += '<option value="' + esc(x.id) + '"' + (x.id === t.id ? ' selected' : '') + '>' + esc(x.name) + '</option>';
+    });
+    h += '</select></label>';
+    h += '<p class="muted">' + esc(t.name) + ' · ' + t.items.length + '가지' + (t.listed ? ' · 원문에 번호가 없어 적힌 차례대로 번호를 붙였어요' : '') + '</p>';
+    if (t.forms) h += '<p class="muted">관련 서식: ' + esc(t.forms) + '</p>';
+    h += causeRows(esc, t.items, d.later);
+    if (t.ref) h += '<p class="muted ca-ref"><b>참고</b> ' + esc(t.ref) + '</p>';
+    h += '<p class="muted">' + esc(d.footer) + '</p>';
+    h += '<p class="muted">출처: ' + esc(d.source) + ' · 쪽: <span class="badge warn">' + esc(d.sourcePage) + '</span></p>';
+    (d.notes || []).forEach(function (n) { h += '<p class="muted">' + esc(n) + '</p>'; });
+    return h + '</section>';
+  }
   function paint(el, api) {
     var esc = api.esc;
     var slots = (view && view.plan && view.plan.slots) || emptySlots();
     var extras = (view && view.plan && view.plan.extras) || [];
     var phase = view ? view.phase : 'idle';
     var h = '<button class="linkish" id="ot-back" type="button">← 홈</button>';
+    h += causeHtml(esc);
     h += '<section class="card"><p class="kicker">' + esc(C.TITLE) + '</p><h1>원인행위 붙임 만들기</h1>';
     h += '<ol class="ot-steps"><li>서류 칸이 다 있는지 확인해요.</li>';
     h += '<li>신분증·재직증명서·통장사본은 각각 A4 한 장에 맞춰요.</li>';
@@ -220,6 +263,8 @@
     el.querySelector('#ot-files').onclick = function () { el.querySelector('#ot-file').click(); };
     el.querySelector('#ot-dir').onchange = function (e) { onPick(el, api, e.target.files); };
     el.querySelector('#ot-file').onchange = function (e) { onPick(el, api, e.target.files); };
+    var sel = el.querySelector('#ca-type');
+    if (sel) sel.onchange = function () { cause.pick = sel.value; paint(el, api); };
     var again = el.querySelector('#ot-again');
     if (again) again.onclick = function () { saveAgain(el, api); };
   }
@@ -312,6 +357,7 @@
     }
     if (!view) view = { phase: 'idle', plan: null, message: '', bad: false, where: null, notes: [] };
     paint(el, api);
+    if (!cause.data && !cause.failed) loadCause().then(function () { if (el.isConnected) paint(el, api); });
   }
   if (root.ShellModules) root.ShellModules['ot-attach'] = { id: 'ot-attach', tab: '', render: render };
 })(typeof window !== 'undefined' ? window : globalThis);
