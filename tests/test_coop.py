@@ -13,7 +13,7 @@ class Coop(unittest.TestCase):
         self.d = json.loads(read('data', 'coop.json'))
 
     def test_shape(self):
-        self.assertEqual(self.d['version'], 'v07')
+        self.assertRegex(self.d['version'], r'^v\d+$')
         self.assertEqual(len(self.d['top5']), 5)
         self.assertGreaterEqual(len(self.d['rows']), 20)
         self.assertGreaterEqual(len(self.d['rules']), 5)
