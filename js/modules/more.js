@@ -95,13 +95,15 @@
       menuBtn('records', '내 기록', '점수와 자주 틀린 규칙') +
       menuBtn('rules', '규칙 목록', '문장과 근거를 고칠 수 있어요') +
       menuBtn('month', '매달 할 일', '알림 문구 수정') +
-      menuBtn('settings', '설정', '백업, 초기화');
+      menuBtn('settings', '설정', '백업, 초기화') +
+      menuBtn('docreg-cal', '문서등록대장 달력', '3.4.~10.6. 월별 추세 · 날짜 누르면 그날 문서');
     el.querySelectorAll('[data-page]').forEach(function (b) {
       b.onclick = function () {
         var id = b.getAttribute('data-page');
         if (id === 'practice') api.go('#/practice');
         else if (id === 'study-must') api.go('#/study/must');
         else if (id === 'changelog') api.go('#/study/changelog');
+        else if (id === 'docreg-cal') api.go('#/docreg/cal');
         else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs') api.go('#/' + id);
         else api.go('#/more/' + id);
       };

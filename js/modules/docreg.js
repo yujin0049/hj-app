@@ -1,7 +1,8 @@
 /* 문서등록대장 학습 (#/docreg): 항공정비과 문서등록대장(2026.3.~10.)을 분류별 객관식 문제로 풀며 익혀요.
    출처: 유진님 10.21. 20:47 「세세하게 분류해서!!! 저기 연습장에 좀 올려줘봐 문제를 풀면서 좀 학습해야겠어」(대장 전달).
    자료 data/docreg.json(공개 행만, 사람 이름 ○○○ 처리, 기안자·결재자 칸 없음). 푼 기록·틀린 문제는 이 기기 localStorage 에만.
-   화면: #/docreg(처음) · #/docreg/quiz?cat=&type=&mode= · #/docreg/cat/<id> · #/docreg/month */
+   화면: #/docreg(처음) · #/docreg/quiz?cat=&type=&mode= · #/docreg/cat/<id> · #/docreg/month
+   · #/docreg/cal = 문서등록대장 달력(3.4.~10.6. 월별 추세·업무 달력). js/docreg-cal.js·data/docreg_calendar.json 은 이 화면을 처음 열 때만 불러옴(docreg.json 은 안 읽음). */
 (function (root) {
   'use strict';
   var data = null, tried = false;
@@ -208,8 +209,26 @@
     var nx = el.querySelector('#dr-next');
     if (nx) nx.onclick = function () { sess.i++; sess.picked = null; quiz(el, api, route); window.scrollTo(0, 0); };
   }
+  var calTried = null;
+  function calPage(el, api) {
+    if (root.HJDocregCal) return root.HJDocregCal.render(el, api);
+    el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
+    if (!calTried) calTried = new Promise(function (res) {
+      var s = document.createElement('script');
+      s.src = new URL('js/docreg-cal.js?v=1', document.baseURI).href;
+      s.onload = function () { res(true); };
+      s.onerror = function () { calTried = null; res(false); };
+      document.body.appendChild(s);
+    });
+    calTried.then(function (ok) {
+      if ((api.route().parts[1] || '') !== 'cal') return;
+      if (ok && root.HJDocregCal) root.HJDocregCal.render(el, api);
+      else el.innerHTML = '<section class="card"><div class="dr-err" id="dr-err">⚠ 달력 화면(js/docreg-cal.js)을 불러오지 못했어요. 새로고침해 주세요.</div></section>';
+    });
+  }
   function render(el, api) {
     style();
+    if ((api.route().parts[1] || '') === 'cal') return calPage(el, api);
     if (!root.HJDocreg) { el.innerHTML = '<section class="card"><div class="dr-err">⚠ 계산 파일(js/docreg-core.js)을 못 불러왔어요. 새로고침해 주세요.</div></section>'; return; }
     var route = api.route();
     function go() {
