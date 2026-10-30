@@ -1,5 +1,5 @@
 /* 협업 보드(#/bots 맨 위) 공용 계산 (브라우저·node 같이 씀). 보기 전용이에요. 쓰는 버튼·입력칸 없음.
-   자료: data/bot_status.json(현황판) + data/todo.json(내일 할 일). 카드에는 허용 목록 7칸만 남기고 나머지는 버려요.
+   자료: data/bot_status.json(현황판) + data/todo.json(내일 할 일) + data/lastwork.json(일 번호별 실제 마지막 작업 시각, tools/lastwork.py). 카드에는 허용 목록 7칸만 남기고 나머지는 버려요.
    허용 목록(계획서 261030_연습장_협업툴_검토_v01): 일 번호 · 짧은 제목 · 봇 이름 · 상태 · 다음 단계 · 시각 · 연습장 링크.
    카드 글은 모두 그냥 글자로만 넣어요(HTML 해석 안 함). 출처: 유진님 10.30. 19:22 「너희들이랑 나랑 협업가능하게 행정업무연습장 개선예정」. */
 (function (root, factory) {
@@ -15,7 +15,7 @@
   var ORDER = ['유진님 확인 필요', '막힘', '진행', '끝', '그 밖'];
   var DOT = { '유진님 확인 필요': 'yu', '막힘': 'stop', '진행': 'run', '끝': 'done', '그 밖': 'etc' };
   var BOTS = ['대장', '문서봇', '춘식이', '춘식이2', '춘식이3', '클로드', '유진님'];
-  var STALE_H = 72; /* 3일 넘게 안 바뀐 안 끝난 카드 = 「오래 멈춤」 색 */
+  var STALE_H = 72; /* 3일 넘게 작업 기록이 없는 안 끝난 카드 = 「오래 멈춤」 색. 기준 = 현황판 최종수정과 실제 마지막 작업(lastwork) 중 늦은 쪽 */
   var TITLE_MAX = 28, NEXT_MAX = 34;
   function esc(s) {
     return String(s == null ? '' : s).replace(/[&<>"'`]/g, function (c) {
@@ -94,8 +94,16 @@
     return o;
   }
   function arr(x) { return Array.isArray(x) ? x : []; }
-  function build(status, todo, nowMs) {
+  /* 현황판 최종수정과 lastwork 시각 중 늦은 쪽(둘 다 모양이 맞을 때만) */
+  function latest(updated, lw) {
+    var a = at(updated), b = at(lw);
+    if (b.ms == null) return a;
+    if (a.ms == null) return b;
+    return b.ms > a.ms ? b : a;
+  }
+  function build(status, todo, nowMs, lastwork) {
     var now = nowMs == null ? Date.now() : nowMs;
+    var lw = lastwork && typeof lastwork === 'object' && lastwork.tasks && typeof lastwork.tasks === 'object' && !Array.isArray(lastwork.tasks) ? lastwork.tasks : {};
     var tasks = arr(status && status.tasks), items = arr(todo && todo.items);
     var cards = [], openNo = {};
     tasks.forEach(function (t) {
@@ -104,7 +112,7 @@
     var tn = todoNext({ items: items }, openNo);
     tasks.forEach(function (t) {
       if (!t || typeof t !== 'object' || !/^T\d{3,4}$/.test(String(t.t || ''))) return;
-      var a = at(t.updated), st = STATE[t.state] || '그 밖';
+      var a = latest(t.updated, Object.prototype.hasOwnProperty.call(lw, t.t) ? lw[t.t] : ''), st = STATE[t.state] || '그 밖';
       var c = pick({ no: t.t, title: shortTitle(t.title), bot: botName(t.bot), state: st, next: nextStep(t, tn.next), at: a.text, link: linkFor(t.t),
         stale: st !== '끝' && a.ms != null && (now - a.ms) > STALE_H * 3600000 });
       c._ms = a.ms; cards.push(c);
@@ -151,5 +159,5 @@
       '<a class="cb-link" href="' + esc(href) + '">연습장에서 보기</a></article>';
   }
   return { FIELDS: FIELDS, LABEL: LABEL, STATE: STATE, ORDER: ORDER, BOTS: BOTS, STALE_H: STALE_H,
-    esc: esc, scrub: scrub, shortTitle: shortTitle, at: at, botName: botName, nextStep: nextStep, todoNext: todoNext, pick: pick, build: build, group: group, cardHTML: cardHTML };
+    esc: esc, scrub: scrub, shortTitle: shortTitle, at: at, latest: latest, botName: botName, nextStep: nextStep, todoNext: todoNext, pick: pick, build: build, group: group, cardHTML: cardHTML };
 });

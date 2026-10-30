@@ -1,7 +1,7 @@
 """협업 보드(#/bots 맨 위, js/collab-board-core.js) 시험: python3 -m unittest tests.test_collab_board
 - 카드에는 허용 목록 7칸(일 번호·짧은 제목·봇 이름·상태·다음 단계·시각·연습장 링크)만 나와요. 다른 칸은 버려요.
 - 카드 글은 그냥 글자(HTML 해석 안 함). 링크는 앱 안(#/…)만.
-- 보기 전용: 보드 부분에 입력칸 없음. 캐시 hj-v77.
+- 보기 전용: 보드 부분에 입력칸 없음. 캐시 hj-v78.
 출처: 유진님 10.30. 19:22 「너희들이랑 나랑 협업가능하게 행정업무연습장 개선예정」, 계획서 261030_연습장_협업툴_검토_v01."""
 import json
 import os
@@ -145,12 +145,24 @@ class PlainText(unittest.TestCase):
                    "process.stdout.write(JSON.stringify([t(72),t(72.1),t(1)]))", {})
         self.assertEqual(out, [False, True, False])
 
+    def test_stale_uses_latest_of_sheet_and_lastwork(self):
+        # 현황판은 10.22 그대로지만 실제 작업 기록이 10.29 이면 「오래 멈춤」이 아니고 시각도 10.29 로 보여요
+        js = ("const T=[{t:'T100',title:'a',bot:'대장',state:'진행',updated:'2026-10-22 10:00'},{t:'T101',title:'b',bot:'대장',state:'진행',updated:'2026-10-29 09:00'}];"
+              "const now=Date.UTC(2026,9,30,11,0);const r=(lw)=>H.build({tasks:T},null,now,lw).map(c=>[c.no,c.stale,c.at]);"
+              "process.stdout.write(JSON.stringify([r(null),r({tasks:{T100:'2026-10-29 21:00',T101:'2026-10-01 00:00'}}),r({tasks:{T100:'2026-10-29'}}),r({tasks:{T100:'엉뚱한 값'}}),r({tasks:[1]})]))")
+        out = node(js, {})
+        self.assertEqual(out[0], [['T100', True, '10.22.(목) 10:00'], ['T101', False, '10.29.(목) 09:00']])
+        self.assertEqual(out[1], [['T100', False, '10.29.(목) 21:00'], ['T101', False, '10.29.(목) 09:00']])  # 더 이른 기록은 무시
+        self.assertEqual(out[2][0], ['T100', False, '10.29.(목)'])  # 날짜만 있으면 날짜만
+        self.assertEqual(out[3][0], out[0][0])
+        self.assertEqual(out[4][0], out[0][0])
+
 
 @unittest.skipUnless(shutil.which('node'), 'node 없음')
 class RealData(unittest.TestCase):
     def test_real_files_whitelisted(self):
-        out = node("const c=H.build(P.s,P.t);process.stdout.write(JSON.stringify({c:c.map(H.pick),g:H.group(c,'state').map(x=>x.key),b:H.group(c,'bot').map(x=>x.key)}))",
-                   {'s': json.loads(read('data', 'bot_status.json')), 't': json.loads(read('data', 'todo.json'))})
+        out = node("const c=H.build(P.s,P.t,null,P.w);process.stdout.write(JSON.stringify({c:c.map(H.pick),g:H.group(c,'state').map(x=>x.key),b:H.group(c,'bot').map(x=>x.key)}))",
+                   {'s': json.loads(read('data', 'bot_status.json')), 't': json.loads(read('data', 'todo.json')), 'w': json.loads(read('data', 'lastwork.json'))})
         self.assertGreater(len(out['c']), 0)
         for c in out['c']:
             self.assertEqual(set(c), set(FIELDS) | {'stale'})
@@ -166,6 +178,7 @@ class Screen(unittest.TestCase):
         ui = read('js', 'modules', 'bots.js')
         self.assertIn('js/collab-board-core.js', ui)
         self.assertIn('data/todo.json', ui)
+        self.assertIn('data/lastwork.json', ui)
         self.assertIn('id="cb-board"', ui)
         board = ui[ui.index('function boardSection'):ui.index('var CSS = [')]
         self.assertNotRegex(board, r'<(input|textarea|form)\b')
@@ -174,7 +187,7 @@ class Screen(unittest.TestCase):
         self.assertIn('H.cardHTML', board)
 
     def test_cache_bumped(self):
-        self.assertIn("var CACHE = 'hj-v77';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v78';", read('sw.js'))
 
     def test_no_contact_info_in_core(self):
         text = read('js', 'collab-board-core.js')

@@ -5,7 +5,7 @@
 (function (root) {
   'use strict';
   var view = { state: '', bot: '', q: '', open: {}, board: 'state' };
-  var todo = null, todoTried = false, boardTried = false, boardFailed = false, todoFailed = false;
+  var todo = null, lastwork = null, lastTried = false, todoTried = false, boardTried = false, boardFailed = false, todoFailed = false;
   var data = null, tried = false, failed = false;
   var score = null, scoreTried = false;
   function loadScore() {
@@ -45,7 +45,7 @@
     var p1 = root.HJBoard || boardTried ? Promise.resolve() : new Promise(function (ok) {
       boardTried = true;
       var s = document.createElement('script');
-      s.src = new URL('js/collab-board-core.js?v=77', document.baseURI).href;
+      s.src = new URL('js/collab-board-core.js?v=78', document.baseURI).href;
       s.onload = ok; s.onerror = function () { boardTried = false; boardFailed = true; ok(); };
       document.head.appendChild(s);
     });
@@ -53,14 +53,19 @@
       .then(function (r) { if (!r.ok) throw new Error('todo'); return r.json(); })
       .then(function (j) { todo = j; todoFailed = false; })
       .catch(function () { todoTried = false; todoFailed = true; }));
-    return Promise.all([p1, p2]);
+    /* 실제 마지막 작업 시각(일 번호·시각만). 못 받으면 현황판 시각만으로 「오래 멈춤」을 셈 */
+    var p3 = lastTried ? Promise.resolve() : (lastTried = true, fetch(new URL('data/lastwork.json', document.baseURI).href, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('lastwork'); return r.json(); })
+      .then(function (j) { lastwork = j; })
+      .catch(function () { lastTried = false; lastwork = null; }));
+    return Promise.all([p1, p2, p3]);
   }
   /* 협업 보드: 카드마다 일 번호·짧은 제목·봇 이름·상태·다음 단계·시각·연습장 링크 7칸만. 묶기(상태별·봇별)는 보는 방법만 바꿔요 */
   function boardSection(esc) {
     var H = root.HJBoard;
     if (!H) return '<section class="bs-sec cb" id="cb-board"><h2>협업 보드</h2><p class="why">' + (boardFailed ? '⚠ 보드 계산 파일(js/collab-board-core.js)을 못 불러왔어요. 새로고침해 주세요.' : '보드 계산 파일을 불러오는 중이에요.') + '</p></section>';
     var cards, groups;
-    try { cards = H.build(data, todo); groups = H.group(cards, view.board); }
+    try { cards = H.build(data, todo, null, lastwork); groups = H.group(cards, view.board); }
     catch (e) { return '<section class="bs-sec cb" id="cb-board"><h2>협업 보드</h2><p class="why">⚠ 보드 자료 모양이 달라 카드를 못 만들었어요. 아래 목록은 그대로 볼 수 있어요.</p></section>'; }
     var stale = cards.filter(function (c) { return c.stale; }).length;
     var seg = [['state', '상태별'], ['bot', '봇별']].map(function (m) {
@@ -75,7 +80,7 @@
     }).join('');
     return '<section class="bs-sec cb" id="cb-board"><h2>협업 보드 <small id="cb-count">' + cards.length + '개</small></h2>' +
       '<p class="why">유진님과 봇이 「누가 · 무엇을 · 어디까지」 하는지 한눈에 봐요. 보기 전용이에요. 지시는 지금처럼 대장에게 해 주세요.' +
-      (!todoFailed ? '' : ' 「내일 할 일」 자료는 못 받아서 현황판 카드만 보여요.') + (stale ? ' 3일 넘게 안 바뀐 카드 ' + stale + '개는 「오래 멈춤」으로 표시했어요.' : '') + '</p>' +
+      (!todoFailed ? '' : ' 「내일 할 일」 자료는 못 받아서 현황판 카드만 보여요.') + (stale ? ' 3일 넘게 작업 기록이 없는 카드 ' + stale + '개는 「오래 멈춤」으로 표시했어요(현황판 수정·명령목록·작업기록 중 마지막 시각 기준).' : '') + '</p>' +
       '<div class="cb-seg" role="group" aria-label="묶는 방법">' + seg + '</div>' + body + '</section>';
   }
   var CSS = [

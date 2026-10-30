@@ -68,6 +68,13 @@ def main(argv=None):
         steps['차트'] = {'ok': make_charts.main() == 0, 'why': ''}
     except Exception as e:
         steps['차트'] = {'ok': False, 'why': type(e).__name__}
+    # 261030 대장: 협업 보드 「오래 멈춤」은 실제 마지막 작업 시각으로(일 번호·시각만 씀). 원자료 없으면 예전 파일 유지
+    try:
+        import lastwork
+        lrc = lastwork.main(['--out', os.path.join(data, 'lastwork.json')])
+        steps['마지막 작업 시각'] = {'ok': lrc == 0, 'why': '' if lrc == 0 else '원자료 없음(예전 파일 유지)'}
+    except Exception as e:
+        steps['마지막 작업 시각'] = {'ok': False, 'why': type(e).__name__}
     rc = cal_pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
     if rc:
         steps['개인정보 검사'] = {'ok': False, 'why': '실패'}
