@@ -2,5 +2,5 @@
 (function (root) {
   'use strict';
   root.MODULE_LIST = ['home', 'students', 'board', 'study', 'more'];
-  root.MODULE_EXTRA = ['practice', 'search', 'news', 'computers', 'dorm', 'schedule', 'banner', 'lockers', 'calendar', 'status', 'filefind', '3d', 'bots', 'docreg', 'who', 'regular-docs', 'haksa', 'coop', 'todo', 'ot-attach', 'charts', 'docs', 'chat'];
+  root.MODULE_EXTRA = ['practice', 'search', 'news', 'computers', 'dorm', 'schedule', 'banner', 'lockers', 'calendar', 'status', 'filefind', '3d', 'bots', 'docreg', 'who', 'regular-docs', 'haksa', 'coop', 'todo', 'ot-attach', 'charts', 'docs'];
 })(typeof globalThis !== 'undefined' ? globalThis : this);

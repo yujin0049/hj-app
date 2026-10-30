@@ -76,8 +76,7 @@
     return '<section class="bs-sec cb" id="cb-board"><h2>협업 보드 <small id="cb-count">' + cards.length + '개</small></h2>' +
       '<p class="why">유진님과 봇이 「누가 · 무엇을 · 어디까지」 하는지 한눈에 봐요. 보기 전용이에요. 지시는 지금처럼 대장에게 해 주세요.' +
       (!todoFailed ? '' : ' 「내일 할 일」 자료는 못 받아서 현황판 카드만 보여요.') + (stale ? ' 3일 넘게 안 바뀐 카드 ' + stale + '개는 「오래 멈춤」으로 표시했어요.' : '') + '</p>' +
-      '<div class="cb-seg" role="group" aria-label="묶는 방법">' + seg + '</div>' + body +
-      '<a class="cb-chat" id="cb-chat" href="#/chat">🔒 대장↔클로드 방 (열쇠 필요) →</a></section>';
+      '<div class="cb-seg" role="group" aria-label="묶는 방법">' + seg + '</div>' + body + '</section>';
   }
   var CSS = [
     '.bs-head{padding:4px 2px 0}.bs-head h1{margin:0 0 2px}.bs-head p{margin:0;color:var(--muted);font-size:.86rem}',
@@ -135,7 +134,6 @@
     '.cb-meta{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:.74rem;color:var(--ink-2);margin-top:3px}.cb-meta .cb-at{color:var(--muted)}',
     '.cb-next{font-size:.8rem;margin-top:4px;color:var(--ink);overflow-wrap:anywhere}',
     '.cb-link{display:inline-block;font-size:.78rem;font-weight:600;color:var(--navy);margin-top:2px;padding:12px 0 4px;min-height:44px;box-sizing:border-box}',
-    '.cb-chat{display:flex;align-items:center;min-height:44px;margin:10px 0 0;padding:0 12px;border-radius:12px;background:var(--soft);color:var(--navy);font-weight:700;text-decoration:none}',
     '@media (prefers-reduced-motion:reduce){.cb-seg button,.cb-card{transition:none!important}}',
     '.hs-next{font-size:.8rem;margin-top:3px;color:var(--ink)}.hs-dir{font-size:.7rem;color:var(--muted);margin-top:2px;word-break:break-all}'
   ].join('\n');
