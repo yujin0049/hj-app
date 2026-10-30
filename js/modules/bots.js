@@ -240,6 +240,7 @@
       '<p class="why">' + (view.state ? '위 숫자를 한 번 더 누르면 전체로 돌아가요.' : '끝난 일은 빼고 보여요. 「끝」 숫자를 누르면 끝난 일만.') + '</p>' +
       '<div class="bs-flt"><select id="bs-bot" aria-label="맡은 봇">' + botOpts + '</select><input id="bs-q" type="search" placeholder="T번호·낱말" value="' + esc(view.q) + '" aria-label="찾기"></div>' +
       list.map(function (t) { return row(B, esc, t, today, null); }).join('') + '</section>' +
+      '<p class="bs-chatlink" style="margin:14px 0 4px"><a href="#/chat">🔒 대장↔클로드 방 (열쇠 필요)</a></p>' +
       '<p class="bs-foot">정본: ' + esc(data.source || '현황판') + '. 이 화면은 읽기만 해요. 고칠 땐 현황판(대장)에서.<br>' +
       (cols.progress ? '' : '진행률 칸이 현황판에 아직 없어 「미기재」로 보여요. ') + (cols.verified ? '' : '검증 칸도 아직 없어 「미기재」예요. ') +
       '갱신: ' + esc(data.refresh || '') + '.<br>왜 이렇게: 유진님이 휴대폰 한 화면에서 「내가 할 일」과 「급한 일」부터 보게, 정본 하나(현황판)만 읽어 손으로 옮긴 틀린 값이 안 생기게 했어요.</p>';
