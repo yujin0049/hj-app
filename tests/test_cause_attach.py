@@ -59,5 +59,59 @@ class T(unittest.TestCase):
         self.assertNotIn('<details', ui)
 
 
+# 글로컬 출장(여비) 단계별 (유진님 10.30. 18:18). 정본: 부록 「2 사업비 지출 구비서류」 국내여비·국외여비 행.
+TRIP_IN = ['계획 공문', '출장신청서', '여비정산 신청서', '(유류비 정산 시)자가용 운임 지급 상세 내역',
+           '영수증(톨게이트, 대중교통 승차권, 숙박영수증(해당자))', '통장사본']
+TRIP_OUT = ['계획 공문(신청서), 허가공문', '출장결과보고서',
+            '여비정산 증빙서류(항공권구입영수증, 항공티켓, 숙박영수증 등)', '여권사본', '통장사본']
+
+
+def trip(d, tid):
+    return [t for t in d['types'] if t['id'] == tid][0]
+
+
+class Trip(unittest.TestCase):
+    def test_trip_lists_match_appendix(self):
+        d = load()
+        self.assertEqual([x['name'] for x in trip(d, 'trip-in')['items']], TRIP_IN)
+        self.assertEqual([x['name'] for x in trip(d, 'trip-out')['items']], TRIP_OUT)
+        for tid, n in (('trip-in', 6), ('trip-out', 5)):
+            self.assertEqual([x['no'] for x in trip(d, tid)['items']], [str(i) for i in range(1, n + 1)])
+
+    def test_stage_counts(self):
+        d = load()
+        self.assertEqual(list(d['stages']), ['before', 'after', 'later'])
+
+        def count(tid):
+            out = {}
+            for x in trip(d, tid)['items']:
+                out[x['stage']] = out.get(x['stage'], 0) + 1
+            return out
+        self.assertEqual(count('trip-in'), {'before': 2, 'after': 4})
+        self.assertEqual(count('trip-out'), {'before': 1, 'after': 3, 'later': 1})
+        self.assertIn('later', [x for x in trip(d, 'trip-out')['items'] if x['name'] == '여권사본'][0])
+        self.assertIn('판단', d['stageNote'])
+
+    def test_missing_cells_say_later_not_invented(self):
+        d = load()
+        gaps = trip(d, 'trip-in')['gaps']
+        self.assertEqual([(g['stage'], g['name']) for g in gaps], [('after', '출장 결과보고서')])
+        self.assertNotIn('gaps', trip(d, 'trip-out'))
+        self.assertIn('현찰매도율', ' '.join(trip(d, 'trip-out')['rules']))
+
+    def test_short_names_for_long_types(self):
+        d = load()
+        for t in d['types']:
+            self.assertLessEqual(len(t.get('short', t['name'])), 16, t['id'])
+
+    def test_screen_has_trip_tabs_and_13px_badge(self):
+        with open(os.path.join(ROOT, 'js', 'modules', 'ot-attach.js'), encoding='utf-8') as fh:
+            ui = fh.read()
+        self.assertIn('data-stage', ui)
+        self.assertIn('data-trip', ui)
+        self.assertIn('#ca-card .badge{font-size:13px}', ui)
+        self.assertIn('x.short || x.name', ui)
+
+
 if __name__ == '__main__':
     unittest.main()

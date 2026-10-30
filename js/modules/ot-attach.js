@@ -11,10 +11,16 @@
     '.ot-actions{display:flex;flex-direction:column;gap:8px;margin-top:12px}' +
     '.ca-list{list-style:none;margin:8px 0 0;padding:0}.ca-row{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line)}' +
     '.ca-no{flex:0 0 28px;height:28px;border-radius:14px;background:var(--navy);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:14px}' +
-    '.ca-row b{display:block;word-break:keep-all}.ca-ref{margin-top:10px}';
+    '.ca-row b{display:block;word-break:keep-all}.ca-ref{margin-top:10px}' +
+    '#ca-card .badge{font-size:13px}#ca-type{width:100%;max-width:100%;text-overflow:ellipsis}' +
+    '#ca-card .chips{flex-wrap:wrap;overflow-x:visible}.ca-trip{margin:4px 0 10px}.ca-trip>span{display:block;font-size:13px;color:var(--muted);margin-bottom:6px}' +
+    '.ca-stage{margin-top:14px}.ca-stage h3{margin:0 0 2px;font-size:16px}.ca-stage .muted{margin:0}' +
+    '.ca-gap .ca-no{background:var(--warnbg);color:var(--warn)}';
   /* 원인행위 종류별 붙임 (유진님 10.30. 17:47 「원인행위 종류별마다 다양해서 글로컬문서에서 찾아봐」).
      자료: data/cause_attach_types.json (글로컬 구비서류 양식 부록 표 그대로). 모르는 칸은 「나중에 업데이트」. */
-  var cause = { data: null, failed: false, pick: 'material' };
+  var cause = { data: null, failed: false, pick: 'material', stage: 'all' };
+  /* 글로컬 출장(여비) 서류 단계별 (유진님 10.30. 18:18 「그리고 글로컬로 출장시 관련서류나증빙 그것도」).
+     부록에는 단계 구분이 없어 단계는 판단, 번호는 부록 그대로. 단계를 모르는 서류·부록에 없는 칸은 「나중에 업데이트」. */
   var lastBytes = null;
   var view = null;
 
@@ -200,6 +206,42 @@
     });
     return h + '</ol>';
   }
+  function tripStages(t) {
+    var out = { before: [], after: [], later: [] };
+    t.items.forEach(function (x) { (out[x.stage] || out.later).push(x); });
+    return out;
+  }
+  function tripHtml(esc, d, t) {
+    var by = tripStages(t);
+    var gaps = t.gaps || [];
+    var h = '<div class="chips" id="ca-stage-tabs">';
+    [['all', '전체 단계']].concat(Object.keys(d.stages).map(function (k) { return [k, d.stages[k].label]; })).forEach(function (s) {
+      var n = s[0] === 'all' ? t.items.length : by[s[0]].length;
+      if (s[0] === 'later' && !n) return;
+      h += '<button class="chip' + (cause.stage === s[0] ? ' on' : '') + '" type="button" data-stage="' + s[0] + '">' + esc(s[1]) + ' ' + n + '</button>';
+    });
+    h += '</div>';
+    Object.keys(d.stages).forEach(function (k) {
+      if (cause.stage !== 'all' && cause.stage !== k) return;
+      var g = gaps.filter(function (x) { return x.stage === k; });
+      if (!by[k].length && !g.length) return;
+      var st = d.stages[k];
+      h += '<div class="ca-stage" data-stage-box="' + k + '"><h3>' + esc(st.label) + '</h3><p class="muted">' + esc(st.sub) + ' · ' + by[k].length + '가지</p>';
+      h += causeRows(esc, by[k], d.later);
+      if (g.length) {
+        h += '<ol class="ca-list">';
+        g.forEach(function (x) {
+          h += '<li class="ca-row ca-gap"><span class="ca-no">?</span><div><b>' + esc(x.name) + '</b>' +
+            '<div class="item-meta"><span class="badge warn">' + esc(d.later) + '</span> ' + esc(x.why) + '</div></div></li>';
+        });
+        h += '</ol>';
+      }
+      h += '</div>';
+    });
+    h += '<p class="muted ca-ref">' + esc(d.stageNote) + '</p>';
+    if (t.rules && t.rules.length) h += '<p class="muted"><b>부록 기타사항</b> ' + esc(t.rules.join(' · ')) + '</p>';
+    return h;
+  }
   function causeHtml(esc) {
     var h = '<section class="card" id="ca-card"><p class="kicker">원인행위 종류별 붙임</p><h2>종류를 고르면 붙임 서류가 순서대로 나와요</h2>';
     var d = cause.data;
@@ -207,12 +249,20 @@
     var t = d.types.filter(function (x) { return x.id === cause.pick; })[0] || d.types[0];
     h += '<label class="field"><span>원인행위 종류</span><select id="ca-type">';
     d.types.forEach(function (x) {
-      h += '<option value="' + esc(x.id) + '"' + (x.id === t.id ? ' selected' : '') + '>' + esc(x.name) + '</option>';
+      h += '<option value="' + esc(x.id) + '"' + (x.id === t.id ? ' selected' : '') + '>' + esc(x.short || x.name) + '</option>';
     });
     h += '</select></label>';
+    var trips = d.types.filter(function (x) { return x.trip; });
+    if (trips.length) {
+      h += '<div class="ca-trip"><span>글로컬 출장 서류 바로 보기</span><div class="chips">';
+      trips.forEach(function (x) {
+        h += '<button class="chip' + (x.id === t.id ? ' on' : '') + '" type="button" data-trip="' + esc(x.id) + '">' + esc(x.tripLabel || x.short || x.name) + '</button>';
+      });
+      h += '</div></div>';
+    }
     h += '<p class="muted">' + esc(t.name) + ' · ' + t.items.length + '가지' + (t.listed ? ' · 원문에 번호가 없어 적힌 차례대로 번호를 붙였어요' : '') + '</p>';
     if (t.forms) h += '<p class="muted">관련 서식: ' + esc(t.forms) + '</p>';
-    h += causeRows(esc, t.items, d.later);
+    h += (t.trip && d.stages) ? tripHtml(esc, d, t) : causeRows(esc, t.items, d.later);
     if (t.ref) h += '<p class="muted ca-ref"><b>참고</b> ' + esc(t.ref) + '</p>';
     h += '<p class="muted">' + esc(d.footer) + '</p>';
     h += '<p class="muted">출처: ' + esc(d.source) + ' · 쪽: <span class="badge warn">' + esc(d.sourcePage) + '</span></p>';
@@ -265,6 +315,12 @@
     el.querySelector('#ot-file').onchange = function (e) { onPick(el, api, e.target.files); };
     var sel = el.querySelector('#ca-type');
     if (sel) sel.onchange = function () { cause.pick = sel.value; paint(el, api); };
+    el.querySelectorAll('[data-trip]').forEach(function (b) {
+      b.onclick = function () { cause.pick = b.getAttribute('data-trip'); paint(el, api); };
+    });
+    el.querySelectorAll('[data-stage]').forEach(function (b) {
+      b.onclick = function () { cause.stage = b.getAttribute('data-stage'); paint(el, api); };
+    });
     var again = el.querySelector('#ot-again');
     if (again) again.onclick = function () { saveAgain(el, api); };
   }
