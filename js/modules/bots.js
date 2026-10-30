@@ -4,7 +4,8 @@
    사람 이름·연락처는 파일에 없어요(봇 이름·T번호·업무 이름만). 출처: 유진님 10.21. 20:15 「응 그거 해봐. 행정업무 연습장에 하면 될듯」. */
 (function (root) {
   'use strict';
-  var view = { state: '', bot: '', q: '', open: {} };
+  var view = { state: '', bot: '', q: '', open: {}, board: 'state' };
+  var todo = null, todoTried = false, boardTried = false, boardFailed = false, todoFailed = false;
   var data = null, tried = false, failed = false;
   var score = null, scoreTried = false;
   function loadScore() {
@@ -38,6 +39,44 @@
       '<div class="hs-kpi" id="hs-kpi">' + kpi + '</div>' + rows +
       (list.length > 6 ? '<button class="bs-more" type="button" data-more="hs">' + (all ? '접기' : (list.length - 6) + '개 더 보기') + '</button>' : '') +
       '<p class="why" style="margin-top:6px">계산 ' + esc(fmtAt(score.built_at)) + ' · 왜: 건마다 어디까지 왔고 다음에 뭘 할지 숫자로 보면 급한 것·유진님 몫부터 손댈 수 있어요.</p></section>';
+  }
+  /* 협업 보드: 계산 파일(js/collab-board-core.js)과 「내일 할 일」(data/todo.json)은 이 화면을 열 때만 받아요(보기만 함) */
+  function loadBoard() {
+    var p1 = root.HJBoard || boardTried ? Promise.resolve() : new Promise(function (ok) {
+      boardTried = true;
+      var s = document.createElement('script');
+      s.src = new URL('js/collab-board-core.js?v=77', document.baseURI).href;
+      s.onload = ok; s.onerror = function () { boardTried = false; boardFailed = true; ok(); };
+      document.head.appendChild(s);
+    });
+    var p2 = todoTried ? Promise.resolve() : (todoTried = true, fetch(new URL('data/todo.json', document.baseURI).href, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('todo'); return r.json(); })
+      .then(function (j) { todo = j; todoFailed = false; })
+      .catch(function () { todoTried = false; todoFailed = true; }));
+    return Promise.all([p1, p2]);
+  }
+  /* 협업 보드: 카드마다 일 번호·짧은 제목·봇 이름·상태·다음 단계·시각·연습장 링크 7칸만. 묶기(상태별·봇별)는 보는 방법만 바꿔요 */
+  function boardSection(esc) {
+    var H = root.HJBoard;
+    if (!H) return '<section class="bs-sec cb" id="cb-board"><h2>협업 보드</h2><p class="why">' + (boardFailed ? '⚠ 보드 계산 파일(js/collab-board-core.js)을 못 불러왔어요. 새로고침해 주세요.' : '보드 계산 파일을 불러오는 중이에요.') + '</p></section>';
+    var cards, groups;
+    try { cards = H.build(data, todo); groups = H.group(cards, view.board); }
+    catch (e) { return '<section class="bs-sec cb" id="cb-board"><h2>협업 보드</h2><p class="why">⚠ 보드 자료 모양이 달라 카드를 못 만들었어요. 아래 목록은 그대로 볼 수 있어요.</p></section>'; }
+    var stale = cards.filter(function (c) { return c.stale; }).length;
+    var seg = [['state', '상태별'], ['bot', '봇별']].map(function (m) {
+      return '<button type="button" data-cb="' + m[0] + '" aria-pressed="' + (view.board === m[0]) + '" class="' + (view.board === m[0] ? 'on' : '') + '">' + m[1] + '</button>';
+    }).join('');
+    var body = groups.map(function (g) {
+      var id = 'cb-' + g.key, all = !!view.open[id], lim = (view.board === 'state' && g.key === '끝') ? 3 : 6;
+      var shown = all ? g.cards : g.cards.slice(0, lim);
+      return '<div class="cb-grp" data-grp="' + esc(g.key) + '"><h3>' + esc(g.key) + ' <small>' + g.cards.length + '개</small></h3><div class="cb-list">' +
+        shown.map(H.cardHTML).join('') + '</div>' +
+        (g.cards.length > lim ? '<button class="bs-more" type="button" data-more="' + esc(id) + '">' + (all ? '접기' : (g.cards.length - lim) + '개 더 보기') + '</button>' : '') + '</div>';
+    }).join('');
+    return '<section class="bs-sec cb" id="cb-board"><h2>협업 보드 <small id="cb-count">' + cards.length + '개</small></h2>' +
+      '<p class="why">유진님과 봇이 「누가 · 무엇을 · 어디까지」 하는지 한눈에 봐요. 보기 전용이에요. 지시는 지금처럼 대장에게 해 주세요.' +
+      (!todoFailed ? '' : ' 「내일 할 일」 자료는 못 받아서 현황판 카드만 보여요.') + (stale ? ' 3일 넘게 안 바뀐 카드 ' + stale + '개는 「오래 멈춤」으로 표시했어요.' : '') + '</p>' +
+      '<div class="cb-seg" role="group" aria-label="묶는 방법">' + seg + '</div>' + body + '</section>';
   }
   var CSS = [
     '.bs-head{padding:4px 2px 0}.bs-head h1{margin:0 0 2px}.bs-head p{margin:0;color:var(--muted);font-size:.86rem}',
@@ -81,6 +120,21 @@
     '.hs-steps{margin-top:4px;font-size:.72rem;line-height:1.6}.hs-steps i{font-style:normal;display:inline-block;margin-right:6px;color:#B0B8C1}.hs-steps i.ok{color:#03B26C;font-weight:700}',
     '.bs-top{font-size:.76rem;color:var(--ink-2);margin-top:2px}.bs-top .tn{font-weight:700;color:var(--muted)}.bs-hist{margin-top:4px;color:var(--ink)}',
     '.bs-ret{font-size:.78rem;color:var(--ink-2);padding:8px 0 10px;border-top:1px solid var(--line);line-height:1.7}.bs-ret b{color:var(--navy)}',
+    '.cb-seg{display:inline-flex;background:var(--soft);border-radius:12px;padding:3px;margin:2px 0 6px}',
+    '.cb-seg button{border:0;background:none;border-radius:10px;padding:8px 16px;min-height:44px;font-size:.84rem;font-weight:600;color:var(--ink-2);cursor:pointer}',
+    '.cb-seg button.on{background:var(--card);color:var(--navy);box-shadow:0 1px 2px rgba(0,0,0,.08)}',
+    '.cb-grp h3{font-size:.9rem;margin:12px 0 6px;display:flex;justify-content:space-between;align-items:baseline}.cb-grp h3 small{font-size:.76rem;color:var(--muted);font-weight:500}',
+    '.cb-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}',
+    '.cb-card{background:var(--soft);border-radius:14px;padding:10px 12px;min-width:0;border-left:3px solid transparent}',
+    '.cb-dot.d-etc{background:#B0B8C1}',
+    '.cb-card.stale{border-left-color:#B0B8C1}.cb-card.stale .cb-st{color:var(--muted)}',
+    '.cb-t1{display:flex;gap:6px;align-items:center;font-size:.76rem}.cb-t1 .cb-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}',
+    '.cb-no{font-weight:700;color:var(--muted)}.cb-st{margin-left:auto;font-weight:700;color:var(--ink-2);white-space:nowrap}',
+    '.cb-title{font-weight:600;font-size:.92rem;line-height:1.35;margin-top:4px;overflow-wrap:anywhere}',
+    '.cb-meta{display:flex;flex-wrap:wrap;gap:2px 8px;font-size:.74rem;color:var(--ink-2);margin-top:3px}.cb-meta .cb-at{color:var(--muted)}',
+    '.cb-next{font-size:.8rem;margin-top:4px;color:var(--ink);overflow-wrap:anywhere}',
+    '.cb-link{display:inline-block;font-size:.78rem;font-weight:600;color:var(--navy);margin-top:2px;padding:12px 0 4px;min-height:44px;box-sizing:border-box}',
+    '@media (prefers-reduced-motion:reduce){.cb-seg button,.cb-card{transition:none!important}}',
     '.hs-next{font-size:.8rem;margin-top:3px;color:var(--ink)}.hs-dir{font-size:.7rem;color:var(--muted);margin-top:2px;word-break:break-all}'
   ].join('\n');
   function style() {
@@ -171,6 +225,7 @@
       '<div class="bs-head"><h1>봇 작업 현황</h1><p id="bs-stamp">현황판 ' + esc(fmtAt(data.read_at)) + ' 읽음 (한국 시간)</p></div>' +
       (st.warn ? '<div class="bs-stale" id="bs-stale">⚠ ' + esc(st.why) + '. 보이는 내용이 현황판과 다를 수 있어요.</div>' : '') +
       '<div class="bs-kpi" id="bs-kpi">' + kpi + '</div>' +
+      boardSection(esc) +
       orgSection(esc) +
       scoreSection(esc, today) +
       section(B, esc, 'bs-yu', 'yu', '유진님이 해야 할 것', '확정 ' + ys.sure + '개(현황판 「유진님 몫」 칸 값, 진한 꼬리표)를 먼저, 그다음 ' + ysSmall.slice(1) + '개(테두리 꼬리표 「추정」 = 칸이 비어 봇이 짐작). 각 묶음 안은 마감 가까운 것부터.', sec.yujin, today, { yu: 1 }, 5) +
@@ -186,6 +241,9 @@
     el.querySelectorAll('[data-st]').forEach(function (b) {
       b.onclick = function () { var s = b.getAttribute('data-st'); view.state = view.state === s ? '' : s; paint(el, api); };
     });
+    el.querySelectorAll('[data-cb]').forEach(function (b) {
+      b.onclick = function () { view.board = b.getAttribute('data-cb'); paint(el, api); };
+    });
     el.querySelectorAll('[data-more]').forEach(function (b) {
       b.onclick = function () { var id = b.getAttribute('data-more'); view.open[id] = !view.open[id]; paint(el, api); };
     });
@@ -196,15 +254,27 @@
       var n = el.querySelector('#bs-q'); n.focus(); try { n.setSelectionRange(pos, pos); } catch (e) { /* 지원 안 함 */ }
     };
   }
+  function jump(el) {
+    if (!view.fromLink || view.jumped === view.fromLink) return;
+    view.jumped = view.fromLink;
+    setTimeout(function () { /* 화면 바꿀 때 맨 위로 올리는 것보다 뒤에 */
+      var a = el.querySelector('#bs-all');
+      if (a && a.scrollIntoView) a.scrollIntoView({ block: 'start', behavior: 'auto' }); /* 바로 이동(움직임 없음) */
+    }, 80);
+  }
   function render(el, api) {
     style();
     if (!root.HJBots) { el.innerHTML = '<section class="card"><div class="bs-stale">⚠ 봇 작업 현황 계산 파일(js/botstatus-core.js)을 못 불러왔어요. 새로고침해 주세요.</div></section>'; return; }
-    if (!score) loadScore().then(function (j) { if (j && data && el.querySelector('#bs-kpi')) paint(el, api); });
-    if (data) { paint(el, api); return; }
+    var rq = api.route && api.route().query, m = /(?:^|&)t=(T\d{3,4})(?:&|$)/.exec(rq || '');
+    if (m) { if (view.fromLink !== m[1]) view.jumped = ''; view.q = m[1]; view.showDone = true; view.state = ''; view.fromLink = m[1]; }
+    else if (view.fromLink) { if (view.q === view.fromLink) view.q = ''; view.showDone = false; view.fromLink = ''; view.jumped = ''; }
+    if (!root.HJBoard || !todo) loadBoard().then(function () { if (data && el.querySelector('#bs-kpi')) { paint(el, api); jump(el); } });
+    if (!score) loadScore().then(function (j) { if (j && data && el.querySelector('#bs-kpi')) { paint(el, api); jump(el); } });
+    if (data) { paint(el, api); jump(el); return; }
     el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     load().then(function (d) {
       if (!d) { el.innerHTML = '<section class="card"><div class="bs-stale" id="bs-stale">⚠ 봇 작업 현황 자료(data/bot_status.json)를 불러오지 못했어요. 인터넷을 확인하고 새로고침해 주세요.</div></section>'; return; }
-      paint(el, api);
+      paint(el, api); jump(el);
     });
   }
   /* 홈 타일 숫자용: 유진님 몫 개수(자료 없으면 null) */
