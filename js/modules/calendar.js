@@ -4,7 +4,17 @@
 (function (root) {
   'use strict';
   var LANES = [['yujin', '유진님 할 일'], ['prof', '교수님 일정'], ['ref', '참고']];
-  var view = { mode: 'month', cur: '', sel: '', lanes: { yujin: 1, prof: 1, ref: 1 }, bot: '', status: '', group: '', showDone: false };
+  var view = { mode: 'month', cur: '', sel: '', lanes: { yujin: 1, prof: 1, ref: 1 }, bot: '', status: '', group: '', showDone: false, q: '', more: {} };
+  /* 261030 목록 UX(근거: 봇공유/조사/261029_hj-app_목록기능검토_v01 제안 2 「앞 3~6건만·검색 없음」):
+     화면 안 찾기 칸, 달력 칸 「+N 더 보기」 버튼(그날 목록으로), 휴대폰 점 6개 넘으면 「+N」, 다가오는 일정 칸마다 8개 + 「더 보기」. 저장 안 함(메모리만). */
+  var COL_PAGE = 8, HIT_PAGE = 10;
+  function moreBtn(key, total, page, what) {
+    if (total <= page) return '';
+    var open = !!view.more[key];
+    return '<button type="button" class="cl-morebtn" data-colmore="' + key + '" aria-expanded="' + open + '">' +
+      (open ? '접기 (처음 ' + page + '개만)' : (total - page) + '개 더 보기' + (what ? ' <small>' + what + '</small>' : '')) + '</button>';
+  }
+  function cut(key, list, page) { return view.more[key] ? list : list.slice(0, page); }
   var D = null;
 
   function base(p) { return new URL(p, document.baseURI).href; }
@@ -82,7 +92,11 @@
     '.cl-ev{display:block;font-size:11px;line-height:1.35;border-radius:5px;padding:1px 4px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.cl-ev.l-yujin{background:#E8F3FF;color:#1B64DA}.cl-ev.l-prof{background:#F3EEFF;color:#6D28D9}.cl-ev.l-ref{background:#F2F4F6;color:#6B7684}',
     '.cl-ev.s-late{box-shadow:inset 3px 0 0 var(--no)}.cl-ev.s-soon,.cl-ev.s-today{box-shadow:inset 3px 0 0 var(--warn)}.cl-ev.s-done{opacity:.5;text-decoration:line-through}',
-    '.cl-more{font-size:11px;color:var(--muted);margin-top:2px}',
+    '.cl-more{display:block;width:100%;font-size:11px;color:var(--navy);font-weight:700;margin-top:2px;padding:2px 0;border:0;background:none;text-align:left;cursor:pointer;text-decoration:underline}',
+    '.cl-q{flex:1 1 100%;min-height:44px;margin:0;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:14px;background:#fff;color:var(--ink-2)}',
+    '.cl-morebtn{display:block;width:100%;min-height:44px;margin:6px 0 0;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px;font-weight:700;color:var(--navy);cursor:pointer}.cl-morebtn small{color:var(--muted);font-weight:600}',
+    '.cl-hits{margin:4px 0 10px}.cl-hits h3{font-size:15px;margin:4px 0}',
+    '.cl-dn{font-size:10px;line-height:6px;color:var(--muted);font-weight:700}',
     '.cl-ev.main{font-size:12px;font-weight:700;padding:2px 5px}.cl-ev.sub{background:none !important;color:var(--muted);font-size:10px;padding:0 3px;box-shadow:none}',
     '.cl-list .row.sub{padding:5px 0 5px 14px;border-top:1px dashed var(--line)}.cl-list .row.sub .tx b{font-size:12px;font-weight:500;color:var(--ink-2)}',
     '.cl-list .row.sub .bar{opacity:.4;width:2px}.dd.sub{font-size:11px;font-weight:600;background:none;color:var(--muted)}',
@@ -101,7 +115,7 @@
     '.cl-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}',
     '.cl-cols h3,.cl-sec{font-size:16px;margin:4px 0 4px}',
     '.cl-note{font-size:12px;color:var(--muted);margin:6px 0 0}',
-    '@media (max-width:640px){.cl-kpi{gap:6px}.cl-kpi div{padding:8px}.cl-kpi b{font-size:18px}.cl-kpi span{font-size:11px;line-height:1.2;display:block}.cl-flt select{flex:1 1 30%;font-size:12px;padding:6px}.cl-day{min-height:50px}.cl-day .cl-ev,.cl-day .cl-more{display:none}',
+    '@media (max-width:640px){.cl-kpi{gap:6px}.cl-kpi div{padding:8px}.cl-kpi b{font-size:18px}.cl-kpi span{font-size:11px;line-height:1.2;display:block}.cl-flt select{flex:1 1 30%;font-size:12px;padding:6px}.cl-day{min-height:50px}.cl-day .cl-ev,.cl-day .cl-more{display:none}.cl-flt .cl-q{font-size:14px}',
     '.cl-dots{display:flex;gap:2px;justify-content:center;flex-wrap:wrap;margin-top:2px}.cl-dots i{width:6px;height:6px;border-radius:3px}',
     '.cl-week{grid-template-columns:1fr}.cl-wcol{min-height:0}.cl-cols{grid-template-columns:1fr}}'
   ].join('\n');
@@ -177,10 +191,11 @@
       '<div class="cl-kpi"><div class="k-late"><b id="k-late">' + late + '</b><span>지연(마감 지남)</span></div><div class="k-soon"><b id="k-soon">' + soon + '</b><span>마감 임박(D-3)</span></div>' +
       '<div class="k-yu"><b id="k-yu">' + yu + '</b><span>유진님이 하실 일</span></div><div class="k-chk"><b id="k-chk">' + D.cal.checks.length + '</b><span>확인 필요·충돌</span></div></div>' +
       '<div class="cl-leg" id="cl-leg">' + LANES.map(function (l) { return '<button data-lane="' + l[0] + '" class="' + (view.lanes[l[0]] ? '' : 'off') + '"><i class="ln-' + l[0] + '"></i>' + l[1] + '</button>'; }).join('') + '</div>' +
-      '<div class="cl-flt"><select id="f-bot" aria-label="담당 봇">' + opts(uniq(all.map(function (e) { return e.bot; })), view.bot, '담당 봇 전체') + '</select>' +
+      '<div class="cl-flt"><input type="search" id="f-q" class="cl-q" placeholder="일정 찾기 (제목·T번호·봇·분야)" aria-label="일정 찾기" autocomplete="off" value="' + esc(view.q) + '"><select id="f-bot" aria-label="담당 봇">' + opts(uniq(all.map(function (e) { return e.bot; })), view.bot, '담당 봇 전체') + '</select>' +
       '<select id="f-st" aria-label="상태">' + opts(uniq(all.map(function (e) { return e.status; })), view.status, '상태 전체') + '</select>' +
       '<select id="f-grp" aria-label="업무 분야">' + opts(D.cal.groups || uniq(all.map(function (e) { return e.group; })), view.group, '업무 분야 전체') + '</select>' +
       '<label><input type="checkbox" id="f-done"' + (view.showDone ? ' checked' : '') + '> 끝난 일 보기</label></div>' +
+      hitsHtml(C, evs, today) +
       '<div class="cl-nav"><button id="cl-prev" aria-label="이전">‹</button><h3 id="cl-title">' +
       (view.mode === 'month' ? y + '년 ' + m + '월' : C.md(C.weekStart(view.cur)) + ' ~ ' + C.md(C.addDays(C.weekStart(view.cur), 6))) +
       '</h3><button id="cl-today">오늘</button><button id="cl-next" aria-label="다음">›</button></div>';
@@ -191,12 +206,13 @@
         html += '<div class="cl-day' + (dm !== m ? ' out' : '') + (d === today ? ' today' : '') + (d === view.sel ? ' sel' : '') + (C.weekday(d) === 0 ? ' sun' : '') +
           '" data-day="' + d + '"><span class="n">' + (+d.split('-')[2]) + '</span>' +
           list.slice(0, 3).map(function (e) { return evChip(C, e, today); }).join('') +
-          (list.length > 3 ? '<div class="cl-more">+' + (list.length - 3) + '</div>' : '') +
-          '<div class="cl-dots">' + list.slice(0, 6).map(function (e) { return '<i class="ln-' + e.lane + '"></i>'; }).join('') + '</div></div>';
+          (list.length > 3 ? '<button type="button" class="cl-more" data-more="' + d + '" aria-label="' + esc(C.md(d)) + ' 일정 ' + list.length + '개 모두 보기">+' + (list.length - 3) + ' 더 보기</button>' : '') +
+          '<div class="cl-dots">' + list.slice(0, 6).map(function (e) { return '<i class="ln-' + e.lane + '"></i>'; }).join('') +
+          (list.length > 6 ? '<b class="cl-dn">+' + (list.length - 6) + '</b>' : '') + '</div></div>';
       });
       html += '</div>';
       var sl = byDay[view.sel] || [];
-      html += '<h3 class="cl-sec" style="margin-top:14px">' + esc(C.md(view.sel)) + ' 일정 ' + sl.length + '개</h3><div class="cl-list" id="cl-daylist">' +
+      html += '<h3 class="cl-sec" id="cl-dayhead" tabindex="-1" style="margin-top:14px">' + esc(C.md(view.sel)) + ' 일정 ' + sl.length + '개</h3><div class="cl-list" id="cl-daylist">' +
         (sl.length ? sl.map(function (e) { return row(C, e, today); }).join('') : '<p class="muted">일정이 없어요.</p>') + '</div>';
     } else {
       html += '<div class="cl-week" id="cl-weekview">' + C.weekDays(view.cur).map(function (d) {
@@ -217,7 +233,8 @@
     function col(lane, title, id) {
       var l = up.filter(function (e) { return e.lane === lane; });
       return '<div><h3>' + title + ' <small class="muted">' + l.length + '</small></h3><div class="cl-list" id="' + id + '">' +
-        (l.length ? l.map(function (e) { return row(C, e, today); }).join('') : '<p class="muted">' + (view.lanes[lane] ? '30일 안에 없어요.' : '꺼 둔 레인이에요.') + '</p>') + '</div></div>';
+        (l.length ? cut(id, l, COL_PAGE).map(function (e) { return row(C, e, today); }).join('') : '<p class="muted">' + (view.lanes[lane] ? '30일 안에 없어요.' : '꺼 둔 레인이에요.') + '</p>') + '</div>' +
+        moreBtn(id, l.length, COL_PAGE, '(모두 ' + l.length + '개)') + '</div>';
     }
     html += '<section class="card"><h2 style="font-size:20px;margin:0 0 6px">다가오는 일정</h2><p class="cl-note">지연된 유진님 일 + 오늘부터 30일. 색: 빨강 지연 · 주황 D-3 이내. 굵은 줄 = 현황판 마감(정본), 작은 「└」 줄 = 같은 T번호의 하위 단계.</p><div class="cl-cols">' +
       col('yujin', '유진님 할 일', 'up-yujin') + col('prof', '교수님 일정', 'up-prof') + '</div>' +
@@ -230,14 +247,49 @@
     bind(el, api);
   }
 
+  /* 찾는 말이 있으면 달력 위에 「찾은 일정」(날짜순, 10개 + 더 보기). 다른 달 일정도 여기서 보여요 */
+  function hitsHtml(C, evs, today) {
+    if (!String(view.q || '').trim()) return '';
+    var hits = evs.filter(function (e) { return !e._cont; }).slice().sort(function (a, b) { return a.date < b.date ? -1 : a.date > b.date ? 1 : mainFirst(a, b); });
+    return '<div class="cl-hits" id="cl-hits"><h3>찾은 일정 <b id="cl-hitcount">' + hits.length + '</b>개</h3><div class="cl-list" id="cl-hitlist">' +
+      (hits.length ? cut('hits', hits, HIT_PAGE).map(function (e) { return row(C, e, today); }).join('') : '<p class="muted">맞는 일정이 없어요. 다른 말이나 「끝난 일 보기」를 써 보세요.</p>') + '</div>' +
+      moreBtn('hits', hits.length, HIT_PAGE, '(모두 ' + hits.length + '개)') + '</div>';
+  }
   function bind(el, api) {
     var C = root.HJCal;
+    var fq = el.querySelector('#f-q');
+    if (fq) {
+      var onq = function (e) {
+        if (e && e.isComposing) return; /* 한글 조합 중에는 다시 그리지 않음 */
+        if (fq.value === view.q) return;
+        var pos = fq.selectionStart;
+        view.q = fq.value; view.more.hits = false;
+        paint(el, api);
+        var n = el.querySelector('#f-q'); if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (er) { /* 지원 안 함 */ } }
+      };
+      fq.oninput = onq;
+      fq.addEventListener('compositionend', function () { setTimeout(onq, 0); });
+    }
+    el.querySelectorAll('[data-colmore]').forEach(function (b) {
+      b.onclick = function () {
+        var k = b.getAttribute('data-colmore'), was = !!view.more[k];
+        view.more[k] = !was; paint(el, api);
+        var nb = el.querySelector('[data-colmore="' + k + '"]'); if (nb) { try { nb.focus({ preventScroll: was ? false : true }); } catch (er) { nb.focus(); } }
+      };
+    });
+    el.querySelectorAll('[data-more]').forEach(function (b) {
+      b.onclick = function (e) {
+        e.stopPropagation();
+        view.sel = b.getAttribute('data-more'); paint(el, api);
+        var h = el.querySelector('#cl-dayhead'); if (h) { if (h.scrollIntoView) h.scrollIntoView({ block: 'start', behavior: 'smooth' }); try { h.focus({ preventScroll: true }); } catch (er) { /* 무시 */ } }
+      };
+    });
     el.querySelectorAll('#cl-mode button').forEach(function (b) { b.onclick = function () { view.mode = b.getAttribute('data-m'); paint(el, api); }; });
     el.querySelectorAll('#cl-leg button').forEach(function (b) { b.onclick = function () { var l = b.getAttribute('data-lane'); view.lanes[l] = view.lanes[l] ? 0 : 1; paint(el, api); }; });
-    el.querySelector('#f-bot').onchange = function (e) { view.bot = e.target.value; paint(el, api); };
-    el.querySelector('#f-st').onchange = function (e) { view.status = e.target.value; paint(el, api); };
-    el.querySelector('#f-grp').onchange = function (e) { view.group = e.target.value; paint(el, api); };
-    el.querySelector('#f-done').onchange = function (e) { view.showDone = e.target.checked; paint(el, api); };
+    el.querySelector('#f-bot').onchange = function (e) { view.bot = e.target.value; view.more.hits = false; paint(el, api); };
+    el.querySelector('#f-st').onchange = function (e) { view.status = e.target.value; view.more.hits = false; paint(el, api); };
+    el.querySelector('#f-grp').onchange = function (e) { view.group = e.target.value; view.more.hits = false; paint(el, api); };
+    el.querySelector('#f-done').onchange = function (e) { view.showDone = e.target.checked; view.more.hits = false; paint(el, api); };
     function move(n) {
       if (view.mode === 'week') view.cur = C.addDays(view.cur, 7 * n);
       else { var p = view.cur.split('-'), y = +p[0], m = +p[1] + n; if (m < 1) { m = 12; y--; } if (m > 12) { m = 1; y++; } view.cur = y + '-' + String(m).padStart(2, '0') + '-01'; }
