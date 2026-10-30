@@ -9,6 +9,13 @@
   var active = []; /* {kind,label,q,kw?} */
   var openId = '';
   var moreOpen = false;
+  /* 261030 목록 UX(근거: 봇공유/조사/261029_hj-app_목록기능검토_v01 「앞 12건만·정렬 없음」): 결과는 10건씩 「더 보기」, 정렬 고르기.
+     찾는 말·칩이 바뀌면 다시 10건부터. 정렬·보이는 개수는 이 화면 안 메모리에만(저장 안 함). */
+  var PAGE = 10;
+  var SORTS = [['rel', '기본 순서'], ['work', '일 이름 가나다'], ['dept', '부서 가나다'], ['status', '상태별']];
+  var sortBy = 'rel';
+  var limit = PAGE;
+  var listKey = '';
   var graph = null; /* HJCoopGraph.build 결과(거미줄+사람별 하는 일). 못 읽으면 null → 데이터 없음 */
   function G() { return root.HJCoopGraph || null; }
   var CSS = [
@@ -36,6 +43,12 @@
     '.cp-sc:hover{border-color:var(--navy)}',
     '.cp-hint{text-align:center;font-size:.84rem;color:var(--muted);margin:10px 0 0;line-height:1.45;max-width:584px}',
     '.cp-results{margin-top:8px}',
+    '.cp-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 10px;margin-top:10px}.cp-bar .cp-hint{margin:0;text-align:left;flex:1 1 180px}',
+    '.cp-sort{display:flex;align-items:center;gap:6px;font-size:.8rem;color:var(--muted);font-weight:700}',
+    '.cp-sort select{width:auto;margin:0;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:6px 8px;background:var(--card);font-size:.84rem;color:var(--ink-2);max-width:100%}',
+    '.cp-morebtn{display:block;width:100%;min-height:44px;margin:4px 0 10px;border:1px solid var(--line);border-radius:12px;background:var(--card);font-size:.88rem;font-weight:700;color:var(--navy);cursor:pointer}',
+    '.cp-morebtn small{font-weight:600;color:var(--muted)}.cp-morebtn.ghost{color:var(--muted)}',
+    '.cp-one:focus{outline:2px solid var(--navy);outline-offset:2px}',
     '.cp-one{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;margin:0 0 10px}',
     '.cp-one h3{margin:0 0 8px;font-size:1.02rem;line-height:1.35}',
     '.cp-grid{display:grid;grid-template-columns:4.5rem 1fr;gap:4px 8px;font-size:.88rem;line-height:1.45}',
@@ -119,6 +132,22 @@
     if (/결재|전결|센터장/.test(blob)) return row.line || row.who || '—';
     if (/결의/.test(blob)) return '결의 창구 포함 · ' + (row.phone || '');
     return row.line || '—';
+  }
+  /* 결과 목록 정렬(순수 함수, 시험용으로 _list 에 내보냄). 원래 자리(i)는 펼침 상태 열쇠로 씀. 같은 값이면 원래 순서 */
+  function sortRows(list, by) {
+    var key = { work: 'work', dept: 'dept', status: 'status' }[by];
+    var out = list.slice();
+    if (!key) return out;
+    out.sort(function (a, b) {
+      var x = String(a.r[key] || '').trim(), y = String(b.r[key] || '').trim();
+      if (!x !== !y) return x ? -1 : 1; /* 빈칸은 맨 뒤 */
+      return x.localeCompare(y, 'ko') || a.i - b.i;
+    });
+    return out;
+  }
+  function pageOf(total, lim) {
+    var shown = Math.min(total, Math.max(PAGE, lim || PAGE));
+    return { shown: shown, rest: total - shown, next: Math.min(PAGE, total - shown) };
   }
   function chainList() { return (data && data.chains) || []; }
   function matchChains(needle, chips) {
@@ -240,7 +269,11 @@
     var esc = api.esc;
     var needle = (q || '').trim().toLowerCase();
     var hasQuery = !!(needle || active.length);
-    var rows = (data.rows || []).filter(function (r) { return matchRow(r, needle); });
+    var rows = (data.rows || []).map(function (r, i) { return { r: r, i: i }; }).filter(function (x) { return matchRow(x.r, needle); });
+    var key = needle + '|' + active.map(chipKey).join(',');
+    if (key !== listKey) { listKey = key; limit = PAGE; }
+    rows = sortRows(rows, sortBy);
+    var pg = pageOf(rows.length, limit);
     var cg = G();
     var graphHtml = hasQuery && cg ? cg.html(graph, cg.search(graph, needle, active)) : '';
     var graphNone = hasQuery && (!cg || !graph || (!graph.hasSpider && !graph.hasPeople)) ? '<p class="cp-hint">부서·사람 자료: 데이터 없음</p>' : '';
@@ -267,11 +300,14 @@
     } else if (!rows.length) {
       results = graphHtml ? '' : '<div class="cp-empty">맞는 협조가 없어요. 칩을 빼거나 다른 말을 쳐 보세요.</div>';
     } else {
-      results = '<p class="cp-hint">' + rows.length + '건 · 한 장에 일주인·내선·돈처리·결재·한줄만</p><div class="cp-results">' +
-        rows.map(function (r, idx) {
-          var id = 'r' + idx;
+      var sortHtml = rows.length > 1 ? '<label class="cp-sort"><span>정렬</span><select id="cp-sort" aria-label="결과 정렬">' +
+        SORTS.map(function (o) { return '<option value="' + o[0] + '"' + (o[0] === sortBy ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select></label>' : '';
+      results = '<div class="cp-bar"><p class="cp-hint" id="cp-count">' + rows.length + '건' + (pg.rest > 0 ? ' 중 ' + pg.shown + '건 보기' : '') + ' · 한 장에 일주인·내선·돈처리·결재·한줄만</p>' + sortHtml + '</div><div class="cp-results" id="cp-results">' +
+        rows.slice(0, pg.shown).map(function (x, n) {
+          var r = x.r;
+          var id = 'r' + x.i;
           var open = openId === id;
-          return '<article class="cp-one"><h3>' + esc(r.work) + '</h3>' +
+          return '<article class="cp-one" tabindex="-1" data-n="' + n + '"><h3>' + esc(r.work) + '</h3>' +
             '<div class="cp-grid">' +
             '<div class="k">일주인</div><div class="v">' + esc(r.who || '—') + '</div>' +
             '<div class="k">내선</div><div class="v">' + esc(r.phone || '—') + '</div>' +
@@ -285,7 +321,9 @@
             (r.status ? '<br>상태: ' + esc(r.status) : '') +
             (r.note && r.note !== '—' ? '<br>비고: ' + esc(r.note) : '') +
             '</div></details></article>';
-        }).join('') + '</div>';
+        }).join('') + '</div>' +
+        (pg.rest > 0 ? '<button type="button" class="cp-morebtn" id="cp-morebtn" aria-controls="cp-results">' + pg.next + '건 더 보기 <small>(남은 ' + pg.rest + '건)</small></button>'
+          : (rows.length > PAGE ? '<button type="button" class="cp-morebtn ghost" id="cp-lessbtn" aria-controls="cp-results">처음 ' + PAGE + '건만 보기</button>' : ''));
     }
 
     results = graphNone + graphHtml + results;
@@ -410,6 +448,23 @@
         if (again) again.focus();
       };
     });
+    var so = el.querySelector('#cp-sort');
+    if (so) so.onchange = function () { sortBy = so.value; limit = PAGE; home(el, api); var again = el.querySelector('#cp-sort'); if (again) again.focus(); };
+    var mb = el.querySelector('#cp-morebtn');
+    if (mb) mb.onclick = function () {
+      var from = Math.max(PAGE, limit);
+      limit = from + PAGE;
+      home(el, api);
+      var first = el.querySelector('.cp-one[data-n="' + from + '"]'); /* 새로 나온 첫 장으로 초점(화면은 그대로) */
+      if (first) { try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); } }
+    };
+    var lb = el.querySelector('#cp-lessbtn');
+    if (lb) lb.onclick = function () {
+      limit = PAGE;
+      home(el, api);
+      var bar = el.querySelector('#cp-count');
+      if (bar && bar.scrollIntoView) bar.scrollIntoView({ block: 'nearest' });
+    };
     var det = el.querySelector('#cp-more');
     if (det) det.ontoggle = function () { moreOpen = !!det.open; };
   }
@@ -428,5 +483,6 @@
       home(el, api);
     });
   }
-  if (root.ShellModules) root.ShellModules.coop = { id: 'coop', tab: '협조', render: render };
+  if (root.ShellModules) root.ShellModules.coop = { id: 'coop', tab: '협조', render: render,
+    _list: { PAGE: PAGE, SORTS: SORTS, sortRows: sortRows, pageOf: pageOf } /* 시험용 */ };
 })(typeof window !== 'undefined' ? window : globalThis);
