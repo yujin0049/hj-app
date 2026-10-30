@@ -1,0 +1,115 @@
+/* 대장↔클로드 채팅방 (#/chat): 열쇠를 넣어야만 읽혀요. 저장소(공개)에는 암호문만 있어요.
+   방 파일: chat 가지의 chat/room.json(사이트 배포 아님). 쓰기는 tools/hj_chat.mjs 로만(화면에서 보내기 없음: 정적 사이트에 토큰을 둘 수 없어서).
+   열쇠는 이 탭 메모리에만(풀린 CryptoKey 만 들고, 글자는 바로 지움) · localStorage·쿠키 안 씀 · 새로고침하면 다시 잠김.
+   출처: 유진님 10.30. 19:43 「거기에 클로드 pc연결끊겨도 채팅방형식으로 답할 수 있게 만들어. 대장-클로드랑」.
+   계획·지켜지는 것/안 지켜지는 것: 봇공유/조사/261030_대장클로드_채팅방_계획_v01.md */
+(function (root) {
+  'use strict';
+  var RAW = 'https://raw.githubusercontent.com/yujin0049/hj-app/chat/chat/room.json';
+  var key = null, room = null, msgs = null, err = '', busy = false, tried = false;
+  var CSS = [
+    '.ch-wrap{max-width:680px;margin:0 auto;padding:0 12px 48px;box-sizing:border-box}',
+    '.ch-head h1{margin:6px 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
+    '.ch-why{font-size:.82rem;color:var(--muted);line-height:1.45;margin:0 0 10px}',
+    '.ch-lock{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:center}',
+    '.ch-lock .ic{font-size:2rem;line-height:1;margin:4px 0 6px}',
+    '.ch-lock label{display:block;font-weight:700;margin:6px 0}',
+    '.ch-lock input{width:100%;box-sizing:border-box;min-height:48px;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:1rem;background:var(--soft);color:var(--ink)}',
+    '.ch-lock .btn{width:100%;margin-top:10px}',
+    '.ch-err{color:var(--no);background:var(--nobg);border-radius:10px;padding:8px 10px;font-size:.88rem;margin:10px 0 0}',
+    '.ch-bar{display:flex;gap:8px;align-items:center;justify-content:space-between;margin:0 0 10px;flex-wrap:wrap}',
+    '.ch-bar .st{font-size:.85rem;color:var(--ok);font-weight:700}',
+    '.ch-bar button{min-height:44px;border-radius:12px;border:0;padding:0 14px;font-weight:700;background:var(--soft);color:var(--navy);cursor:pointer}',
+    '.ch-list{display:flex;flex-direction:column;gap:8px}',
+    '.ch-msg{display:flex;flex-direction:column;max-width:86%}',
+    '.ch-msg.l{align-self:flex-start}.ch-msg.r{align-self:flex-end;align-items:flex-end}.ch-msg.c{align-self:center;align-items:center}',
+    '.ch-who{font-size:.75rem;color:var(--muted);margin:0 4px 2px;font-weight:700}.ch-who time{font-weight:400}',
+    '.ch-b{white-space:pre-wrap;overflow-wrap:anywhere;word-break:keep-all;line-height:1.45;font-size:.95rem;border-radius:16px;padding:9px 12px;background:var(--card);border:1px solid var(--line);color:var(--ink)}',
+    '.ch-msg.r .ch-b{background:var(--blue-soft);border-color:transparent}',
+    '.ch-msg.c .ch-b{background:var(--soft);font-size:.85rem}',
+    '.ch-msg.bad .ch-b{background:var(--warnbg);color:var(--warn);border-color:transparent}',
+    '.ch-empty{text-align:center;color:var(--muted);padding:24px 8px}',
+    '.ch-how{font-size:.8rem;color:var(--muted);line-height:1.5;margin:14px 2px 0}.ch-how code{font-size:.76rem;word-break:break-all}',
+    '@media (prefers-reduced-motion:reduce){.ch-wrap *{transition:none!important;animation:none!important}}'
+  ].join('\n');
+  function style() {
+    if (document.getElementById('ch-style')) return;
+    var s = document.createElement('style'); s.id = 'ch-style'; s.textContent = CSS; document.head.appendChild(s);
+  }
+  function src() {
+    var h = location.hostname;
+    return (h === 'localhost' || h === '127.0.0.1') ? new URL('chat/room.json', document.baseURI).href : RAW;
+  }
+  function loadCore() {
+    if (root.HJChat) return Promise.resolve(true);
+    return new Promise(function (ok) {
+      var s = document.createElement('script'); s.src = 'js/chat-crypto.js?v=77';
+      s.onload = function () { ok(!!root.HJChat); }; s.onerror = function () { ok(false); };
+      document.head.appendChild(s);
+    });
+  }
+  function fetchRoom() {
+    return fetch(src() + (src().indexOf('?') < 0 ? '?t=' + Date.now() : ''), { cache: 'no-store' })
+      .then(function (r) { if (r.status === 404) return 'none'; if (!r.ok) throw new Error('room'); return r.json(); })
+      .then(function (j) { room = j === 'none' ? 'none' : j; return room; });
+  }
+  var WHY = '이 방은 <b>열쇠가 있어야</b> 읽혀요. 저장소에는 알아볼 수 없는 암호문만 올라가요(AES-GCM). ' +
+    '다만 <b>글이 몇 개인지·언제 올라왔는지</b>는 누구나 볼 수 있어요. 그래서 개인정보·금액·공문 본문은 넣지 않아요.';
+  function lockedHTML(esc) {
+    return '<section class="ch-lock" id="ch-lock"><div class="ic" aria-hidden="true">🔒</div><p><b>잠겨 있어요</b></p>' +
+      '<form id="ch-form" autocomplete="off"><label for="ch-key">열쇠</label>' +
+      '<input id="ch-key" type="password" autocomplete="one-time-code" autocapitalize="off" spellcheck="false" placeholder="계정 메모의 hj-chat 열쇠" required>' +
+      '<p class="ch-why">브라우저가 「비밀번호 저장?」을 물으면 <b>저장 안 함</b>을 눌러 주세요.</p>' +
+      '<button class="btn" type="submit"' + (busy ? ' disabled' : '') + '>' + (busy ? '여는 중…' : '열기') + '</button></form>' +
+      (err ? '<div class="ch-err" role="alert">' + esc(err) + '</div>' : '') + '</section>';
+  }
+  function openHTML(esc) {
+    var C = root.HJChat;
+    var list = msgs.length ? msgs.map(C.bubbleHTML).join('') : '<p class="ch-empty">아직 글이 없어요.</p>';
+    return '<div class="ch-bar"><span class="st">🔓 열림 · 글 ' + msgs.length + '개 <small title="계정 메모의 방 지문과 같아야 해요">· 방 지문 ' + esc(C.fingerprint(room)) + '</small></span><span><button type="button" id="ch-re">새로 읽기</button> <button type="button" id="ch-lockbtn">잠그기</button></span></div>' +
+      '<div class="ch-list" id="ch-list" aria-live="polite">' + list + '</div>';
+  }
+  function paint(el, api) {
+    var esc = api.esc, body;
+    if (!root.HJChat) body = '<div class="ch-err">암호 파일(js/chat-crypto.js)을 못 불러왔어요. 새로고침해 주세요.</div>';
+    else if (room === 'none') body = '<p class="ch-empty" id="ch-none">방이 아직 없어요. 대장이 열쇠를 정하고 방을 만들면 열려요.</p>';
+    else if (!room) body = '<p class="ch-empty">불러오는 중…</p>';
+    else if (room === 'fail' || !root.HJChat.valid(room)) body = '<div class="ch-err">방 파일을 못 불러왔어요. 인터넷을 확인하고 새로고침해 주세요.</div>';
+    else body = key && msgs ? openHTML(esc) : lockedHTML(esc);
+    el.innerHTML = '<div class="ch-wrap"><header class="ch-head"><h1>대장↔클로드 방</h1><p class="ch-why">' + WHY + '</p></header>' + body +
+      '<p class="ch-how">글 쓰기는 이 화면이 아니라 도구로 해요: <code>node tools/hj_chat.mjs post --from 클로드 --text "…"</code> (열쇠는 HJ_CHAT_KEY 환경변수). 업무 PC가 꺼져 있어도 claude.ai 웹·휴대폰에서 돼요. <a href="#/bots">봇 현황으로</a></p></div>';
+    var f = el.querySelector('#ch-form');
+    if (f) f.onsubmit = function (e) {
+      e.preventDefault();
+      var inp = el.querySelector('#ch-key'), pass = inp.value; inp.value = '';
+      busy = true; err = ''; paint(el, api);
+      root.HJChat.unlock(pass, room).then(function (k) { key = k; return root.HJChat.readAll(k, room); })
+        .then(function (m) { msgs = m; }, function (x) { key = null; msgs = null; err = (x && x.message) || '열쇠가 달라요'; })
+        .then(function () { pass = ''; busy = false; if (el.querySelector('.ch-wrap')) paint(el, api); else { key = null; msgs = null; } });
+    };
+    var re = el.querySelector('#ch-re');
+    if (re) re.onclick = function () {
+      fetchRoom().then(function () { if (!root.HJChat.valid(room)) throw new Error('room'); return root.HJChat.readAll(key, room); })
+        .then(function (m) { msgs = m; }, function () { err = '방 파일을 다시 못 읽었어요. 잠근 뒤 새로고침해 주세요.'; key = null; msgs = null; tried = false; })
+        .then(function () { if (el.querySelector('.ch-wrap')) paint(el, api); });
+    };
+    var lb = el.querySelector('#ch-lockbtn');
+    if (lb) lb.onclick = function () { lock(); paint(el, api); };
+  }
+  var last = null;
+  function lock() { key = null; msgs = null; }
+  if (typeof document !== 'undefined') document.addEventListener('visibilitychange', function () {
+    if (!document.hidden || !key) return;
+    lock();
+    if (last && last.el.querySelector('.ch-wrap')) paint(last.el, last.api); /* 앱을 내려 두면 화면도 잠김 */
+  });
+  function render(el, api) {
+    lock(); last = { el: el, api: api }; /* 다른 화면에 갔다 오거나 앱을 내려 두면 다시 잠김 */
+    style();
+    paint(el, api);
+    var need = [loadCore()];
+    if (!tried) { tried = true; need.push(fetchRoom().catch(function () { room = 'fail'; tried = false; })); }
+    Promise.all(need).then(function () { if (el.querySelector('.ch-wrap')) paint(el, api); });
+  }
+  if (root.ShellModules) root.ShellModules.chat = { id: 'chat', tab: '대장↔클로드 방', render: render };
+})(typeof window !== 'undefined' ? window : globalThis);
