@@ -9,11 +9,16 @@
   var CSS = [
     '.st-pin{background:#E8F3FF;border-radius:20px;padding:16px;margin-bottom:12px}',
     '.st-pin h2{font-size:18px;margin:0 0 4px;color:#1B64DA}',
-    '.st-tbl{width:100%;border-collapse:collapse;font-size:14px}',
-    '.st-tbl th{font-size:12px;color:var(--muted);text-align:left;font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}',
-    '.st-tbl td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:top}',
-    '.st-tbl td.t{font-weight:700;color:var(--ink-2);white-space:nowrap}.st-tbl td.ttl{word-break:keep-all;line-height:1.4}',
+    '.st-tbl{width:100%;border-collapse:collapse;font-size:14px;table-layout:fixed}',
+    '.st-tbl th{font-size:12px;color:var(--muted);font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}',
+    '.st-tbl td{padding:9px 6px;border-bottom:1px solid var(--line)}',
+    '.st-tbl td.t{font-weight:700;color:var(--ink-2)}.st-tbl td.ttl .tag{margin-left:4px}',
     '.st-tbl td.who{color:var(--muted);font-size:12px}',
+    /* 표 규칙(261031): 한 행 = 한 줄. 칸 너비 고정, 업무 이름이 나머지. 넘치면 … + 말풍선(title) */
+    '.st-tbl th:nth-child(1){width:4.6em}.st-tbl th:nth-child(3){width:5.6em}.st-tbl th:nth-child(4){width:10.2em}.st-tbl th:nth-child(5){width:6.4em}.st-tbl th:nth-child(6){width:9.8em}',
+    '.st-tbl td.ttl{position:relative}.st-tbl td.ttl:has(.st-steps){padding-right:8.2em}',
+    '.st-tbl td.ttl .st-steps{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:7.8em;margin:0}.st-tbl td.ttl .st-steps>summary{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
+    '.st-tbl td.ttl:has(.st-steps[open]){white-space:normal;padding-right:6px}.st-tbl td.ttl .st-steps[open]{position:static;transform:none;width:auto;margin-top:6px}',
     '.st-badge{display:inline-block;font-size:12px;font-weight:700;border-radius:8px;padding:2px 8px;white-space:nowrap}',
     '.b-할일{background:var(--soft);color:var(--ink-2)}.b-진행중{background:#E8F3FF;color:#1B64DA}.b-완료,.b-취소{background:var(--okbg);color:var(--ok)}',
     '.b-확인필요{background:#F3EEFF;color:#6D28D9}.b-보류,.b-대기{background:var(--warnbg);color:var(--warn)}',
@@ -21,8 +26,8 @@
     '.st-steps li{margin:3px 0}.st-steps .l-prof{color:#6D28D9}.st-steps .l-ref{color:var(--muted)}',
     '.oj-row{margin:10px 0}.oj-row .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}',
     '.oj-bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}.oj-bar i{display:block;height:100%;background:var(--navy);border-radius:5px}',
-    '@media (max-width:640px){.st-tbl thead{display:none}.st-tbl tr{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;padding:10px 0;border-bottom:1px solid var(--line)}',
-    '.st-tbl td{border:0;padding:0}.st-tbl td.ttl{grid-column:2/4}.st-tbl td.t{grid-row:1/3}.st-tbl td.who,.st-tbl td.bot{font-size:12px;color:var(--muted)}}'
+    '@media (max-width:640px){.st-tbl{font-size:13px}.st-tbl th,.st-tbl td{padding-left:3px;padding-right:3px}.st-tbl th:nth-child(1){width:3.5em}.st-tbl th:nth-child(3){width:5.3em}.st-tbl th:nth-child(4){width:6.2em}.st-tbl td:nth-child(4) .dd{padding-left:4px;padding-right:4px}.st-tbl .st-badge{padding:2px 5px}',
+    '.st-tbl th:nth-child(5),.st-tbl td:nth-child(5),.st-tbl th:nth-child(6),.st-tbl td:nth-child(6),.st-tbl td:nth-child(4) small{display:none}.st-tbl td.ttl:has(.st-steps){padding-right:2.6em}.st-tbl td.ttl .st-steps{width:2.2em;right:2px}}'
   ].join('\n');
   function style() {
     if (root.HJCalStyle) root.HJCalStyle();
@@ -92,11 +97,15 @@
       '<section class="card"><div class="cl-top"><h2>현황표</h2></div>' +
       '<div class="cl-kpi"><div><b id="s-all">' + D.st.counts.active + '</b><span>진행할 업무</span></div><div class="k-late"><b id="s-late">' + late + '</b><span>지연</span></div>' +
       '<div class="k-soon"><b id="s-soon">' + soon + '</b><span>마감 임박(D-3)</span></div><div class="k-yu"><b>' + pin.length + '</b><span>유진님 할 일</span></div></div>' +
-      '<div class="cl-flt"><select id="sf-bot" aria-label="담당 봇">' + opts(uniq(tasks.map(function (t) { return t.bot; })), view.bot, '담당 봇 전체') + '</select>' +
+      /* 표 규칙(261031): 위쪽 필터 상자 대신 표 바로 위 툴바 한 줄(찾기·정렬·개수). 상세검색(봇·상태·분야·끝난 일)은 접기 */
+      '<div class="hj-toolbar" data-grid-for="st-tbl"><input type="search" data-grid-find placeholder="찾기" aria-label="현황표에서 찾기" autocomplete="off">' +
+      '<select data-grid-sort aria-label="정렬"></select><span class="hj-count" data-grid-count id="st-count">' + shown.length + '개</span>' +
+      '<details class="hj-adv" id="st-adv"><summary>상세검색</summary><div class="hj-adv-in cl-flt">' +
+      '<select id="sf-bot" aria-label="담당 봇">' + opts(uniq(tasks.map(function (t) { return t.bot; })), view.bot, '담당 봇 전체') + '</select>' +
       '<select id="sf-st" aria-label="상태">' + opts(uniq(tasks.map(function (t) { return t.status; })), view.status, '상태 전체') + '</select>' +
       '<select id="sf-grp" aria-label="업무 분야">' + opts(D.st.groups || uniq(tasks.map(function (t) { return t.group; })), view.group, '업무 분야 전체') + '</select>' +
-      '<label><input type="checkbox" id="sf-done"' + (view.showDone ? ' checked' : '') + '> 끝난 일 보기</label></div>' +
-      '<p class="cl-note" id="st-count">' + shown.length + '개 보기</p>' + table(C, shown, today, 'st-tbl') +
+      '<label><input type="checkbox" id="sf-done"' + (view.showDone ? ' checked' : '') + '> 끝난 일 보기</label></div></details></div>' +
+      table(C, shown, today, 'st-tbl') +
       '<p class="cl-note" id="st-lock">담당·상대(사람) 칸은 사이트 파일에 없어요. 유진님만 들어오는 잠금(Cloudflare Access) 확인 뒤 잠긴 API에서 읽어 보여요.</p></section>';
     if (D.ojnt && D.ojnt.items) {
       html += '<section class="card" id="oj"><h2 style="font-size:18px;margin:0">OJNT 입사 서류 진행률</h2><p class="cl-note">숫자만(이름 없음). ' + esc(D.ojnt.source) + '</p>' +

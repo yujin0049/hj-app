@@ -1142,3 +1142,32 @@ body #hj-stamp { padding-left: 16px; padding-right: 16px; }
 /* 협조 화면 칩·바로가기: 손가락 누름 영역 40·44px 이상 */
 .cp-chip { min-height: 40px; }
 .cp-sc { min-height: 44px; }
+
+/* ── 표 규칙(261031 그리드솔루션 피드백) · js/grid-rules.js 가 칸에 g-num/g-long/g-short·title 을 붙여요 ── */
+table.hj-grid th, table.hj-grid td { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: middle; }
+table.hj-grid th.g-num, table.hj-grid td.g-num { text-align: right; font-variant-numeric: tabular-nums; }
+table.hj-grid th.g-long, table.hj-grid td.g-long { text-align: left; }
+table.hj-grid th.g-short, table.hj-grid td.g-short { text-align: center; }
+table.hj-grid td br { display: none; }
+table.hj-grid td small { display: inline; margin-left: .3em; }
+table.plain.hj-grid { table-layout: fixed; }
+table.hj-grid.lk-sum th, table.hj-grid.lk-sum td { padding-left: 4px; padding-right: 4px; }
+.ch-tbl.hj-grid col.cv { width: 7.4rem; }
+.rd-grid.hj-grid th.doc small { display: inline; margin-left: .3em; }
+.hj-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 8px 0 6px; }
+.hj-toolbar input[type=search] { flex: 1 1 8em; min-width: 0; height: 34px; padding: 0 10px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: .88rem; background: var(--card, #fff); }
+.hj-toolbar select { flex: 0 1 auto; max-width: 8.5em; height: 34px; border: 1px solid var(--line); border-radius: 10px; font: inherit; font-size: .84rem; background: var(--card, #fff); }
+.hj-toolbar .hj-count { flex: 0 0 auto; font-size: .84rem; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hj-adv { flex: 0 0 auto; font-size: .84rem; }
+.hj-adv > summary { cursor: pointer; white-space: nowrap; color: var(--navy, #1B64DA); font-weight: 700; list-style: none; padding: 6px 4px; }
+.hj-adv > summary::-webkit-details-marker { display: none; }
+.hj-adv > summary::after { content: ' ▾'; }
+.hj-adv[open] { flex-basis: 100%; order: 9; }
+.hj-adv[open] > summary::after { content: ' ▴'; }
+.hj-adv-in { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 6px 0 2px; }
+.hj-adv-in select { max-width: none; }
+@media (max-width: 420px) { .hj-toolbar select { max-width: 6.6em; } }
+/* 협조 결과(표 모양 카드): 줄마다 한 줄, 넘치면 … + 말풍선 */
+.cp-grid > * { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.cp-grid > .k { text-align: center; }
+.cp-hint:has(+ .cp-results) { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
