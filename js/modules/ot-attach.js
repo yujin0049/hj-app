@@ -211,6 +211,20 @@
     t.items.forEach(function (x) { (out[x.stage] || out.later).push(x); });
     return out;
   }
+  function stageHas(t, k) {
+    if (k === 'all') return true;
+    if (!t || !t.trip) return false;
+    return t.items.some(function (x) { return (x.stage || 'later') === k; }) ||
+      (t.gaps || []).some(function (x) { return x.stage === k; });
+  }
+  /* 종류를 바꿨는데 고른 단계가 그 종류에 없으면 「전체」로 (춘식이3 검수 10.30. 국외→확인 필요→국내 빈 목록). */
+  function pickType(id) {
+    cause.pick = id;
+    var d = cause.data;
+    var t = d && d.types.filter(function (x) { return x.id === id; })[0];
+    if (!stageHas(t, cause.stage)) cause.stage = 'all';
+  }
+  function pickStage(k) { cause.stage = k; }
   function tripHtml(esc, d, t) {
     var by = tripStages(t);
     var gaps = t.gaps || [];
@@ -226,7 +240,7 @@
       var g = gaps.filter(function (x) { return x.stage === k; });
       if (!by[k].length && !g.length) return;
       var st = d.stages[k];
-      h += '<div class="ca-stage" data-stage-box="' + k + '"><h3>' + esc(st.label) + '</h3><p class="muted">' + esc(st.sub) + ' · ' + by[k].length + '가지</p>';
+      h += '<div class="ca-stage" data-stage-box="' + k + '"><h3>' + esc(st.label) + '</h3><p class="muted">' + (st.sub ? esc(st.sub) + ' · ' : '') + by[k].length + '가지</p>';
       h += causeRows(esc, by[k], d.later);
       if (g.length) {
         h += '<ol class="ca-list">';
@@ -247,6 +261,7 @@
     var d = cause.data;
     if (!d) return h + '<p class="muted">' + (cause.failed ? '목록을 불러오지 못했어요.' : '목록을 불러오는 중이에요…') + '</p></section>';
     var t = d.types.filter(function (x) { return x.id === cause.pick; })[0] || d.types[0];
+    if (!stageHas(t, cause.stage)) cause.stage = 'all';
     h += '<label class="field"><span>원인행위 종류</span><select id="ca-type">';
     d.types.forEach(function (x) {
       h += '<option value="' + esc(x.id) + '"' + (x.id === t.id ? ' selected' : '') + '>' + esc(x.short || x.name) + '</option>';
@@ -314,12 +329,12 @@
     el.querySelector('#ot-dir').onchange = function (e) { onPick(el, api, e.target.files); };
     el.querySelector('#ot-file').onchange = function (e) { onPick(el, api, e.target.files); };
     var sel = el.querySelector('#ca-type');
-    if (sel) sel.onchange = function () { cause.pick = sel.value; paint(el, api); };
+    if (sel) sel.onchange = function () { pickType(sel.value); paint(el, api); };
     el.querySelectorAll('[data-trip]').forEach(function (b) {
-      b.onclick = function () { cause.pick = b.getAttribute('data-trip'); paint(el, api); };
+      b.onclick = function () { pickType(b.getAttribute('data-trip')); paint(el, api); };
     });
     el.querySelectorAll('[data-stage]').forEach(function (b) {
-      b.onclick = function () { cause.stage = b.getAttribute('data-stage'); paint(el, api); };
+      b.onclick = function () { pickStage(b.getAttribute('data-stage')); paint(el, api); };
     });
     var again = el.querySelector('#ot-again');
     if (again) again.onclick = function () { saveAgain(el, api); };
@@ -415,5 +430,8 @@
     paint(el, api);
     if (!cause.data && !cause.failed) loadCause().then(function () { if (el.isConnected) paint(el, api); });
   }
-  if (root.ShellModules) root.ShellModules['ot-attach'] = { id: 'ot-attach', tab: '', render: render };
+  if (root.ShellModules) root.ShellModules['ot-attach'] = {
+    id: 'ot-attach', tab: '', render: render,
+    _cause: { state: cause, pickType: pickType, pickStage: pickStage, html: causeHtml } /* 시험용 */
+  };
 })(typeof window !== 'undefined' ? window : globalThis);
