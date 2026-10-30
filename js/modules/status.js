@@ -15,7 +15,7 @@
     '.st-tbl td.t{font-weight:700;color:var(--ink-2)}.st-tbl td.ttl .tag{margin-left:4px}',
     '.st-tbl td.who{color:var(--muted);font-size:12px}',
     /* 표 규칙(261031): 한 행 = 한 줄. 칸 너비 고정, 업무 이름이 나머지. 넘치면 … + 말풍선(title) */
-    '.st-tbl th:nth-child(1){width:4.6em}.st-tbl th:nth-child(3){width:5.6em}.st-tbl th:nth-child(4){width:8.8em}.st-tbl th:nth-child(5){width:6.4em}.st-tbl th:nth-child(6){width:9.8em}',
+    '.st-tbl th:nth-child(1){width:4.6em}.st-tbl th:nth-child(3){width:5.6em}.st-tbl th:nth-child(4){width:10.2em}.st-tbl th:nth-child(5){width:6.4em}.st-tbl th:nth-child(6){width:9.8em}',
     '.st-tbl td.ttl{position:relative}.st-tbl td.ttl:has(.st-steps){padding-right:8.2em}',
     '.st-tbl td.ttl .st-steps{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:7.8em;margin:0}.st-tbl td.ttl .st-steps>summary{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}',
     '.st-tbl td.ttl:has(.st-steps[open]){white-space:normal;padding-right:6px}.st-tbl td.ttl .st-steps[open]{position:static;transform:none;width:auto;margin-top:6px}',
@@ -26,7 +26,7 @@
     '.st-steps li{margin:3px 0}.st-steps .l-prof{color:#6D28D9}.st-steps .l-ref{color:var(--muted)}',
     '.oj-row{margin:10px 0}.oj-row .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}',
     '.oj-bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}.oj-bar i{display:block;height:100%;background:var(--navy);border-radius:5px}',
-    '@media (max-width:640px){.st-tbl{font-size:13px}.st-tbl th,.st-tbl td{padding-left:3px;padding-right:3px}.st-tbl th:nth-child(1){width:3.5em}.st-tbl th:nth-child(3){width:5.5em}.st-tbl th:nth-child(4){width:5.4em}.st-tbl .st-badge{padding:2px 5px}',
+    '@media (max-width:640px){.st-tbl{font-size:13px}.st-tbl th,.st-tbl td{padding-left:3px;padding-right:3px}.st-tbl th:nth-child(1){width:3.5em}.st-tbl th:nth-child(3){width:5.3em}.st-tbl th:nth-child(4){width:6.2em}.st-tbl td:nth-child(4) .dd{padding-left:4px;padding-right:4px}.st-tbl .st-badge{padding:2px 5px}',
     '.st-tbl th:nth-child(5),.st-tbl td:nth-child(5),.st-tbl th:nth-child(6),.st-tbl td:nth-child(6),.st-tbl td:nth-child(4) small{display:none}.st-tbl td.ttl:has(.st-steps){padding-right:2.6em}.st-tbl td.ttl .st-steps{width:2.2em;right:2px}}'
   ].join('\n');
   function style() {
