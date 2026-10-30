@@ -39,6 +39,7 @@ TASK = {'t': 'T901', 'title': '실습재료 납품 ' + EVIL + ' (15,180,000원·
 TODO = {'date': '2026-10-30', 'items': [
     {'id': 't1', 'title': 'T901 납품서 받기', 'note': '노트비밀 F:/경로', 'path': '경로비밀', 'who': 'yujin', 'done': False},
     {'id': 't2', 'title': '코러스 ' + EVIL, 'note': '노트비밀2', 'who': 'yujin', 'done': False},
+    {'id': 't5', 'title': 'T901 결재 올리기', 'note': '', 'who': 'yujin', 'done': False},
     {'id': 't4', 'title': 'T999 현황판에 없는 일', 'note': '노트비밀3', 'who': 'yujin', 'done': False},
     {'id': 't3', 'title': '끝난 일', 'note': '', 'who': 'yujin', 'done': True}]}
 SECRETS = ['비밀원문칸', '점검비밀', '감사위험비밀', '메모비밀', FAKE_PHONE, 'F:/비밀', '노트비밀', '경로비밀', '15,180,000', '용호기공', '3천만', 'object Object', '>37<', '37%']
@@ -53,7 +54,7 @@ class Whitelist(unittest.TestCase):
 
     def test_fields_are_the_seven(self):
         self.assertEqual(self.out['fields'], FIELDS)
-        self.assertEqual(len(self.out['cards']), 3)  # T901 + 번호 없는 할 일 + 현황판에 없는 T999 할 일(끝난 일 빠짐)
+        self.assertEqual(len(self.out['cards']), 4)  # T901 + 번호 없는 할 일 + 같은 T901 두 번째 할 일 + 현황판에 없는 T999(끝난 일 빠짐)
         for c in self.out['cards']:
             self.assertEqual(set(c), set(FIELDS) | {'stale'})
             self.assertIsInstance(c['stale'], bool)
@@ -72,14 +73,15 @@ class Whitelist(unittest.TestCase):
         self.assertEqual(c['at'], '10.30.(금) 19:40')
         self.assertEqual(c['next'], '유진님: 납품서 받기')
         nos = [x['no'] for x in self.out['cards']]
-        self.assertEqual(nos[1:], ['할 일 2', '할 일 3'])  # 남은 일만 세어요
-        self.assertIn('T999', self.out['cards'][2]['title'])
+        self.assertEqual(nos[1:], ['할 일 2', '할 일 3', '할 일 4'])  # 남은 일만 세어요
+        self.assertIn('T901', self.out['cards'][2]['title'])
+        self.assertIn('T999', self.out['cards'][3]['title'])
         self.assertFalse(c['stale'])
         self.assertLessEqual(len(c['title']), 28)
 
     def test_html_has_only_seven_slots(self):
         h = self.out['html']
-        self.assertEqual(h.count('<article'), 3)
+        self.assertEqual(h.count('<article'), 4)
         cls = set(re.findall(r'class="(cb-[a-z0-9]+)', h))
         self.assertLessEqual(cls, {'cb-card', 'cb-t1', 'cb-dot', 'cb-no', 'cb-st', 'cb-title', 'cb-meta', 'cb-bot', 'cb-at', 'cb-next', 'cb-link'})
         self.assertNotRegex(h, r'<(input|textarea|select|button|form)\b')
@@ -113,7 +115,7 @@ class PlainText(unittest.TestCase):
     def test_more_money_and_contact_shapes(self):
         l = ['송금 3천만원', '예산 1억 원 확보', '단가 5백만원', '집행 \\15,180,000', '집행 15,180,000 KRW', '금 1,500,000 지급',
              '견적(용호기공', '【업체명】 품의', '연락 ' + '0101234' + '5678', '연락 010.1234.5678', '번호 ' + '900101' + '1234567',
-             '(x)·품의', '2원칙 지키기']
+             '(x)·품의', '2원칙 지키기', '예산 113만원을 집행', '연락 +82-10-' + '1234-5678', '[719 품의']
         out = node("process.stdout.write(JSON.stringify(P.l.map(H.shortTitle)))", {'l': l})
         for o in out[:6]:
             self.assertNotRegex(o, r'\d', o)
@@ -122,6 +124,7 @@ class PlainText(unittest.TestCase):
             self.assertNotRegex(o, r'\d{4}', o)
         self.assertEqual(out[11], '품의')
         self.assertEqual(out[12], '2원칙 지키기')
+        self.assertNotRegex(out[13], r'\d'); self.assertNotIn('1234', out[14]); self.assertEqual(out[15], '제목 미기재')
 
     def test_odd_input_does_not_throw(self):
         out = node("process.stdout.write(JSON.stringify([H.build(null,null).length,H.build({tasks:{}},{items:'x'}).length,"
@@ -130,6 +133,12 @@ class PlainText(unittest.TestCase):
         self.assertEqual(len(out[2]), 1)
         self.assertEqual(out[2][0]['state'], '그 밖')
         self.assertEqual(out[2][0]['at'], '')
+
+    def test_other_state_not_doubled_and_bad_day(self):
+        out = node("const c=H.build({tasks:[{t:'T300',title:'a',state:'보류',updated:'2026-02-31 10:00'}]},{date:'2026-10-30',items:[{title:'T300 서류',done:false}]});process.stdout.write(JSON.stringify(c.map(H.pick)))", {})
+        self.assertEqual(len(out), 2)
+        self.assertEqual(out[0]['next'], '현황판에서 상태 확인')
+        self.assertEqual(out[0]['at'], '')
 
     def test_stale_after_three_days(self):
         out = node("const t=(h)=>H.build({tasks:[{t:'T100',title:'a',bot:'대장',state:'진행',updated:'2026-10-27 10:00'}]},null,Date.UTC(2026,9,27,1,0)+h*3600000)[0].stale;"
@@ -145,7 +154,7 @@ class RealData(unittest.TestCase):
         self.assertGreater(len(out['c']), 0)
         for c in out['c']:
             self.assertEqual(set(c), set(FIELDS) | {'stale'})
-            self.assertNotRegex(c['title'] + c['next'], r'\d[\d,.]*(\s*[억천백만])*\s*원(?![가-힣])|\d{1,3}(,\d{3})+')
+            self.assertNotRegex(c['title'] + c['next'], r'\d\s*[억천백만]*\s*원(?!칙|장|래|본|인|문|리|활|서)|\d{1,3}(,\d{3})+')
             self.assertNotRegex(c['title'] + c['next'], r'\d{2,3}-\d{3,4}-\d{4}|[\w.]+@[\w-]+\.\w|\d{6}-\d{7}')
             self.assertTrue(c['link'].startswith('#/'))
         self.assertEqual(out['g'][0], '유진님 확인 필요')

@@ -13,7 +13,7 @@
   /* 현황판 상태 → 보드 상태. 「유진님 확인 필요」를 맨 위에 둬요. */
   var STATE = { '대기(유진님 몫)': '유진님 확인 필요', '막힘': '막힘', '진행': '진행', '끝': '끝' };
   var ORDER = ['유진님 확인 필요', '막힘', '진행', '끝', '그 밖'];
-  var DOT = { '유진님 확인 필요': 'yu', '막힘': 'stop', '진행': 'run', '끝': 'done', '그 밖': 'done' };
+  var DOT = { '유진님 확인 필요': 'yu', '막힘': 'stop', '진행': 'run', '끝': 'done', '그 밖': 'etc' };
   var BOTS = ['대장', '문서봇', '춘식이', '춘식이2', '춘식이3', '클로드', '유진님'];
   var STALE_H = 72; /* 3일 넘게 안 바뀐 안 끝난 카드 = 「오래 멈춤」 색 */
   var TITLE_MAX = 28, NEXT_MAX = 34;
@@ -33,11 +33,11 @@
     x = x.replace(/[(（【〔\[].*$/, ' ') /* 안 닫힌 괄호는 끝까지 버려요 */
       .replace(/[\w.+-]+@[\w-]+(\.[\w-]+)+/g, ' ')
       .replace(/\d{6}[-\s]?[1-8]\d{6}/g, ' ')
-      .replace(/0\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/g, ' ')
+      .replace(/(?:\+?82[-.\s]?|0)\d{1,2}[-.\s]?\d{3,4}[-.\s]?\d{4}/g, ' ')
       .replace(/\d{10,}/g, ' ')
       .replace(/[₩\\]\s*\d[\d,.]*/g, ' ')
       .replace(/금\s*\d[\d,.]*/g, ' ')
-      .replace(/\d[\d,.]*(?:\s*[억천백만])*\s*(?:원|KRW)(?![가-힣])/g, ' ')
+      .replace(/\d[\d,.]*(?:\s*[억천백만])*\s*(?:원(?:으로|을|이|의|은|과|도|에)?(?!칙|장|래|본|인|문|리|활|서)|KRW)/g, ' ')
       .replace(/\d[\d,.]*(?:\s*[억천백만])+(?![가-힣])/g, ' ')
       .replace(/\d{1,3}(?:,\d{3})+/g, ' ')
       .replace(/[<>]/g, ' ')
@@ -46,13 +46,15 @@
       .replace(/^[\s·,:—–-]+|[\s·,:—–-]+$/g, '');
     return x;
   }
-  function shortTitle(s) { return clip(scrub(s), TITLE_MAX); }
+  function shortTitle(s) { return clip(scrub(s), TITLE_MAX) || '제목 미기재'; }
   function pad(n) { return String(n).padStart(2, '0'); }
   var WD = ['일', '월', '화', '수', '목', '금', '토'];
   /* 'YYYY-MM-DD HH:MM' 또는 'YYYY-MM-DD' → { text: '10.22.(목) 15:09', ms } (KST 글자 그대로). 모양이 다르면 빈칸 */
   function at(s) {
     var m = /^(\d{4})-(\d\d)-(\d\d)(?:[ T](\d\d):(\d\d))?/.exec(String(s || ''));
     if (!m || +m[2] < 1 || +m[2] > 12 || +m[3] < 1 || +m[3] > 31 || (m[4] && (+m[4] > 23 || +m[5] > 59))) return { text: '', ms: null };
+    var chk = new Date(Date.UTC(+m[1], +m[2] - 1, +m[3]));
+    if (chk.getUTCMonth() !== +m[2] - 1 || chk.getUTCDate() !== +m[3]) return { text: '', ms: null };
     var utc = Date.UTC(+m[1], +m[2] - 1, +m[3], m[4] ? +m[4] : 0, m[5] ? +m[5] : 0) - 9 * 3600000;
     var wd = WD[new Date(Date.UTC(+m[1], +m[2] - 1, +m[3])).getUTCDay()];
     return { text: (+m[2]) + '.' + (+m[3]) + '.(' + wd + ')' + (m[4] ? ' ' + m[4] + ':' + m[5] : ''), ms: utc };
@@ -63,17 +65,18 @@
   }
   function linkFor(no) { return /^T\d{3,4}$/.test(no) ? '#/bots?t=' + no : '#/todo'; }
   /* 「내일 할 일」(todo.json)에서 T번호가 같은 안 끝난 유진님 일 → 다음 단계 */
-  function todoNext(todo) {
-    var o = {};
-    arr(todo && todo.items).forEach(function (it) {
+  function todoNext(todo, openNo) {
+    var o = {}, used = {};
+    arr(todo && todo.items).forEach(function (it, i) {
       if (!it || typeof it !== 'object' || it.done) return;
       var m = /\b(T\d{3,4})\b/.exec(String(it.title || ''));
-      if (m && !o[m[1]]) o[m[1]] = String(it.title).replace(m[1], '').trim();
+      if (m && openNo && openNo[m[1]] && !o[m[1]]) { o[m[1]] = String(it.title).replace(m[1], '').trim(); used[i] = 1; }
     });
-    return o;
+    return { next: o, used: used };
   }
   function nextStep(t, tn) {
     if (t.state === '끝') return '없음(끝났어요)';
+    if (!STATE[t.state]) return '현황판에서 상태 확인';
     if (tn[t.t]) return clip('유진님: ' + shortTitle(tn[t.t]), NEXT_MAX);
     if (t.state === '대기(유진님 몫)') {
       var tags = (Array.isArray(t.yujin) ? t.yujin : []).filter(function (g) { return typeof g === 'string'; })
@@ -94,22 +97,24 @@
   function build(status, todo, nowMs) {
     var now = nowMs == null ? Date.now() : nowMs;
     var tasks = arr(status && status.tasks), items = arr(todo && todo.items);
-    var tn = todoNext({ items: items }), cards = [], openNo = {};
+    var cards = [], openNo = {};
+    tasks.forEach(function (t) {
+      if (t && typeof t === 'object' && /^T\d{3,4}$/.test(String(t.t || '')) && STATE[t.state] && t.state !== '끝') openNo[t.t] = 1;
+    });
+    var tn = todoNext({ items: items }, openNo);
     tasks.forEach(function (t) {
       if (!t || typeof t !== 'object' || !/^T\d{3,4}$/.test(String(t.t || ''))) return;
       var a = at(t.updated), st = STATE[t.state] || '그 밖';
-      if (st !== '끝' && st !== '그 밖') openNo[t.t] = 1;
-      var c = pick({ no: t.t, title: shortTitle(t.title), bot: botName(t.bot), state: st, next: nextStep(t, tn), at: a.text, link: linkFor(t.t),
+      var c = pick({ no: t.t, title: shortTitle(t.title), bot: botName(t.bot), state: st, next: nextStep(t, tn.next), at: a.text, link: linkFor(t.t),
         stale: st !== '끝' && a.ms != null && (now - a.ms) > STALE_H * 3600000 });
       c._ms = a.ms; cards.push(c);
     });
-    /* 「내일 할 일」 중 안 끝난 것: T번호가 열린 현황판 카드에 붙지 않으면(번호 없음·현황판에 없음·이미 끝) 따로 유진님 카드 */
+    /* 「내일 할 일」 중 안 끝난 것: 열린 현황판 카드의 「다음 단계」로 붙지 않은 것은 모두 따로 유진님 카드 */
     var d = at(todo && todo.date), n = 0;
-    items.forEach(function (it) {
+    items.forEach(function (it, i) {
       if (!it || typeof it !== 'object' || it.done) return;
       n += 1;
-      var m = /\b(T\d{3,4})\b/.exec(String(it.title || ''));
-      if (m && openNo[m[1]]) return;
+      if (tn.used[i]) return;
       var c = pick({ no: '할 일 ' + n, title: shortTitle(it.title), bot: '유진님', state: '유진님 확인 필요', next: '유진님이 해요', at: d.text, link: '#/todo' });
       c._ms = d.ms; cards.push(c);
     });

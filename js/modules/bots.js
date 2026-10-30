@@ -45,7 +45,7 @@
     var p1 = root.HJBoard || boardTried ? Promise.resolve() : new Promise(function (ok) {
       boardTried = true;
       var s = document.createElement('script');
-      s.src = new URL('js/collab-board-core.js?v=1', document.baseURI).href;
+      s.src = new URL('js/collab-board-core.js?v=77', document.baseURI).href;
       s.onload = ok; s.onerror = function () { boardTried = false; boardFailed = true; ok(); };
       document.head.appendChild(s);
     });
@@ -121,11 +121,12 @@
     '.bs-top{font-size:.76rem;color:var(--ink-2);margin-top:2px}.bs-top .tn{font-weight:700;color:var(--muted)}.bs-hist{margin-top:4px;color:var(--ink)}',
     '.bs-ret{font-size:.78rem;color:var(--ink-2);padding:8px 0 10px;border-top:1px solid var(--line);line-height:1.7}.bs-ret b{color:var(--navy)}',
     '.cb-seg{display:inline-flex;background:var(--soft);border-radius:12px;padding:3px;margin:2px 0 6px}',
-    '.cb-seg button{border:0;background:none;border-radius:10px;padding:8px 14px;min-height:36px;font-size:.84rem;font-weight:600;color:var(--ink-2);cursor:pointer}',
+    '.cb-seg button{border:0;background:none;border-radius:10px;padding:8px 16px;min-height:44px;font-size:.84rem;font-weight:600;color:var(--ink-2);cursor:pointer}',
     '.cb-seg button.on{background:var(--card);color:var(--navy);box-shadow:0 1px 2px rgba(0,0,0,.08)}',
     '.cb-grp h3{font-size:.9rem;margin:12px 0 6px;display:flex;justify-content:space-between;align-items:baseline}.cb-grp h3 small{font-size:.76rem;color:var(--muted);font-weight:500}',
     '.cb-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:8px}',
     '.cb-card{background:var(--soft);border-radius:14px;padding:10px 12px;min-width:0;border-left:3px solid transparent}',
+    '.cb-dot.d-etc{background:#B0B8C1}',
     '.cb-card.stale{border-left-color:#B0B8C1}.cb-card.stale .cb-st{color:var(--muted)}',
     '.cb-t1{display:flex;gap:6px;align-items:center;font-size:.76rem}.cb-t1 .cb-dot{width:8px;height:8px;border-radius:50%;flex:0 0 8px}',
     '.cb-no{font-weight:700;color:var(--muted)}.cb-st{margin-left:auto;font-weight:700;color:var(--ink-2);white-space:nowrap}',
@@ -254,7 +255,8 @@
     };
   }
   function jump(el) {
-    if (!view.fromLink) return;
+    if (!view.fromLink || view.jumped === view.fromLink) return;
+    view.jumped = view.fromLink;
     setTimeout(function () { /* 화면 바꿀 때 맨 위로 올리는 것보다 뒤에 */
       var a = el.querySelector('#bs-all');
       if (a && a.scrollIntoView) a.scrollIntoView({ block: 'start', behavior: 'auto' }); /* 바로 이동(움직임 없음) */
@@ -264,8 +266,8 @@
     style();
     if (!root.HJBots) { el.innerHTML = '<section class="card"><div class="bs-stale">⚠ 봇 작업 현황 계산 파일(js/botstatus-core.js)을 못 불러왔어요. 새로고침해 주세요.</div></section>'; return; }
     var rq = api.route && api.route().query, m = /(?:^|&)t=(T\d{3,4})(?:&|$)/.exec(rq || '');
-    if (m) { view.q = m[1]; view.showDone = true; view.state = ''; view.fromLink = m[1]; }
-    else if (view.fromLink) { if (view.q === view.fromLink) view.q = ''; view.showDone = false; view.fromLink = ''; }
+    if (m) { if (view.fromLink !== m[1]) view.jumped = ''; view.q = m[1]; view.showDone = true; view.state = ''; view.fromLink = m[1]; }
+    else if (view.fromLink) { if (view.q === view.fromLink) view.q = ''; view.showDone = false; view.fromLink = ''; view.jumped = ''; }
     if (!root.HJBoard || !todo) loadBoard().then(function () { if (data && el.querySelector('#bs-kpi')) { paint(el, api); jump(el); } });
     if (!score) loadScore().then(function (j) { if (j && data && el.querySelector('#bs-kpi')) { paint(el, api); jump(el); } });
     if (data) { paint(el, api); jump(el); return; }
