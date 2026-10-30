@@ -1,0 +1,34 @@
+# 대장↔클로드 방: 대장이 글을 쓴 뒤 「클로드 깨우기」(업무 PC가 꺼져 있어도). 꺼진 초안: 비밀 2개가 없으면 조용히 건너뜀.
+# 어떻게: claude.ai/code 의 「예약 작업(scheduled task, 옛 이름 routine)」 하나를 API 방아쇠로 불러요.
+#   그 작업이 클라우드에서 hj-app 을 받아 chat 가지 방을 읽고(HJ_CHAT_KEY 는 claude 환경 변수) 답을 claude/* 가지에 올려요.
+#   → chat-ping → chat-collect 가 chat 가지로 모으고 대장 웹훅을 깨워요.
+# 손으로 실행(workflow_dispatch)만: 늘 main 에 있는 이 파일로 돌아요. push·pull_request 사건 안 씀.
+# 비밀(유진님이 Settings → Secrets and variables → Actions 에 넣음, 춘식이는 안 만듦):
+#   HJ_CLAUDE_FIRE_URL   : 예약 작업 API 방아쇠의 Fire URL
+#   HJ_CLAUDE_FIRE_TOKEN : 그 작업의 bearer 토큰(한 번만 보여 줌)
+# 본문에는 방 글을 넣지 않아요(공개 실행 기록). 응답 본문은 버려요. 문서: docs/hj_chat_연동.md
+name: chat-wake-claude
+on:
+  workflow_dispatch: {}
+permissions: {}
+concurrency:
+  group: chat-wake-claude
+  cancel-in-progress: false
+jobs:
+  wake:
+    if: github.repository == 'yujin0049/hj-app'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: 클로드 깨우기
+        env:
+          FIRE_URL: ${{ secrets.HJ_CLAUDE_FIRE_URL }}
+          FIRE_TOKEN: ${{ secrets.HJ_CLAUDE_FIRE_TOKEN }}
+        run: |
+          if [ -z "$FIRE_URL" ] || [ -z "$FIRE_TOKEN" ]; then echo "클로드 깨우기 비밀이 아직 없어요(건너뜀)"; exit 0; fi
+          curl -sS --fail --max-time 20 -X POST "$FIRE_URL" \
+            -H "Authorization: Bearer $FIRE_TOKEN" \
+            -H "anthropic-beta: experimental-cc-routine-2026-04-01" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "Content-Type: application/json" \
+            --data '{"text":"hj-chat: 대장 새 글 있음"}' -o /dev/null -w "깨우기 응답 %{http_code}\n"

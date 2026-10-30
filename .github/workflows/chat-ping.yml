@@ -1,0 +1,17 @@
+# 대장↔클로드 방: 클로드가 claude/* 가지에 방 파일을 올리면 「바로」 모으기를 부르는 종(비밀 없음).
+# 왜 따로: push 사건은 「푸시된 가지 안의 파일」로 돌아요. 그래서 이 파일에는 비밀도 쓰기 권한도 두지 않아요(고쳐져도 빼낼 게 없음).
+#   진짜 일(모으기·웹훅)은 chat-collect.yml 이 workflow_run 으로 이어받아요. workflow_run 은 늘 main 에 있는 파일로 돌아서 안전해요.
+# 문서: docs/hj_chat_연동.md
+name: chat-ping
+on:
+  push:
+    branches: ['claude/**']
+    paths: ['chat/room.json']
+permissions: {}
+jobs:
+  ping:
+    if: github.repository == 'yujin0049/hj-app'
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - run: echo "claude 가지 방 파일이 바뀌었어요 → chat-collect 가 이어서 모아요"
