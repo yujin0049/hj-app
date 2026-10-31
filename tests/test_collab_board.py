@@ -187,7 +187,7 @@ class Screen(unittest.TestCase):
         self.assertIn('H.cardHTML', board)
 
     def test_cache_bumped(self):
-        self.assertIn("var CACHE = 'hj-v83';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v84';", read('sw.js'))
 
     def test_no_contact_info_in_core(self):
         text = read('js', 'collab-board-core.js')

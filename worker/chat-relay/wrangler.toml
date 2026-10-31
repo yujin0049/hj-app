@@ -1,0 +1,14 @@
+# 참고용(배포는 Cloudflare API로 했음). 비밀값 없음.
+name = "hj-chat-relay"
+main = "index.mjs"
+compatibility_date = "2026-05-01"
+workers_dev = true
+
+[vars]
+ROOM_FP = "gnQKz8dK"
+ALLOW_ORIGINS = "https://yujin0049.github.io,https://hj-chat-send-pv.yujin06344.workers.dev"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "hj-chat-relay-db"
+database_id = "ab79303f-3d8a-4f7b-ab6c-af3cd5689682"
