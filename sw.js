@@ -1,5 +1,5 @@
 /* 항상 새 버전 먼저(네트워크 우선). 인터넷이 없을 때만 저장본을 보여 줘요. 잠금 없음. */
-var CACHE = 'hj-v83';
+var CACHE = 'hj-v84';
 /* 중요문서(#/docs)는 폰에 저장 금지(유진님 261029 「내 휴대폰에 저장은 싫어」): 캐시에 넣지도, 저장본을 꺼내 주지도 않음(network-only). */
 var NO_STORE = ['/data/docs_important.json', '/js/modules/docs.js'];
 self.addEventListener('install', function (e) {

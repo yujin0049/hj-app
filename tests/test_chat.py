@@ -16,6 +16,8 @@ import unittest
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CORE = os.path.join(ROOT, 'js', 'chat-crypto.js')
 TOOL = os.path.join(ROOT, 'tools', 'hj_chat.mjs')
+RELAY = os.path.join(ROOT, 'worker', 'chat-relay', 'index.mjs')
+RELAY_URL = 'https://hj-chat-relay.yujin06344.workers.dev'
 
 
 def read(*p):
@@ -142,8 +144,12 @@ class ChatTool(unittest.TestCase):
 class ChatWiring(unittest.TestCase):
     def test_screen_keeps_no_key_and_no_write(self):
         js = re.sub(r'/\*.*?\*/', '', read('js', 'modules', 'chat.js'), flags=re.S)
-        for bad in ('localStorage', 'sessionStorage', 'document.cookie', 'indexedDB', 'innerText =', 'Authorization', 'method:', 'POST', 'PUT'):
+        for bad in ('localStorage', 'sessionStorage', 'document.cookie', 'indexedDB', 'innerText =', 'Authorization', 'PUT', 'token'):
             self.assertFalse(bad in js, bad)
+        # 쓰기는 중계 Worker 의 /msg 하나뿐(261031 p1 보내기). GitHub 로는 쓰지 않음.
+        self.assertEqual(js.count("method: 'POST'"), 1)
+        self.assertIn("fetch(RELAY + '/msg', { method: 'POST'", js)
+        self.assertIn("var RELAY = 'https://hj-chat-relay.yujin06344.workers.dev'", js)
         # api.github.com 은 공개 「읽기」 주소 하나만(261031: raw 캐시 5분 → API 먼저). 토큰·쓰기 없음.
         self.assertEqual(set(re.findall(r'https://api\.github\.com[^\'"\s]*', js)),
                          {'https://api.github.com/repos/yujin0049/hj-app/contents/chat/room.json?ref=chat'})
@@ -160,7 +166,9 @@ class ChatWiring(unittest.TestCase):
         self.assertNotIn('push', on)
         self.assertFalse('pull_request' in y)
         self.assertIn('secrets.HJ_CHAT_HOOK_URL', y)
-        for u in re.findall(r'https?://[^\s"\']+', y):   # 웹훅 주소 같은 진짜 URL 없음(자리표시만)
+        for u in re.findall(r'https?://[^\s"\']+', y):   # 웹훅 주소 같은 진짜 URL 없음(자리표시만). 공개 중계 Worker 주소만 예외.
+            if u == RELAY_URL:
+                continue
             self.assertIn('${', u)
         self.assertIn('-o /dev/null', y)
         self.assertIn('workflow_run', on)          # 바로 모으기(main 판 파일로 돎)
@@ -196,9 +204,6 @@ class ChatWiring(unittest.TestCase):
             s = read(*p)
             self.assertNotRegex(s, r'HJ_CHAT_KEY\s*=\s*[\'"]?[A-Za-z0-9_\-]{12,}')
 
-
-if __name__ == '__main__':
-    unittest.main()
 
 
 class ChatRoomSource(unittest.TestCase):
@@ -238,3 +243,145 @@ setTimeout(()=>{console.log(JSON.stringify({calls, api:html.includes('GitHub API
         self.assertEqual([c for c in out['api']['calls'] if 'room.json' in c], ['https://api.github.com/repos/yujin0049/hj-app/contents/chat/room.json'])
         self.assertTrue(out['blocked']['raw'])
         self.assertIn('https://raw.githubusercontent.com/yujin0049/hj-app/chat/chat/room.json', out['blocked']['calls'])
+
+
+@unittest.skipUnless(shutil.which('node'), 'node 없음')
+class ChatSend(unittest.TestCase):
+    """261031 p1 보내기: 화면이 봉한 글 {id,iv,ct} → 중계 Worker → 목록·chat-collect 가 room.json 과 번호로 합침."""
+    @classmethod
+    def setUpClass(cls):
+        cls.key = 'test-' + secrets.token_urlsafe(24)
+        cls.room = node("""
+          let room=await C.initRoom(P.k); const k=await C.unlock(P.k,room);
+          room=await C.post(k,room,'대장','기존 글','2026-10-30T19:50:01+09:00'); return room;""", {'k': cls.key})
+
+    def test_compose_then_merge_relay(self):
+        out = node("""
+          const k=await C.unlock(P.k,P.r); const at=C.seoulNow(Date.UTC(2026,9,31,3,4,5));
+          const m=await C.compose(k,P.r,'유진님','시험 보내기',at);
+          const fp=C.fingerprint(P.r);
+          const relay={fp, msgs:[Object.assign({n:1},m), {n:2,id:'../x',iv:'a',ct:'<b>'}]};
+          const a=C.withRelay(P.r,relay), b=C.withRelay(a.room,relay), c=C.withRelay(P.r,{fp:'zzzzzzzz',msgs:[m]});
+          const read=await C.readAll(k,a.room);
+          let empty=''; try{await C.compose(k,P.r,'유진님','   ',at)}catch(e){empty=e.message}
+          let who=''; try{await C.compose(k,P.r,'아무개','x',at)}catch(e){who=e.message}
+          return {at, keys:Object.keys(m).sort(), id:m.id, raw:JSON.stringify(m), a:a.added, b:b.added, c:c.added, n:a.room.msgs.length,
+                  last:read[read.length-1], bad:read.filter(x=>x.bad).length, empty, who};""", {'k': self.key, 'r': self.room})
+        self.assertEqual(out['at'], '2026-10-31T12:04:05+09:00')        # 서울 시각
+        self.assertEqual(out['keys'], ['ct', 'id', 'iv'])
+        self.assertTrue(out['id'].startswith('m261031120405-'))
+        self.assertNotIn('시험', out['raw'])
+        self.assertNotIn('유진님', out['raw'])
+        self.assertEqual((out['a'], out['b'], out['c'], out['n']), (1, 0, 0, 2))   # 번호로 합집합 · 다른 방 지문은 안 합침 · 이상한 모양은 버림
+        self.assertEqual(out['last']['from'], '유진님')
+        self.assertEqual(out['last']['text'], '시험 보내기')
+        self.assertEqual(out['bad'], 0)
+        self.assertIn('비었', out['empty'])
+        self.assertIn('보낸 사람', out['who'])
+
+    def relay(self, script, payload):
+        js = ("import * as R from %s; const C=(await import('node:module')).createRequire(import.meta.url)(%s);"
+              "const P=JSON.parse(require_fs().readFileSync(0,'utf8')); function require_fs(){return FS}"
+              % (json.dumps('file://' + RELAY), json.dumps(CORE)))
+        js = "import FS from 'node:fs';" + js + "const out=await (async()=>{%s})(); process.stdout.write(JSON.stringify(out));" % script
+        r = subprocess.run(['node', '--input-type=module', '-e', js], input=json.dumps(payload, ensure_ascii=False), capture_output=True, text=True, timeout=120)
+        if r.returncode:
+            raise AssertionError(r.stderr)
+        return json.loads(r.stdout)
+
+    def test_worker_accepts_only_room_ciphertext(self):
+        out = self.relay("""
+          const k=await C.unlock(P.k,P.r); const now=Date.UTC(2026,9,31,3,4,5); const fp=C.fingerprint(P.r);
+          const m=await C.compose(k,P.r,'유진님','시험',C.seoulNow(now));
+          const ck=(o)=>{const r=R.checkEnvelope(typeof o==='string'?o:JSON.stringify(o),fp,now);return r.ok?'ok':r.status+':'+r.error};
+          return {
+            good: ck({fp,msg:m}),
+            plain: ck('시험'),
+            plainmsg: ck({fp,msg:{id:m.id,iv:m.iv,ct:'시험 평문'}}),
+            text: ck({fp,msg:m,text:'시험'}),
+            extra: ck({fp,msg:Object.assign({from:'유진님'},m)}),
+            other: ck({fp:'zzzzzzzz',msg:m}),
+            big: ck({fp,msg:{id:m.id,iv:m.iv,ct:'A'.repeat(9000)}}),
+            old: ck({fp,msg:Object.assign({},m,{id:'m250101000000-abcdef'})}),
+            badid: ck({fp,msg:Object.assign({},m,{id:'../../x'})}),
+            nofp: R.checkEnvelope(JSON.stringify({fp,msg:m}),'',now).status,
+            max: R.MAX_BODY, rate: R.RATE_PER_MIN };""", {'k': self.key, 'r': self.room})
+        self.assertEqual(out['good'], 'ok')
+        self.assertEqual(out['plain'], '400:not-json')
+        self.assertEqual(out['plainmsg'], '400:ct')
+        self.assertEqual(out['text'], '400:shape')
+        self.assertEqual(out['extra'], '400:shape')
+        self.assertEqual(out['other'], '403:other-room')
+        self.assertEqual(out['big'], '413:too-big')
+        self.assertEqual(out['old'], '400:time')
+        self.assertEqual(out['badid'], '400:id')
+        self.assertEqual(out['nofp'], 403)
+        self.assertEqual((out['max'], out['rate']), (8192, 10))
+
+    def test_worker_fetch_cors_rate_and_since(self):
+        out = self.relay("""
+          /* 가짜 D1: 이 Worker 가 쓰는 질의만 */
+          const msgs=[], rl={}; let n=0;
+          const DB={prepare(sql){return {args:[],bind(...a){this.args=a;return this},
+            async all(){ if(sql.startsWith('SELECT n, id')) return {results:msgs.filter(x=>x.n>this.args[0]).slice(0,this.args[1]).map(({n,id,iv,ct})=>({n,id,iv,ct}))}; },
+            async first(){ const a=this.args;
+              if(sql.startsWith('INSERT INTO rl')){const k=a[0]+':'+a[1]; rl[k]=(rl[k]||0)+1; return {c:rl[k]};}
+              if(sql.startsWith('SELECT COUNT')) return {k:msgs.length};
+              if(sql.startsWith('SELECT n FROM')){const r=msgs.find(x=>x.id===a[0]); return r?{n:r.n}:null;} },
+            async run(){ const a=this.args;
+              if(sql.startsWith('INSERT OR IGNORE')){ if(msgs.some(x=>x.id===a[0])) return {meta:{changes:0}}; msgs.push({n:++n,id:a[0],iv:a[1],ct:a[2]}); return {meta:{changes:1}}; }
+              return {meta:{changes:0}}; } };}};
+          const env={DB, ROOM_FP:C.fingerprint(P.r), ALLOW_ORIGINS:'https://yujin0049.github.io,https://pv.example'};
+          const k=await C.unlock(P.k,P.r); const W=R.default;
+          const post=async(origin,body,ip)=>{const h={'Content-Type':'application/json','CF-Connecting-IP':ip||'1.2.3.4'}; if(origin) h.Origin=origin;
+            const r=await W.fetch(new Request('https://relay/msg',{method:'POST',headers:h,body}),env); return [r.status,r.headers.get('access-control-allow-origin')];};
+          const env1=async(t)=>JSON.stringify({fp:env.ROOM_FP,msg:await C.compose(k,P.r,'유진님',t,C.seoulNow())});
+          const res={};
+          const b1=await env1('시험 1');
+          res.ok=await post('https://yujin0049.github.io',b1);
+          res.dup=await post('https://yujin0049.github.io',b1);
+          res.evil=await post('https://evil.example',await env1('x'));
+          res.none=await post(null,await env1('x'));
+          res.plain=await post('https://pv.example','시험');
+          const codes=[]; for(let i=0;i<12;i++) codes.push((await post('https://pv.example',await env1('r'+i),'9.9.9.9'))[0]);
+          res.codes=codes;
+          const g=await W.fetch(new Request('https://relay/msgs?since=0',{headers:{Origin:'https://yujin0049.github.io'}}),env); const gj=await g.json();
+          const g2=await (await W.fetch(new Request('https://relay/msgs?since='+gj.msgs[0].n),env)).json();
+          const pre=await W.fetch(new Request('https://relay/msg',{method:'OPTIONS',headers:{Origin:'https://evil.example'}}),env);
+          res.get=[g.status,g.headers.get('access-control-allow-origin'),gj.fp===env.ROOM_FP,gj.msgs.length,Object.keys(gj.msgs[0]).sort().join(',')];
+          res.since=g2.msgs.length; res.pre=[pre.status,pre.headers.get('access-control-allow-origin')];
+          return res;""", {'k': self.key, 'r': self.room})
+        self.assertEqual(out['ok'], [200, 'https://yujin0049.github.io'])
+        self.assertEqual(out['dup'][0], 200)                     # 같은 번호 두 번 → 한 줄만(INSERT OR IGNORE)
+        self.assertEqual(out['evil'], [403, None])               # 허용 출처 밖
+        self.assertEqual(out['none'][0], 403)                    # 출처 없는 POST
+        self.assertEqual(out['plain'][0], 400)                   # 평문 거절
+        self.assertEqual(out['codes'][:10], [200] * 10)          # 한 IP 분당 10번까지 통과
+        self.assertEqual(out['codes'][10:], [429, 429])          # 넘으면 429
+        self.assertEqual(out['get'][:3], [200, 'https://yujin0049.github.io', True])
+        self.assertEqual(out['get'][4], 'ct,id,iv,n')
+        self.assertEqual(out['since'], out['get'][3] - 1)
+        self.assertEqual(out['pre'], [403, None])
+
+    def test_screen_has_send_box_and_merges_relay(self):
+        js = read('js', 'modules', 'chat.js')
+        for w in ('id="ch-text"', 'id="ch-go"', "ME = '유진님'", 'C.compose(key, room, ME', 'C.withRelay(base', "RELAY + '/msgs?since='", 'maxlength'):
+            self.assertIn(w, js)
+        self.assertIn('chat-crypto.js?v=84', js)
+        self.assertIn("'hj-v84'", read('sw.js'))
+
+    def test_collect_pulls_relay_without_new_secret(self):
+        y = '\n'.join(l for l in read('.github', 'workflows', 'chat-collect.yml').splitlines() if not l.lstrip().startswith('#'))
+        self.assertIn(RELAY_URL, y)
+        self.assertIn('/msgs?since=', y)
+        self.assertIn('C.withRelay(base,j)', y)
+        self.assertEqual(sorted(set(re.findall(r'secrets\.([A-Z_]+)', y))), ['HJ_CHAT_HOOK_AUTH', 'HJ_CHAT_HOOK_URL'])
+
+    def test_worker_source_has_no_token(self):
+        w = read('worker', 'chat-relay', 'index.mjs') + read('worker', 'chat-relay', 'wrangler.toml')
+        for bad in ('GITHUB', 'github_pat', 'ghp_', 'Authorization', 'HJ_CHAT_KEY', 'decrypt'):
+            self.assertNotIn(bad, w)
+
+
+if __name__ == '__main__':
+    unittest.main()

@@ -92,6 +92,25 @@
     var id = newId(atIso);
     return seal(key, room, id, { id: id, from: from, at: atIso, text: t }).then(function (m) { var r = JSON.parse(JSON.stringify(room)); r.msgs.push(m); r.msgs = sorted(r.msgs); return r; });
   }
+  /* 글 하나 봉하기(화면 보내기용, 261031): 방 파일은 그대로 두고 {id, iv, ct} 하나만 돌려줌 → 중계 Worker 에 POST */
+  function compose(key, room, from, text, atIso) {
+    var t = cleanText(text).trim();
+    if (!t) return Promise.reject(new Error('글이 비었어요'));
+    if (FROM.indexOf(from) < 0) return Promise.reject(new Error('보낸 사람은 ' + FROM.join('·') + ' 중 하나'));
+    var id = newId(atIso);
+    return seal(key, room, id, { id: id, from: from, at: atIso, text: t });
+  }
+  /* 중계 Worker 글(GET /msgs 의 msgs)을 방 파일에 합치기: 같은 방 지문일 때만, 모양 맞는 것만, 글 번호로 합집합(열쇠 필요 없음) */
+  function withRelay(room, relay) {
+    if (!valid(room)) throw new Error('방 파일 모양이 달라요');
+    if (!relay || relay.fp !== fingerprint(room) || !Array.isArray(relay.msgs)) return { room: room, added: 0 };
+    return merge(room, { v: room.v, salt: room.salt, iter: room.iter, check: room.check, msgs: relay.msgs.map(function (m) { return { id: m && m.id, iv: m && m.iv, ct: m && m.ct }; }) });
+  }
+  /* 지금 서울 시각 'YYYY-MM-DDTHH:MM:SS+09:00' (글 번호·화면 시각이 서울 기준) */
+  function seoulNow(ms) {
+    var d = new Date((ms == null ? Date.now() : ms) + 9 * 3600000), p = function (n) { return ('0' + n).slice(-2); };
+    return d.getUTCFullYear() + '-' + p(d.getUTCMonth() + 1) + '-' + p(d.getUTCDate()) + 'T' + p(d.getUTCHours()) + ':' + p(d.getUTCMinutes()) + ':' + p(d.getUTCSeconds()) + '+09:00';
+  }
   /* 화면용: 시각 'YYYY-MM-DDTHH:MM…' → '10.30.(금) 19:43' (서울 시간 그대로 적힌 값) */
   function atText(s) {
     var m = /^(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2})/.exec(String(s || ''));
@@ -107,5 +126,5 @@
     var who = cleanFrom(m.from);
     return '<div class="ch-msg ' + side(who) + '"><div class="ch-who">' + esc(who) + ' <time>' + esc(atText(m.at)) + '</time></div><div class="ch-b">' + esc(m.text) + '</div></div>';
   }
-  return { V: V, ITER: ITER, MIN_KEY: MIN_KEY, FROM: FROM, MAX_TEXT: MAX_TEXT, deriveKey: deriveKey, ID_RE: ID_RE, initRoom: initRoom, unlock: unlock, readAll: readAll, post: post, valid: valid, merge: merge, fingerprint: fingerprint, newId: newId, atText: atText, esc: esc, bubbleHTML: bubbleHTML, _seal: seal };
+  return { V: V, ITER: ITER, MIN_KEY: MIN_KEY, FROM: FROM, MAX_TEXT: MAX_TEXT, deriveKey: deriveKey, ID_RE: ID_RE, initRoom: initRoom, unlock: unlock, readAll: readAll, post: post, valid: valid, merge: merge, fingerprint: fingerprint, newId: newId, atText: atText, esc: esc, bubbleHTML: bubbleHTML, compose: compose, withRelay: withRelay, seoulNow: seoulNow, _seal: seal };
 });

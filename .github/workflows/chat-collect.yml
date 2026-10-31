@@ -2,7 +2,7 @@
 # 왜 workflow_run·예약 실행인가: 둘 다 늘 main 에 있는 이 파일로만 돌아요. push 사건은 "푸시된 가지 안의 파일"로 돌아서,
 #   그 가지에 쓸 수 있는 누구든 파일을 고쳐 비밀을 빼낼 수 있어요. 그래서 이 파일은 push 사건을 안 써요(pull_request_target 도 안 씀).
 #   push 는 비밀 없는 chat-ping.yml 이 받고, 이 파일이 workflow_run 으로 이어받아요.
-# 하는 일: claude/* 가지들의 chat/room.json 을 chat 가지의 chat/room.json 으로 합침(열쇠 없이 글 번호로 합집합, 다른 방이면 안 합침).
+# 하는 일: claude/* 가지들의 chat/room.json + 중계 Worker(hj-chat-relay, 화면 「보내기」 글) 를 chat 가지의 chat/room.json 으로 합침(열쇠 없이 글 번호로 합집합, 다른 방이면 안 합침).
 #   새 글이 모였으면 웹훅으로 본문 없이 「새 글 있음 + 개수」만 보내요. 대장이 직접 받아 열쇠로 풀어 읽어요.
 # 비밀 2개는 대장/유진님이 저장소 Settings → Secrets and variables → Actions 에 넣어요(코드에 없음, 춘식이는 안 만듦):
 #   HJ_CHAT_HOOK_URL  : 「클로드 실시간 창구」 웹훅 주소
@@ -35,6 +35,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           REPO: ${{ github.repository }}
+          RELAY: ${{ vars.HJ_CHAT_RELAY_URL || 'https://hj-chat-relay.yujin06344.workers.dev' }}
         run: |
           set -eu
           git clone -q --no-checkout "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" r
@@ -51,6 +52,20 @@ jobs:
               n=$(node /tmp/tools/hj_chat.mjs merge --file chat/room.json --extra /tmp/extra.json 2>/dev/null | sed -n 's/^added=//p' || true)
               total=$((total + ${n:-0}))
             fi
+          done
+          # 화면 「보내기」 글: 중계 Worker(공개 주소, 암호문만)에서 가져와 같은 방 지문일 때만 번호로 합침. 새 secret 없음.
+          since=0
+          for i in 1 2 3 4 5 6 7 8 9 10; do
+            if ! curl -sS --fail --max-time 20 "${RELAY}/msgs?since=${since}" -o /tmp/relay.json; then echo "중계에 못 닿음(건너뜀)"; break; fi
+            n=$(node -e '
+              const fs=require("fs"); const C=require("/tmp/js/chat-crypto.js");
+              const base=JSON.parse(fs.readFileSync("chat/room.json","utf8")); const j=JSON.parse(fs.readFileSync("/tmp/relay.json","utf8"));
+              const m=C.withRelay(base,j); fs.writeFileSync("chat/room.json",JSON.stringify(m.room,null,1)+"\n");
+              process.stdout.write(m.added+" "+(+j.last||0)+" "+(j.more?1:0));' 2>/dev/null || echo "0 0 0")
+            set -- $n
+            total=$((total + ${1:-0}))
+            if [ "${3:-0}" != "1" ] || [ "${2:-0}" -le "$since" ]; then break; fi
+            since=$2
           done
           echo "added=$total" >> "$GITHUB_OUTPUT"
           if [ "$total" -gt 0 ]; then
