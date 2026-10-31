@@ -1,5 +1,5 @@
 """문서등록대장 달력(#/docreg/cal) 시험: python3 -m unittest tests.test_docreg_cal
-- 더보기 맨 아래 버튼 하나, 홈·index.html 은 그대로(자료·화면 파일은 처음 열 때만), 캐시 hj-v79
+- 더보기 맨 아래 버튼 하나, 홈·index.html 은 그대로(자료·화면 파일은 처음 열 때만), 캐시 hj-v83
 - data/docreg_calendar.json 이 있으면: 모양(월별·날짜별·목록), 합계가 맞는지, 전화·계좌·이메일·주민 모양 없음"""
 import json, os, re, unittest
 R = os.path.join(os.path.dirname(__file__), '..')
@@ -28,7 +28,7 @@ class Wiring(unittest.TestCase):
         self.assertNotIn('data/docreg.json', c)
 
     def test_cache(self):
-        self.assertIn("var CACHE = 'hj-v79';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v83';", read('sw.js'))
 
 P = os.path.join(R, 'data', 'docreg_calendar.json')
 
