@@ -1,0 +1,24 @@
+/* 브랜드 C(Datum Line) · 블랙 우선. 이 파일은 tools/brand_c_build.py 가 만듦(손으로 고치지 말고 스크립트를 고쳐 주세요).
+   바탕 #101214 · 강조 #4CC3FF · 글자 #E4E7EA · 링크 #96D8FE. 제목·로고만 Hahmlet, 본문·표·숫자 IBM Plex Sans KR(+tabular-nums). 글꼴: OFL-1.1(fonts/OFL-*.txt). */
+@font-face { font-family: "IBM Plex Sans KR"; font-weight: 400; font-style: normal; font-display: swap; src: url("../fonts/IBMPlexSansKR-400.woff2") format("woff2"); }
+@font-face { font-family: "IBM Plex Sans KR"; font-weight: 600 900; font-style: normal; font-display: swap; src: url("../fonts/IBMPlexSansKR-600.woff2") format("woff2"); }
+@font-face { font-family: "Hahmlet"; font-weight: 700; font-style: normal; font-display: swap; src: url("../fonts/Hahmlet-700.woff2") format("woff2"); }
+:root {
+  color-scheme: dark;
+  --bg: #101214; --card: #171a1e; --navy: #4cc3ff; --navy-2: #96d8fe;
+  --ink: #e4e7ea; --ink-2: #cdd2d7; --muted: #9ba2aa; --line: #2e343b;
+  --ok: #3fc6a0; --okbg: #10261f; --no: #fe8477; --nobg: #2d1718; --warn: #e59b37; --warnbg: #2a1f0e;
+  --soft: #1f2328; --blue-soft: #0f2433;
+  --bc-accent: #4cc3ff; --bc-on-accent: #091017; --bc-link: #96d8fe;
+  --font-display: "Hahmlet", "IBM Plex Sans KR", serif;
+  --font-text: "IBM Plex Sans KR", system-ui, -apple-system, "Apple SD Gothic Neo", sans-serif;
+}
+html, body { background: #101214; color: #e4e7ea; }
+body, button, input, select, textarea { font-family: var(--font-text); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+body table, body td, body th, body b, body small, body .num { font-variant-numeric: tabular-nums; }
+h1, h2, h3, #title, .brand-title { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; }
+a, a:visited { color: #96d8fe; }
+::selection { background: #0f3a52; color: #e4e7ea; }
+:focus-visible { outline-color: #4cc3ff; }
+.top #title { display: inline-flex; align-items: center; gap: 8px; }
+.brand-mark { width: 22px; height: 22px; flex: none; vertical-align: -4px; margin-right: 6px; }
