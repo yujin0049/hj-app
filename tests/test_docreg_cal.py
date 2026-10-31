@@ -28,7 +28,7 @@ class Wiring(unittest.TestCase):
         self.assertNotIn('data/docreg.json', c)
 
     def test_cache(self):
-        self.assertIn("var CACHE = 'hj-v83';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v84';", read('sw.js'))
 
 P = os.path.join(R, 'data', 'docreg_calendar.json')
 
