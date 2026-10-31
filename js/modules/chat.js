@@ -1,12 +1,14 @@
 /* 대장↔클로드 채팅방 (#/chat): 열쇠를 넣어야만 읽혀요. 저장소(공개)에는 암호문만 있어요.
-   방 파일: chat 가지의 chat/room.json(사이트 배포 아님). 쓰기는 tools/hj_chat.mjs 로만(화면에서 보내기 없음: 정적 사이트에 토큰을 둘 수 없어서).
+   방 파일: chat 가지의 chat/room.json(사이트 배포 아님). 읽는 곳: GitHub API(약 1분 캐시) 먼저, 막히면 raw(약 5분 캐시, ?t= 무시) — 261031 춘식이2. 쓰기는 tools/hj_chat.mjs 로만(화면에서 보내기 없음: 정적 사이트에 토큰을 둘 수 없어서).
    열쇠는 이 탭 메모리에만(풀린 CryptoKey 만 들고, 글자는 바로 지움) · localStorage·쿠키 안 씀 · 새로고침하면 다시 잠김.
    출처: 유진님 10.30. 19:43 「거기에 클로드 pc연결끊겨도 채팅방형식으로 답할 수 있게 만들어. 대장-클로드랑」.
    계획·지켜지는 것/안 지켜지는 것: 봇공유/조사/261030_대장클로드_채팅방_계획_v01.md */
 (function (root) {
   'use strict';
   var RAW = 'https://raw.githubusercontent.com/yujin0049/hj-app/chat/chat/room.json';
-  var key = null, room = null, msgs = null, err = '', busy = false, tried = false;
+  /* API 는 CORS 허용·캐시 약 60초(raw 는 약 300초, ?t= 를 무시해 「새로 읽기」에도 옛 판이 와요). 로그인 없이 IP당 시간당 60번 → 넘거나 막히면 raw 로. */
+  var API = 'https://api.github.com/repos/yujin0049/hj-app/contents/chat/room.json?ref=chat';
+  var key = null, room = null, msgs = null, err = '', busy = false, tried = false, via = '', gotAt = null;
   var CSS = [
     '.ch-wrap{max-width:680px;margin:0 auto;padding:0 12px 48px;box-sizing:border-box}',
     '.ch-head h1{margin:6px 0 4px;font-size:1.35rem;letter-spacing:-.02em}',
@@ -29,16 +31,13 @@
     '.ch-msg.c .ch-b{background:var(--soft);font-size:.85rem}',
     '.ch-msg.bad .ch-b{background:var(--warnbg);color:var(--warn);border-color:transparent}',
     '.ch-empty{text-align:center;color:var(--muted);padding:24px 8px}',
+    '.ch-got{font-size:.75rem;color:var(--muted);margin:8px 2px 0;text-align:right}',
     '.ch-how{font-size:.8rem;color:var(--muted);line-height:1.5;margin:14px 2px 0}.ch-how code{font-size:.76rem;word-break:break-all}',
     '@media (prefers-reduced-motion:reduce){.ch-wrap *{transition:none!important;animation:none!important}}'
   ].join('\n');
   function style() {
     if (document.getElementById('ch-style')) return;
     var s = document.createElement('style'); s.id = 'ch-style'; s.textContent = CSS; document.head.appendChild(s);
-  }
-  function src() {
-    var h = location.hostname;
-    return (h === 'localhost' || h === '127.0.0.1') ? new URL('chat/room.json', document.baseURI).href : RAW;
   }
   function loadCore() {
     if (root.HJChat) return Promise.resolve(true);
@@ -48,10 +47,37 @@
       document.head.appendChild(s);
     });
   }
+  function b64json(b64) {
+    var bin = atob(String(b64).replace(/\s+/g, '')), u = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return JSON.parse(new TextDecoder('utf-8').decode(u));
+  }
+  function get(url, unwrap) {
+    return fetch(url + (url.indexOf('?') < 0 ? '?' : '&') + 't=' + Date.now(), { cache: 'no-store' })
+      .then(function (r) {
+        if (r.status === 404) return 'none';
+        if (!r.ok) throw new Error('room ' + r.status);
+        return r.json().then(unwrap);
+      });
+  }
+  function fromApi(j) {
+    /* 1MB 넘는 파일은 content 가 비어 와요 → raw 로 넘김 */
+    if (!j || j.encoding !== 'base64' || !j.content) throw new Error('api-big');
+    return b64json(j.content);
+  }
+  function same(j) { return j; }
   function fetchRoom() {
-    return fetch(src() + (src().indexOf('?') < 0 ? '?t=' + Date.now() : ''), { cache: 'no-store' })
-      .then(function (r) { if (r.status === 404) return 'none'; if (!r.ok) throw new Error('room'); return r.json(); })
-      .then(function (j) { room = j === 'none' ? 'none' : j; return room; });
+    var h = location.hostname, p;
+    if (h === 'localhost' || h === '127.0.0.1') p = get(new URL('chat/room.json', document.baseURI).href, same).then(function (j) { via = '이 컴퓨터'; return j; });
+    else p = get(API, fromApi).then(function (j) { via = 'GitHub API'; return j; }, function () {
+      return get(RAW, same).then(function (j) { via = 'raw(최대 5분 늦음)'; return j; });
+    });
+    return p.then(function (j) { room = j === 'none' ? 'none' : j; gotAt = new Date(); return room; });
+  }
+  function gotHTML(esc) {
+    if (!gotAt) return '';
+    var t = ('0' + gotAt.getHours()).slice(-2) + ':' + ('0' + gotAt.getMinutes()).slice(-2) + ':' + ('0' + gotAt.getSeconds()).slice(-2);
+    return '<p class="ch-got" id="ch-got">받은 곳 ' + esc(via) + ' · ' + t + ' 받음</p>';
   }
   var WHY = '이 방은 <b>열쇠가 있어야</b> 읽혀요. 저장소에는 알아볼 수 없는 암호문만 올라가요(AES-GCM). ' +
     '다만 <b>글이 몇 개인지·언제 올라왔는지</b>는 누구나 볼 수 있어요. 그래서 개인정보·금액·공문 본문은 넣지 않아요.';
@@ -74,7 +100,7 @@
     else if (room === 'none') body = '<p class="ch-empty" id="ch-none">방이 아직 없어요. 대장이 열쇠를 정하고 방을 만들면 열려요.</p>';
     else if (!room) body = '<p class="ch-empty">불러오는 중…</p>';
     else if (room === 'fail') body = '<div class="ch-err">방 파일을 못 불러왔어요. 인터넷을 확인하고 새로고침해 주세요.</div>';
-    else body = key && msgs ? openHTML(esc) : lockedHTML(esc);
+    else body = (key && msgs ? openHTML(esc) : lockedHTML(esc)) + gotHTML(esc);
     el.innerHTML = '<div class="ch-wrap"><header class="ch-head"><h1>대장↔클로드 방</h1><p class="ch-why">' + WHY + '</p></header>' + body +
       '<p class="ch-how">글 쓰기는 이 화면이 아니라 도구로 해요: <code>node tools/hj_chat.mjs post --from 클로드 --text "…"</code> (열쇠는 HJ_CHAT_KEY 환경변수). 업무 PC가 꺼져 있어도 claude.ai 웹·휴대폰에서 돼요. <a href="#/bots">봇 현황으로</a></p></div>';
     var f = el.querySelector('#ch-form');

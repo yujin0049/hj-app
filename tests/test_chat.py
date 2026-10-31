@@ -142,8 +142,11 @@ class ChatTool(unittest.TestCase):
 class ChatWiring(unittest.TestCase):
     def test_screen_keeps_no_key_and_no_write(self):
         js = re.sub(r'/\*.*?\*/', '', read('js', 'modules', 'chat.js'), flags=re.S)
-        for bad in ('localStorage', 'sessionStorage', 'document.cookie', 'indexedDB', 'innerText =', 'api.github.com', 'Authorization'):
+        for bad in ('localStorage', 'sessionStorage', 'document.cookie', 'indexedDB', 'innerText =', 'Authorization', 'method:', 'POST', 'PUT'):
             self.assertFalse(bad in js, bad)
+        # api.github.com 은 공개 「읽기」 주소 하나만(261031: raw 캐시 5분 → API 먼저). 토큰·쓰기 없음.
+        self.assertEqual(set(re.findall(r'https://api\.github\.com[^\'"\s]*', js)),
+                         {'https://api.github.com/repos/yujin0049/hj-app/contents/chat/room.json?ref=chat'})
         self.assertIn("type=\"password\"", js)
         self.assertIn("inp.value = ''", js)
         self.assertIn("ShellModules.chat", js)
@@ -196,3 +199,42 @@ class ChatWiring(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ChatRoomSource(unittest.TestCase):
+    """261031 춘식이2: 방 파일은 GitHub API(약 1분 캐시) 먼저, 막히면 raw(약 5분 캐시) — 공개 주소에서 새 글이 늦게 보이던 문제."""
+    def test_api_first_then_raw(self):
+        s = read('js', 'modules', 'chat.js')
+        self.assertIn("https://api.github.com/repos/yujin0049/hj-app/contents/chat/room.json?ref=chat", s)
+        self.assertIn("https://raw.githubusercontent.com/yujin0049/hj-app/chat/chat/room.json", s)
+        i_api, i_raw = s.index('get(API, fromApi)'), s.index('get(RAW, same)')
+        self.assertLess(i_api, i_raw)
+        # 열쇠·토큰을 API 요청에 싣지 않음(공개 읽기만)
+        self.assertNotIn('Authorization', s)
+
+    def test_api_unwrap_node(self):
+        if not shutil.which('node'):
+            self.skipTest('node 없음')
+        js = r"""
+global.window=global; global.location={hostname:'example.com'}; global.document={baseURI:'https://example.com/',getElementById:()=>({})}; global.HJChat={};
+global.atob=(b)=>Buffer.from(b,'base64').toString('binary');
+let calls=[]; let mode=process.argv[1];
+global.fetch=(u)=>{calls.push(u.split('?')[0]);
+  if(u.startsWith('https://api.github.com')){
+    if(mode==='api') return Promise.resolve({status:200,ok:true,json:()=>Promise.resolve({encoding:'base64',content:Buffer.from(JSON.stringify({v:1,salt:'abcdefgh',msgs:[]})).toString('base64').replace(/(.{60})/g,'$1\n')})});
+    return Promise.resolve({status:403,ok:false});}
+  return Promise.resolve({status:200,ok:true,json:()=>Promise.resolve({v:1,salt:'rawrawra',msgs:[]})});};
+global.ShellModules={}; require(process.argv[2]);
+let html=''; const el={querySelector:(q)=>q==='.ch-wrap'?{}:null,set innerHTML(v){html=v},get innerHTML(){return html}};
+ShellModules.chat.render(el,{esc:(x)=>String(x)});
+setTimeout(()=>{console.log(JSON.stringify({calls, api:html.includes('GitHub API'), raw:html.includes('raw(')}))},200);
+"""
+        out = {}
+        for mode in ('api', 'blocked'):
+            r = subprocess.run(['node', '-e', js, mode, os.path.join(ROOT, 'js', 'modules', 'chat.js')], capture_output=True, text=True, timeout=60)
+            self.assertEqual(r.returncode, 0, r.stderr)
+            out[mode] = json.loads(r.stdout.strip().splitlines()[-1])
+        self.assertTrue(out['api']['api'])
+        self.assertEqual([c for c in out['api']['calls'] if 'room.json' in c], ['https://api.github.com/repos/yujin0049/hj-app/contents/chat/room.json'])
+        self.assertTrue(out['blocked']['raw'])
+        self.assertIn('https://raw.githubusercontent.com/yujin0049/hj-app/chat/chat/room.json', out['blocked']['calls'])
