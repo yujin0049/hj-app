@@ -6,6 +6,10 @@ const newFile = (path: string, lines: string[]) =>
 
 export interface SynCase { id: string; diff: string; expect: [string, string, number][]; mustNotAny?: boolean; onMain?: string[] }
 
+// Box paths and the fake email domain are assembled at runtime so the literal text never sits in the repo.
+const PH: Record<string, string> = { '<BOX>': ['', 'home', 'box'].join('/'), '<WS>': ['', 'workspace'].join('/'), '<EXAMPLE>': ['example', 'com'].join('.') };
+const fill = (t: string) => t.replace(/<BOX>|<WS>|<EXAMPLE>/g, k => PH[k]);
+
 export const SYN: SynCase[] = [
   { id: 's01_contract_in_forward', diff: newFile('worker/migrations/0099_x.sql', [
       '-- 유진님 OK 뒤에만. 적용 전 백업. 전후 행 수 COUNT(*) 비교.',
@@ -43,7 +47,7 @@ export const SYN: SynCase[] = [
   { id: 's08_clean_code_with_env_and_fake_name', mustNotAny: true, diff: newFile('worker/src/y.js', [
       'const key = env.GSYNC_SALT; // 이름만',
       "const who = '가짜학생77';",
-      "const mail = 'dev' + '@' + 'example.com';"]),
+      fill("const mail = 'dev' + '@' + '<EXAMPLE>';")]),
     expect: [] },
   { id: 's09_skip_file_already_on_main', mustNotAny: true, onMain: ['worker/migrations/0012_x.sql'], diff: newFile('worker/migrations/0012_x.sql', [
       'ALTER TABLE t1 ADD COLUMN c TEXT;']),
@@ -58,11 +62,11 @@ export const SYN: SynCase[] = [
       'rm -f out.log']),
     expect: [['R7_no_delete', 'verify/x.sh', 2], ['R7_no_delete', 'verify/x.sh', 4]] },
   { id: 's12_box_path', diff: newFile('verify/y.sh', [
-      'JAR="${TLA2TOOLS:-/home/box/tools/x.jar}"',
-      'OUT=/workspace/tmp/out']),
+      fill('JAR="${TLA2TOOLS:-<BOX>/tools/x.jar}"'),
+      fill('OUT=<WS>/tmp/out')]),
     expect: [['R8_box_path', 'verify/y.sh', 1]] },
   { id: 's13_fake_email_literal', diff: newFile('tests/z.test.js', [
-      "const who = { mail: 'dev@example.com' };"]),
+      fill("const who = { mail: 'dev@<EXAMPLE>' };")]),
     expect: [['R9_fake_contact', 'tests/z.test.js', 1]] },
   { id: 's14_rebuild_drop_no_count', diff: newFile('worker/migrations/0096_x.sql', [
       '-- 적용 전 D1 백업. 실 D1은 유진님 OK 받고만.',
