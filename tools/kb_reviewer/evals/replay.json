@@ -1,0 +1,8 @@
+{
+  "_note": "Local hj-attend clone (KB_REPO). diff = base...head. main = the main tip the PR was reviewed/merged against (merged PRs: the commit just before the merge), used for 'skip files already on main'.",
+  "pr17": { "base": "38166f0", "head": "origin/pr/17", "main": "38166f0" },
+  "pr18": { "base": "107be1b^1", "head": "107be1b", "main": "107be1b^1" },
+  "pr19": { "base": "ba421e6", "head": "origin/pr/19", "main": "e864f25" },
+  "pr20": { "base": "e864f25^1", "head": "e864f25", "main": "e864f25^1" },
+  "pr21": { "base": "e864f25", "head": "origin/pr/21", "main": "e864f25" }
+}

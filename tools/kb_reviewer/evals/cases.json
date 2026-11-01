@@ -1,0 +1,255 @@
+{
+  "_note": "Expected findings written down from reading the SQL before the first run (see evals/README.md). 'known' = the 3 violations named in the task. Line = new-file line in that PR's diff.",
+  "real": {
+    "pr17": {
+      "expect": [
+        [
+          "R4_idempotent",
+          "worker/migrations/0011_selfcheck.sql",
+          4
+        ],
+        [
+          "R4_idempotent",
+          "worker/migrations/0011_selfcheck.sql",
+          5
+        ],
+        [
+          "R4_idempotent",
+          "worker/schema.sql",
+          174
+        ],
+        [
+          "R4_idempotent",
+          "worker/schema.sql",
+          175
+        ]
+      ],
+      "must_not": [
+        [
+          "R6_live_d1_ok",
+          "worker/migrations/0011_selfcheck.sql"
+        ],
+        [
+          "R3_row_count",
+          "worker/migrations/0012_rev_index.sql"
+        ]
+      ]
+    },
+    "pr18": {
+      "expect": [
+        [
+          "R1_backup",
+          "docs/rollback/0015_down.sql",
+          4,
+          "known:0015_down DROP COLUMN enc, no archive"
+        ],
+        [
+          "R4_idempotent",
+          "docs/rollback/0013_down.sql",
+          23,
+          "known:0013_down rerun name clash marks_archive_261031"
+        ],
+        [
+          "R6_live_d1_ok",
+          "worker/migrations/0013_marks_excused.sql",
+          5,
+          "known:relies on wrangler migration log (live has no d1_migrations)"
+        ],
+        [
+          "R6_live_d1_ok",
+          "worker/migrations/0014_prof_notes.sql",
+          3,
+          "same assumption as above"
+        ],
+        [
+          "R6_live_d1_ok",
+          "worker/migrations/0013_marks_excused.sql",
+          6
+        ],
+        [
+          "R4_idempotent",
+          "docs/rollback/0014_down.sql",
+          8
+        ],
+        [
+          "R4_idempotent",
+          "docs/rollback/0014_down.sql",
+          9
+        ],
+        [
+          "R4_idempotent",
+          "worker/migrations/0014_prof_notes.sql",
+          25
+        ],
+        [
+          "R4_idempotent",
+          "worker/migrations/0015_link_enc.sql",
+          5
+        ],
+        [
+          "R4_idempotent",
+          "worker/schema.sql",
+          293
+        ],
+        [
+          "R4_idempotent",
+          "worker/schema.sql",
+          297
+        ],
+        [
+          "R3_row_count",
+          "docs/rollback/0013_down.sql",
+          null
+        ],
+        [
+          "R3_row_count",
+          "docs/rollback/0014_down.sql",
+          null
+        ],
+        [
+          "R3_row_count",
+          "docs/rollback/0015_down.sql",
+          null
+        ],
+        [
+          "R3_row_count",
+          "worker/migrations/0013_marks_excused.sql",
+          null
+        ]
+      ],
+      "must_not": [
+        [
+          "R1_backup",
+          "worker/migrations/0013_marks_excused.sql"
+        ],
+        [
+          "R2_expand_order",
+          "worker/migrations/0013_marks_excused.sql"
+        ],
+        [
+          "R1_backup",
+          "docs/rollback/0014_down.sql"
+        ],
+        [
+          "R1_backup",
+          "docs/rollback/0013_down.sql"
+        ],
+        [
+          "R6_live_d1_ok",
+          "docs/rollback/0013_down.sql"
+        ],
+        [
+          "R5_secret_pii",
+          "*"
+        ]
+      ]
+    },
+    "pr19": {
+      "expect": [
+        [
+          "R4_idempotent",
+          "docs/rollback/0016_down.sql",
+          11
+        ],
+        [
+          "R3_row_count",
+          "docs/rollback/0016_down.sql",
+          null
+        ],
+        [
+          "R6_live_d1_ok",
+          "worker/migrations/0016_gsync.sql",
+          null
+        ]
+      ],
+      "must_not": [
+        [
+          "R1_backup",
+          "docs/rollback/0016_down.sql"
+        ],
+        [
+          "R4_idempotent",
+          "worker/migrations/0016_gsync.sql"
+        ],
+        [
+          "R5_secret_pii",
+          "*"
+        ]
+      ]
+    },
+    "pr20": {
+      "expect": [
+        [
+          "R3_row_count",
+          "docs/rollback/0017_down.sql",
+          null
+        ],
+        [
+          "R4_idempotent",
+          "docs/rollback/0017_down.sql",
+          6
+        ],
+        [
+          "R4_idempotent",
+          "worker/migrations/0017_walkin.sql",
+          6
+        ],
+        [
+          "R4_idempotent",
+          "worker/schema.sql",
+          300
+        ]
+      ],
+      "must_not": [
+        [
+          "R1_backup",
+          "docs/rollback/0017_down.sql"
+        ],
+        [
+          "R6_live_d1_ok",
+          "worker/migrations/0017_walkin.sql"
+        ],
+        [
+          "R5_secret_pii",
+          "*"
+        ]
+      ]
+    },
+    "pr21": {
+      "expect": [
+        [
+          "R4_idempotent",
+          "docs/rollback/0016_down.sql",
+          11
+        ],
+        [
+          "R3_row_count",
+          "docs/rollback/0016_down.sql",
+          null
+        ],
+        [
+          "R6_live_d1_ok",
+          "worker/migrations/0016_gsync.sql",
+          null
+        ]
+      ],
+      "must_not": [
+        [
+          "R1_backup",
+          "docs/rollback/0016_down.sql"
+        ],
+        [
+          "R4_idempotent",
+          "worker/migrations/0016_gsync.sql"
+        ],
+        [
+          "R5_secret_pii",
+          "*"
+        ]
+      ]
+    }
+  },
+  "adjudicated_after_run": {
+    "pr17 R6_live_d1_ok worker/migrations/0012_rev_index.sql": "TP by the rule text (migration header has no 「유진님 OK 뒤에만」 line), but not pre-registered -> counted as FP in the strict rate"
+  }
+}

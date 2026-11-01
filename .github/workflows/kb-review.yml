@@ -1,0 +1,52 @@
+# kb-reviewer: 봇교훈 규칙 6개로 PR 이 더한 줄을 검사해 댓글 1개를 남김(새 커밋이면 같은 댓글을 고쳐 씀).
+# 키·모델·새 secret 없음: 내장 GITHUB_TOKEN 만. 승인·변경요청·머지·라벨은 하지 않음.
+name: kb-review
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+permissions:
+  contents: read
+  pull-requests: write
+concurrency:
+  group: kb-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  review:
+    # fork PR 은 토큰이 읽기 전용이라 댓글을 못 씀 → 같은 저장소 가지만
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: synthetic eval (규칙이 망가지면 여기서 멈춤)
+        run: node --experimental-strip-types --no-warnings tools/kb_reviewer/evals/run_eval.ts
+        env:
+          KB_EVAL_WRITE: '0'
+      - name: review
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          node --experimental-strip-types --no-warnings tools/kb_reviewer/src/review.ts \
+            --git . "$BASE_SHA" "$HEAD_SHA" --main "$BASE_SHA" \
+            --out "$RUNNER_TEMP/kb.json" --comment "$RUNNER_TEMP/kb.md" --title " · PR #$PR_NUM (${HEAD_SHA:0:7})"
+          cat "$RUNNER_TEMP/kb.md" >> "$GITHUB_STEP_SUMMARY"
+      - name: comment (1개, 있으면 고쳐 씀)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+        run: |
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" --paginate \
+            --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- kb-reviewer -->"))) | .id' | head -1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$RUNNER_TEMP/kb.md" --jq .html_url
+          else
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" -F body=@"$RUNNER_TEMP/kb.md" --jq .html_url
+          fi
