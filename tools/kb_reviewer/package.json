@@ -1,0 +1,10 @@
+{
+  "name": "kb-reviewer-261101",
+  "private": true,
+  "type": "module",
+  "description": "Keyless rule-based PR reviewer: checks hj-attend / hj-app diffs against 봇교훈 notes. Never approves or merges.",
+  "scripts": {
+    "review": "node --experimental-strip-types --no-warnings src/review.ts",
+    "eval": "node --experimental-strip-types --no-warnings evals/run_eval.ts"
+  }
+}
