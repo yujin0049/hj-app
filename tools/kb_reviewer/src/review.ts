@@ -39,17 +39,18 @@ export function gitReview(dir: string, base: string, head: string, main?: string
   return { findings: review(diff, ctx, { onMain }), skippedOnMain: [...onMain] };
 }
 
+const SEV = { block: '막음', warn: '주의', low: '참고' } as const;
 const TEMPLATE_PATH = new URL('../prompts/comment_template.md', import.meta.url);
 
 export function renderComment(fs: Finding[], title = ''): string {
   const tpl = readFileSync(TEMPLATE_PATH, 'utf8');
   const blocks = fs.map((f, i) => [
-    `**${i + 1}. [${f.severity === 'block' ? '막음' : '주의'} · ${f.rule}] \`${f.path}:${f.line}\`**`,
-    '```sql', f.code, '```',
+    `**${i + 1}. [${SEV[f.severity]} · ${f.rule}] \`${f.path}:${f.line}\`**`,
+    '```', f.code, '```',
     `- 왜: ${f.why}`, `- 고칠 것: ${f.fix}`,
     ...cite(f.rule).map(c => `- ${c}`),
   ].join('\n')).join('\n\n');
-  const counts = `막음 ${fs.filter(f => f.severity === 'block').length} · 주의 ${fs.filter(f => f.severity === 'warn').length}`;
+  const counts = (['block', 'warn', 'low'] as const).map(s => `${SEV[s]} ${fs.filter(f => f.severity === s).length}`).join(' · ');
   return tpl.replace('{{title}}', title).replace('{{counts}}', counts).replace('{{findings}}', blocks || '규칙 위반 없음.');
 }
 

@@ -1,6 +1,6 @@
 # kb-reviewer (261101)
 
-hj-attend / hj-app PR 의 **더한 줄**을 봇교훈 규칙 6개와 맞춰 보고, 어긴 줄마다 「규칙 한 줄 + 근거 노트 파일 이름」을 단 댓글 하나를 만들어요.
+hj-attend / hj-app PR 의 **더한 줄**을 봇교훈 규칙 9개와 맞춰 보고, 어긴 줄마다 「규칙 한 줄 + 근거 노트 파일 이름」을 단 댓글 하나를 만들어요.
 main 과 내용이 같은 파일과 이 폴더(tools/kb_reviewer/) 자체는 건너뛰어요.
 승인·변경요청·머지는 하지 않아요(코드에 GitHub 호출 자체가 없어요. 올리기는 별도 한 단계).
 
@@ -15,10 +15,10 @@ main 과 내용이 같은 파일과 이 폴더(tools/kb_reviewer/) 자체는 건
 
 ## 구조
 - `prompts/review_policy.md` 방침(모델을 붙일 때 그대로 쓸 프롬프트) · `prompts/comment_template.md` 댓글 틀
-- `rules/r1..r6_*.ts` 규칙 6개 · `rules/notes.ts` 규칙마다 **우리 말 한 줄 + 노트 파일 이름**만(교훈 문장·볼트 경로 없음 → CI 에서 노트 없이 똑같이 돎)
-- `src/diff.ts` unified diff 해석 · `src/review.ts` CLI · `src/quote.ts` 근거 문구
-- `evals/` PR#17–21 diff 를 로컬 git 에서 다시 뽑아 재생(`evals/replay.json`, 파일로 저장 안 함) + 합성 10건, `npm run eval` → `evals/results.md` · 설명 `evals/notes_261101.md`
-- CI: 저장소의 `.github/workflows/kb-review.yml` — pull_request 때 GITHUB_TOKEN 만(contents: read · pull-requests: write), 합성 eval → 리뷰 → 댓글 1개(표시 `<!-- kb-reviewer -->` 로 같은 댓글을 고쳐 씀). 승인·변경요청·머지 없음.
+- `rules/r1..r6_*.ts`, `rules/r7_r9_hygiene.ts` 규칙 9개 · `rules/notes.ts` 규칙마다 **우리 말 한 줄 + 노트 파일 이름**만(교훈 문장·볼트 경로 없음 → CI 에서 노트 없이 똑같이 돎)
+- `src/pii_gate.ts` 댓글 올리기 전 검사(값은 출력 안 함) · `src/diff.ts` unified diff 해석 · `src/review.ts` CLI · `src/quote.ts` 근거 문구
+- `evals/` PR#17–21 diff 를 로컬 git 에서 다시 뽑아 재생(`evals/replay.json`, 파일로 저장 안 함) + 합성 14건 · 교차 정답표는 `KB_C3=<expected.json>`, `npm run eval` → `evals/results.md` · 설명 `evals/notes_261101.md`
+- CI: 저장소의 `.github/workflows/kb-review.yml` — pull_request 때 GITHUB_TOKEN 만(contents: read · pull-requests: write), 합성 eval → 리뷰 → pii 검사 → 댓글 1개(표시 `<!-- kb-reviewer -->` 로 같은 댓글을 고쳐 씀). 승인·변경요청·머지 없음. action 은 커밋 SHA 고정, `${{ }}` 값은 env 로만.
 
 | 규칙 | 근거 노트(파일 이름) |
 |---|---|
@@ -28,6 +28,9 @@ main 과 내용이 같은 파일과 이 폴더(tools/kb_reviewer/) 자체는 건
 | R4 재실행 안전 | 261101_엘리트블로그_교훈.md |
 | R5 개인정보·키 없음 | 261027_이종에이전트_보드_세션교체.md · 261030_춘식이_클로드Code_다시쓰기.md |
 | R6 실 D1 은 유진님 OK | 261101_엘리트블로그_교훈.md |
+| R7 지우지 않기(rm 대신 .trash) | 폴더정리.md · 옵시디언.md · OJNT·기숙사.md |
+| R8 상자 절대 경로 없음 | 261028_F파일_옵시디언주소금지.md |
+| R9 가짜 연락처도 조립 | 개인정보검사.md |
 
 ## 돌리기 (node 22, 설치 없음)
 ```bash

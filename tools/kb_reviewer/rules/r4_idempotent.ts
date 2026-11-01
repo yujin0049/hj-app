@@ -15,6 +15,9 @@ export const r4: Rule = {
         const [, kind, name] = m;
         const temp = kind.toUpperCase() === 'TABLE' && new RegExp(`\\b${esc(name)}\\s+RENAME\\s+TO\\b`, 'i').test(codeAfter(f, l.n));
         if (!temp) push(l.n, l.text, `${name} 이(가) 이미 있으면 두 번째 실행에서 멈춤.`, `CREATE ${kind.toUpperCase()} IF NOT EXISTS ${name} …`);
+        else out.push({ rule: 'R4_idempotent', severity: 'low', path: f.path, line: l.n, code: l.text,
+          why: `임시 표 ${name} 를 IF NOT EXISTS 없이 만듦(중간에 멈춘 뒤 다시 돌리면 「already exists」).`,
+          fix: `DROP TABLE IF EXISTS ${name}; 를 앞에 두거나 CREATE TABLE IF NOT EXISTS ${name} …` });
       } else if ((m = l.text.match(/ALTER\s+TABLE\s+(\w+)\s+ADD\s+COLUMN\s+(\w+)/i))) {
         push(l.n, l.text, `${m[1]}.${m[2]} 칸이 이미 있으면 「duplicate column」 으로 멈춤(실 D1에는 적용 기록 표가 없어 다시 돌 수 있음).`,
           '적용 스크립트에서 pragma_table_info 로 칸이 있는지 먼저 보고 없을 때만 실행(건너뜀 기록).');

@@ -43,7 +43,7 @@ export const SYN: SynCase[] = [
   { id: 's08_clean_code_with_env_and_fake_name', mustNotAny: true, diff: newFile('worker/src/y.js', [
       'const key = env.GSYNC_SALT; // 이름만',
       "const who = '가짜학생77';",
-      'const mail = "dev@example.com";']),
+      "const mail = 'dev' + '@' + 'example.com';"]),
     expect: [] },
   { id: 's09_skip_file_already_on_main', mustNotAny: true, onMain: ['worker/migrations/0012_x.sql'], diff: newFile('worker/migrations/0012_x.sql', [
       'ALTER TABLE t1 ADD COLUMN c TEXT;']),
@@ -51,4 +51,24 @@ export const SYN: SynCase[] = [
   { id: 's10_self_folder_skipped', mustNotAny: true, diff: newFile('tools/kb_reviewer/evals/x.ts', [
       "const s = 'npx wrangler d1 migrations apply x --remote';"]),
     expect: [] },
+  { id: 's11_rm_in_script', diff: newFile('verify/x.sh', [
+      '#!/usr/bin/env bash',
+      'T="$(mktemp -d)"; trap \'rm -rf "$T"\' EXIT',
+      '# 정리는 rm 대신 .trash 로 옮김',
+      'rm -f out.log']),
+    expect: [['R7_no_delete', 'verify/x.sh', 2], ['R7_no_delete', 'verify/x.sh', 4]] },
+  { id: 's12_box_path', diff: newFile('verify/y.sh', [
+      'JAR="${TLA2TOOLS:-/home/box/tools/x.jar}"',
+      'OUT=/workspace/tmp/out']),
+    expect: [['R8_box_path', 'verify/y.sh', 1]] },
+  { id: 's13_fake_email_literal', diff: newFile('tests/z.test.js', [
+      "const who = { mail: 'dev@example.com' };"]),
+    expect: [['R9_fake_contact', 'tests/z.test.js', 1]] },
+  { id: 's14_rebuild_drop_no_count', diff: newFile('worker/migrations/0096_x.sql', [
+      '-- 적용 전 D1 백업. 실 D1은 유진님 OK 받고만.',
+      'CREATE TABLE t2_new (id INTEGER PRIMARY KEY, c TEXT);',
+      'INSERT INTO t2_new (id, c) SELECT id, c FROM t2;',
+      'DROP TABLE t2;',
+      'ALTER TABLE t2_new RENAME TO t2;']),
+    expect: [['R4_idempotent', 'worker/migrations/0096_x.sql', 2], ['R3_row_count', 'worker/migrations/0096_x.sql', 3], ['R1_backup', 'worker/migrations/0096_x.sql', 4]] },
 ];

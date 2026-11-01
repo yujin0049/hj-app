@@ -1,5 +1,6 @@
-# kb-reviewer: 봇교훈 규칙 6개로 PR 이 더한 줄을 검사해 댓글 1개를 남김(새 커밋이면 같은 댓글을 고쳐 씀).
+# kb-reviewer: 봇교훈 규칙 9개로 PR 이 더한 줄을 검사해 댓글 1개를 남김(새 커밋이면 같은 댓글을 고쳐 씀).
 # 키·모델·새 secret 없음: 내장 GITHUB_TOKEN 만. 승인·변경요청·머지·라벨은 하지 않음.
+# ${{ }} 값은 run 안에 바로 넣지 않고 env 로만 넘김. action 은 커밋 SHA 로 고정.
 name: kb-review
 on:
   pull_request:
@@ -16,37 +17,39 @@ jobs:
     if: github.event.pull_request.head.repo.full_name == github.repository
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    env:
+      BASE_REF: ${{ github.base_ref }}
+      BASE_SHA: ${{ github.event.pull_request.base.sha }}
+      HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_NUM: ${{ github.event.pull_request.number }}
+      KB: node --experimental-strip-types --no-warnings tools/kb_reviewer
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
           node-version: 22
       - name: synthetic eval (규칙이 망가지면 여기서 멈춤)
-        run: node --experimental-strip-types --no-warnings tools/kb_reviewer/evals/run_eval.ts
         env:
           KB_EVAL_WRITE: '0'
+        run: $KB/evals/run_eval.ts
       - name: review
-        env:
-          BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-          PR_NUM: ${{ github.event.pull_request.number }}
         run: |
-          node --experimental-strip-types --no-warnings tools/kb_reviewer/src/review.ts \
-            --git . "$BASE_SHA" "$HEAD_SHA" --main "$BASE_SHA" \
+          $KB/src/review.ts --git . "$BASE_SHA" "$HEAD_SHA" --main "origin/$BASE_REF" \
             --out "$RUNNER_TEMP/kb.json" --comment "$RUNNER_TEMP/kb.md" --title " · PR #$PR_NUM (${HEAD_SHA:0:7})"
           cat "$RUNNER_TEMP/kb.md" >> "$GITHUB_STEP_SUMMARY"
-      - name: comment (1개, 있으면 고쳐 씀)
+      - name: pii check (댓글 본문, 걸리면 댓글 안 올림)
+        run: $KB/src/pii_gate.ts "$RUNNER_TEMP/kb.md"
+      - name: comment (1개 · synchronize 등 다시 돌면 내 댓글을 고쳐 씀)
         env:
           GH_TOKEN: ${{ github.token }}
-          PR_NUM: ${{ github.event.pull_request.number }}
         run: |
           id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" --paginate \
             --jq '.[] | select(.user.login == "github-actions[bot]" and (.body | contains("<!-- kb-reviewer -->"))) | .id' | head -1)
           if [ -n "$id" ]; then
-            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$RUNNER_TEMP/kb.md" --jq .html_url
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@"$RUNNER_TEMP/kb.md" --jq '"edited " + .html_url'
           else
-            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" -F body=@"$RUNNER_TEMP/kb.md" --jq .html_url
+            gh api "repos/$GITHUB_REPOSITORY/issues/$PR_NUM/comments" -F body=@"$RUNNER_TEMP/kb.md" --jq '"posted " + .html_url'
           fi

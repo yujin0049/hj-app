@@ -2,7 +2,7 @@
 import type { Rule, Finding } from './types.ts';
 
 const SKIP = /(^|\/)(package-lock\.json|.*\.min\.js|vendor\/|fonts\/)/;
-const PATTERNS: [string, RegExp][] = [
+export const PATTERNS: [string, RegExp][] = [
   ['GitHub 토큰', /\b(ghp|gho|ghu|ghs)_[A-Za-z0-9]{30,}|\bgithub_pat_[A-Za-z0-9_]{20,}/],
   ['API 키(sk-)', /\bsk-[A-Za-z0-9_-]{20,}/],
   ['AWS 키', /\bAKIA[0-9A-Z]{16}\b/],

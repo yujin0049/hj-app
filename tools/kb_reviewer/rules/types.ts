@@ -1,5 +1,5 @@
 // Shared types. A rule sees one parsed file of a diff and returns findings on ADDED lines only.
-export type Severity = 'block' | 'warn';
+export type Severity = 'block' | 'warn' | 'low';   // 막음(high) · 주의(med) · 참고(low)
 
 export interface AddedLine { n: number; text: string }
 
@@ -20,7 +20,8 @@ export interface Finding {
   fix: string;             // what to do instead
 }
 
-export type RuleId = 'R1_backup' | 'R2_expand_order' | 'R3_row_count' | 'R4_idempotent' | 'R5_secret_pii' | 'R6_live_d1_ok';
+export type RuleId = 'R1_backup' | 'R2_expand_order' | 'R3_row_count' | 'R4_idempotent' | 'R5_secret_pii' | 'R6_live_d1_ok'
+  | 'R7_no_delete' | 'R8_box_path' | 'R9_fake_contact';
 
 export interface Rule {
   id: RuleId;

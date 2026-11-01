@@ -17,4 +17,10 @@ export const NOTES: Record<RuleId, RuleCite> = {
     notes: ['261027_이종에이전트_보드_세션교체.md', '261030_춘식이_클로드Code_다시쓰기.md'] },
   R6_live_d1_ok: { rule: '실 D1 변경은 미리보기 D1 먼저, 실 D1은 백업 뒤 유진님 OK 받고만 한다.',
     notes: ['261101_엘리트블로그_교훈.md'] },
+  R7_no_delete: { rule: '파일·폴더를 지우지 않는다(rm 대신 .trash/_archive 로 옮김, 임시 폴더 정리도 같음).',
+    notes: ['폴더정리.md', '옵시디언.md', 'OJNT·기숙사.md'] },
+  R8_box_path: { rule: '저장소 산출물에 봇 상자 내부 절대 경로를 넣지 않는다(설정 값·상대 경로로).',
+    notes: ['261028_F파일_옵시디언주소금지.md'] },
+  R9_fake_contact: { rule: '시험·코드의 가짜 연락처(이메일 등)도 문자열 그대로 두지 않고 실행 때 조립한다.',
+    notes: ['개인정보검사.md'] },
 };
