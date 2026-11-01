@@ -52,6 +52,15 @@ const detail = rows.flatMap(r => [
   ...r.missed.map(m => `- MISSED ${r.id}: ${m[0]} ${m[1]}:${m[2] ?? '*'} ${m[3] ?? ''}`),
   ...r.fp.map(f => `- FP ${r.id}: ${f.rule} ${f.path}:${f.line}`),
 ]);
+// Answer set v2 (cases_v2.json, next to v1): same scoring, real PRs only.
+const v2 = JSON.parse(readFileSync(here('./cases_v2.json'), 'utf8'));
+let v2md: string[] = [];
+if (REPO) {
+  const rs = Object.entries<any>(v2.real).map(([id, c]) => score(id, realFs[id] ?? [], c.expect));
+  const e = rs.reduce((a, r) => a + r.expected, 0), c = rs.reduce((a, r) => a + r.caught, 0), t = rs.reduce((a, r) => a + r.total, 0), fp = rs.reduce((a, r) => a + r.fp.length, 0);
+  v2md = ['', `## 정답표 v2 (cases_v2.json): caught ${c}/${e} · missed ${e - c} · findings ${t} · FP ${fp} (FP rate ${t ? (100 * fp / t).toFixed(1) : '0.0'}%)`,
+    ...rs.flatMap(r => [...r.missed.map(m => `- MISSED ${r.id}: ${m[0]} ${m[1]}:${m[2] ?? '*'}`), ...r.fp.map(f => `- FP ${r.id}: ${f.rule} ${f.path}:${f.line}`)])];
+}
 // Second answer set (cross-eval, made blind by another bot): KB_C3=<expected.json>. Caught = any finding on the same file:line.
 let c3md: string[] = [];
 const C3 = process.env.KB_C3 ?? '';
@@ -67,9 +76,9 @@ if (C3 && REPO) {
     ...res.map(({ e, f }) => `| ${e.id} | #${e.pr} | ${e.file}:${e.line} | ${e.sev} | ${f ? f.rule : 'MISSED'} | ${f ? sevName(f.severity) : '-'} |`),
     '', '정답표 밖 지적(규칙별): ' + Object.entries(extra.reduce((a: any, x) => (a[x.f.rule] = (a[x.f.rule] ?? 0) + 1, a), {})).map(([k, v]) => `${k} ${v}`).join(' · ')];
 }
-const md = ['# kb-reviewer eval', '', `- ${agg(isReal, 'real PR#17–21')}`, `- ${agg(r => !isReal(r), 'synthetic')}`, `- ${agg(() => true, 'all')}`,
+const md = ['# kb-reviewer eval', '', `- ${agg(isReal, 'real PR#17–21 · 정답표 v1 (cases.json)')}`, `- ${agg(r => !isReal(r), 'synthetic')}`, `- ${agg(() => true, 'all')}`,
   `- comment cites filename + rule wording only, no vault: ${citeOk ? 'OK' : 'FAIL'}`,
-  `- pii gate on a comment with all synthetic findings (values masked): ${gateOk ? 'OK' : 'FAIL ' + JSON.stringify(gateHits)}`, '', ...table, '', ...detail, ...c3md, ''].join('\n');
+  `- pii gate on a comment with all synthetic findings (values masked): ${gateOk ? 'OK' : 'FAIL ' + JSON.stringify(gateHits)}`, '', ...table, '', ...detail, ...v2md, ...c3md, ''].join('\n');
 if (process.env.KB_EVAL_WRITE !== '0') { writeFileSync(here('./results.md'), md); writeFileSync(here('./results.json'), JSON.stringify(rows, null, 2)); }
 console.log(md);
 const synBad = rows.filter(r => !isReal(r)).some(r => r.missed.length || r.fp.length);

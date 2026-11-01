@@ -1,0 +1,327 @@
+{
+ "_note": "v2 (11.01. 10:26 춘식이 결정 뒤). v1(cases.json)은 그대로 두고 옆에 둠. v1 29건 + 아래 12건을 정답으로 더함. 더한 줄마다 규칙 문구에 맞는지 diff 에서 그 줄을 다시 보고 확인함(값이 실제로 있음).",
+ "real": {
+  "pr17": {
+   "expect": [
+    [
+     "R4_idempotent",
+     "worker/migrations/0011_selfcheck.sql",
+     4
+    ],
+    [
+     "R4_idempotent",
+     "worker/migrations/0011_selfcheck.sql",
+     5
+    ],
+    [
+     "R4_idempotent",
+     "worker/schema.sql",
+     174
+    ],
+    [
+     "R4_idempotent",
+     "worker/schema.sql",
+     175
+    ],
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0012_rev_index.sql",
+     4,
+     "decision: 더하기만 하는 migration도 실 D1 적용 전 유진님 OK 필요 → 머리말 OK 줄 없음 = 정답(low)"
+    ],
+    [
+     "R7_no_delete",
+     "verify/run.sh",
+     10,
+     "c3 E1: trap 으로 rm -rf"
+    ],
+    [
+     "R8_box_path",
+     "verify/run.sh",
+     7,
+     "c3 E2: /home/box 기본값"
+    ]
+   ],
+   "must_not": [
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0011_selfcheck.sql"
+    ],
+    [
+     "R3_row_count",
+     "worker/migrations/0012_rev_index.sql"
+    ]
+   ]
+  },
+  "pr18": {
+   "expect": [
+    [
+     "R1_backup",
+     "docs/rollback/0015_down.sql",
+     4,
+     "known:0015_down DROP COLUMN enc, no archive"
+    ],
+    [
+     "R4_idempotent",
+     "docs/rollback/0013_down.sql",
+     23,
+     "known:0013_down rerun name clash marks_archive_261031"
+    ],
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0013_marks_excused.sql",
+     5,
+     "known:relies on wrangler migration log (live has no d1_migrations)"
+    ],
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0014_prof_notes.sql",
+     3,
+     "same assumption as above"
+    ],
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0013_marks_excused.sql",
+     6
+    ],
+    [
+     "R4_idempotent",
+     "docs/rollback/0014_down.sql",
+     8
+    ],
+    [
+     "R4_idempotent",
+     "docs/rollback/0014_down.sql",
+     9
+    ],
+    [
+     "R4_idempotent",
+     "worker/migrations/0014_prof_notes.sql",
+     25
+    ],
+    [
+     "R4_idempotent",
+     "worker/migrations/0015_link_enc.sql",
+     5
+    ],
+    [
+     "R4_idempotent",
+     "worker/schema.sql",
+     293
+    ],
+    [
+     "R4_idempotent",
+     "worker/schema.sql",
+     297
+    ],
+    [
+     "R3_row_count",
+     "docs/rollback/0013_down.sql",
+     null
+    ],
+    [
+     "R3_row_count",
+     "docs/rollback/0014_down.sql",
+     null
+    ],
+    [
+     "R3_row_count",
+     "docs/rollback/0015_down.sql",
+     null
+    ],
+    [
+     "R3_row_count",
+     "worker/migrations/0013_marks_excused.sql",
+     null
+    ],
+    [
+     "R1_backup",
+     "worker/migrations/0013_marks_excused.sql",
+     17,
+     "c3 E3: 재구성 DROP TABLE, 보관 이름·행 수 확인 없음"
+    ],
+    [
+     "R4_idempotent",
+     "worker/migrations/0013_marks_excused.sql",
+     7,
+     "c3 E4: 임시 표 IF NOT EXISTS 없음"
+    ],
+    [
+     "R1_backup",
+     "docs/rollback/0014_down.sql",
+     10,
+     "c3 E8: 보관 직후 같은 단계 DROP COLUMN, 행 수 확인 없음"
+    ],
+    [
+     "R4_idempotent",
+     "docs/rollback/0013_down.sql",
+     7,
+     "임시 표 marks_old IF NOT EXISTS 없음(뒤에서 RENAME, E4 와 같은 모양)"
+    ],
+    [
+     "R8_box_path",
+     "public/brand-c.css",
+     2,
+     "출처 주석에 /workspace 경로"
+    ],
+    [
+     "R8_box_path",
+     "public/crm/crm-kit.js",
+     1,
+     "출처 주석에 /workspace 경로"
+    ],
+    [
+     "R8_box_path",
+     "public/crm/crm.css",
+     1,
+     "출처 주석에 /workspace 경로"
+    ],
+    [
+     "R8_box_path",
+     "tests/brand.test.js",
+     28,
+     "시험 기본값에 /workspace 경로"
+    ]
+   ],
+   "must_not": [
+    [
+     "R1_backup",
+     "worker/migrations/0013_marks_excused.sql"
+    ],
+    [
+     "R2_expand_order",
+     "worker/migrations/0013_marks_excused.sql"
+    ],
+    [
+     "R1_backup",
+     "docs/rollback/0014_down.sql"
+    ],
+    [
+     "R1_backup",
+     "docs/rollback/0013_down.sql"
+    ],
+    [
+     "R6_live_d1_ok",
+     "docs/rollback/0013_down.sql"
+    ],
+    [
+     "R5_secret_pii",
+     "*"
+    ]
+   ]
+  },
+  "pr19": {
+   "expect": [
+    [
+     "R4_idempotent",
+     "docs/rollback/0016_down.sql",
+     11
+    ],
+    [
+     "R3_row_count",
+     "docs/rollback/0016_down.sql",
+     null
+    ],
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0016_gsync.sql",
+     null
+    ]
+   ],
+   "must_not": [
+    [
+     "R1_backup",
+     "docs/rollback/0016_down.sql"
+    ],
+    [
+     "R4_idempotent",
+     "worker/migrations/0016_gsync.sql"
+    ],
+    [
+     "R5_secret_pii",
+     "*"
+    ]
+   ]
+  },
+  "pr20": {
+   "expect": [
+    [
+     "R3_row_count",
+     "docs/rollback/0017_down.sql",
+     null
+    ],
+    [
+     "R4_idempotent",
+     "docs/rollback/0017_down.sql",
+     6
+    ],
+    [
+     "R4_idempotent",
+     "worker/migrations/0017_walkin.sql",
+     6
+    ],
+    [
+     "R4_idempotent",
+     "worker/schema.sql",
+     300
+    ],
+    [
+     "R9_fake_contact",
+     "tests/cal06.test.js",
+     48,
+     "c3 E10: 시험에 이메일 문자열"
+    ]
+   ],
+   "must_not": [
+    [
+     "R1_backup",
+     "docs/rollback/0017_down.sql"
+    ],
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0017_walkin.sql"
+    ],
+    [
+     "R5_secret_pii",
+     "*"
+    ]
+   ]
+  },
+  "pr21": {
+   "expect": [
+    [
+     "R4_idempotent",
+     "docs/rollback/0016_down.sql",
+     11
+    ],
+    [
+     "R3_row_count",
+     "docs/rollback/0016_down.sql",
+     null
+    ],
+    [
+     "R6_live_d1_ok",
+     "worker/migrations/0016_gsync.sql",
+     null
+    ]
+   ],
+   "must_not": [
+    [
+     "R1_backup",
+     "docs/rollback/0016_down.sql"
+    ],
+    [
+     "R4_idempotent",
+     "worker/migrations/0016_gsync.sql"
+    ],
+    [
+     "R5_secret_pii",
+     "*"
+    ]
+   ]
+  }
+ },
+ "decisions": {
+  "R6 머리말 OK 줄 (0012·0016)": "춘식이 11.01. 10:26: 「더하기만」 예외 규칙은 넣지 않음. 더하기만 하는 migration 도 실 D1 에 올리기 전 유진님 OK 가 필요하므로 머리말에 OK 줄이 없다는 지적은 맞음. 심각도 low."
+ }
+}

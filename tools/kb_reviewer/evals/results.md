@@ -1,6 +1,6 @@
 # kb-reviewer eval
 
-- real PR#17–21: caught 29/29 · missed 0 · findings 41 · FP 12 (FP rate 29.3%)
+- real PR#17–21 · 정답표 v1 (cases.json): caught 29/29 · missed 0 · findings 41 · FP 12 (FP rate 29.3%)
 - synthetic: caught 17/17 · missed 0 · findings 17 · FP 0 (FP rate 0.0%)
 - all: caught 46/46 · missed 0 · findings 58 · FP 12 (FP rate 20.7%)
 - comment cites filename + rule wording only, no vault: OK
@@ -43,6 +43,8 @@
 - FP pr18: R4_idempotent worker/migrations/0013_marks_excused.sql:7
 - FP pr18: R1_backup worker/migrations/0013_marks_excused.sql:17
 - FP pr20: R9_fake_contact tests/cal06.test.js:48
+
+## 정답표 v2 (cases_v2.json): caught 41/41 · missed 0 · findings 41 · FP 0 (FP rate 0.0%)
 
 ## 두 번째 정답표(교차 eval, 10건): caught 10/10 · missed 0 · 정답표 밖 지적 30
 

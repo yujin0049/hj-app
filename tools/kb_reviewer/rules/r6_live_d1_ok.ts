@@ -25,7 +25,7 @@ export const r6: Rule = {
     }
     if (f.isNew && /\.sql$/.test(f.path) && /(migrations\/|rollback\/)/.test(f.path) && !mentionsOk(comments(f))) {
       const first = f.added.find(l => l.text.trim() && !/^\s*--/.test(l.text)) ?? f.added[0];
-      if (first) out.push({ rule: 'R6_live_d1_ok', severity: 'warn', path: f.path, line: first.n, code: first.text.trim().slice(0, 160),
+      if (first) out.push({ rule: 'R6_live_d1_ok', severity: 'low', path: f.path, line: first.n, code: first.text.trim().slice(0, 160),
         why: '실 D1에 적용하는 파일인데 머리말에 「유진님 OK 뒤에만」 문구가 없음.', fix: '머리말에 「① 미리보기 D1 먼저 ② 실 D1은 백업 뒤 유진님 OK 받고만」 한 줄.' });
     }
     return out;
