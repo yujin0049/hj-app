@@ -100,6 +100,26 @@ class WorkerWordBaseline(unittest.TestCase):
         self.assertNotIn(NAME, raw)
         self.assertEqual(json.load(open(self.base, encoding='utf-8'))['worker_keys'], {C.word_key('/data/a.json', WORD): 1})
 
+    def test_save_words_rerun_overwrites_not_accumulates(self):
+        f = {'/data/a.json': '{"x": "%s 목록", "y": "%s"}' % (WORD, WORD)}
+        self.save(f, '/data/a.json')
+        first = json.load(open(self.base, encoding='utf-8'))
+        out = self.save(f, '/data/a.json')
+        again = json.load(open(self.base, encoding='utf-8'))
+        self.assertEqual(again['worker_keys'], first['worker_keys'])
+        self.assertEqual(again['worker_keys'], {C.word_key('/data/a.json', WORD): 2})
+        self.assertEqual(len(again['worker_notes']), 1)
+        self.assertIn('새 열쇠 0개', out)
+
+    def test_save_words_without_worker_warns_rc1(self):
+        before = open(self.base, encoding='utf-8').read()
+        buf, err = io.StringIO(), io.StringIO()
+        with contextlib.redirect_stdout(buf), contextlib.redirect_stderr(err):
+            rc = C.main(['--data', self.d, '--files', '--raw', '--baseline', self.base, '--save-words', '/data/a.json', '--note', '시험'])
+        self.assertEqual(rc, 1)
+        self.assertIn('--worker', err.getvalue())
+        self.assertEqual(open(self.base, encoding='utf-8').read(), before)
+
     def test_pii_baseline_save_keeps_worker_keys(self):
         self.save({'/data/a.json': WORD}, '/data/a.json')
         root = os.path.join(self.d, 'site'); os.makedirs(os.path.join(root, 'data'))
