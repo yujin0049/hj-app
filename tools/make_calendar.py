@@ -302,6 +302,8 @@ def build(raw, extra, today, year, master=None, ingest_ev=None, ingest_td=None, 
               'area': ex.get('area') or (task_t[ref]['area'] if ref in task_t else '기타'),
               'bot': safe_bot(task_t[ref].get('bot')) if ref in task_t else '', 'src': origin, 'source': src_note,
               'yujin': [], 'check': ex.get('check', ''), '_mk': ex.get('mkind', '')}
+        if ref in task_t and is_done(task_t[ref]['status']) and not is_done(ev['status']):
+            ev['status'] = task_t[ref]['status']  # 현황판에서 끝난 T번호는 다른 자료가 「열림」이어도 끝난 일
         if ex.get('end'):
             ev['end'] = norm_date(ex['end'], year)
         if not ev.get('end'):
