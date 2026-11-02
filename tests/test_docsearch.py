@@ -1,5 +1,5 @@
 """문서대장 찾기(#/docsearch) 시험: python3 -m unittest tests.test_docsearch
-- 연결: 모듈 목록·홈 입구·계산 파일은 처음 열 때만(index.html 에 없음)·캐시 hj-v86(#59가 올림)
+- 연결: 모듈 목록·홈 입구·계산 파일은 처음 열 때만(index.html 에 없음)·캐시 hj-v87
 - 자료: data/docsearch.json 개인정보 모양 없음·사람 칸(기안자·결재자) 없음·볼트 경로 없음·「키 없이 도는 검색」 표시
 - 유료 AI·키 없음: 화면·계산 파일에 외부 AI 주소·키 칸이 없음"""
 import json, os, re, sys, unittest
