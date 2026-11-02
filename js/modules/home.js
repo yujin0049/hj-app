@@ -176,6 +176,8 @@
     h += '<button class="bs-entry" type="button" data-go="#/todo" id="home-todo"><span class="tile-ic green">✅</span><span class="bs-entry-tx"><b>내일 할 일</b><span class="tile-sub">10.28 시드 · 한 장 리스트</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 문서등록대장 학습(#/docreg): 문제 풀며 문서등록대장 익히기(유진님 10.21. 20:47 지시). 진도는 자료를 읽은 뒤 채워요.
     h += '<button class="bs-entry" type="button" data-go="#/docreg" id="home-docreg"><span class="tile-ic teal">📑</span><span class="bs-entry-tx"><b>문서등록대장 학습</b><span class="tile-sub" id="home-docreg-sub">분류별 문제로 문서 익히기</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    // 문서대장 찾기(#/docsearch): 키워드·질문 검색·부족 부서(유진님 11.02. 「문서대장 부족한 부서랑, 키워드로 검색이나 ai 검색가능한 사이트를 앱 내에 만들어줘.」).
+    h += '<button class="bs-entry" type="button" data-go="#/docsearch" id="home-docsearch"><span class="tile-ic blue">🔎</span><span class="bs-entry-tx"><b>문서대장 찾기</b><span class="tile-sub">키워드 · AI 질문(키 없이) · 부족 부서</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += card3d();
     h += '<p class="menu-group">바로가기</p><div class="tiles">' +
       tile('#/board', '📋', '오늘 할 일', work.length ? ('진행 중 ' + work.length + '건') : '업무 현황표', 'blue') +
