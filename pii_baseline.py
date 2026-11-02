@@ -7,6 +7,7 @@
 - data/pii_baseline.json 에는 a~p 글자 해시와 개수만(원문 없음). 화면·질문목록에는 가린 값(김*준, 01****78)만.
 - 실패(1)일 때 질문목록(기본 볼트 00 홈/질문목록.md, --qlist·HJ_PII_QLIST 로 바꿈)에 새 열쇠마다 한 줄(같은 줄 있으면 안 씀).
   자동 --save 는 절대 안 함.
+- 열쇠 해시는 소금(salt) 없는 sha256 그대로 둠(예전 열쇠·워커 어절 열쇠와 맞추려고). 원문을 숨기는 장치가 아니라 「같은 것인지」 대조용이고, 원문은 어디에도 저장 안 함.
 """
 import argparse, collections, datetime, glob, hashlib, json, os, re, sys
 

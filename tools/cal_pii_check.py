@@ -106,7 +106,7 @@ def save_words(base, files, names, only, note):
     with open(base, encoding='utf-8') as fh:
         b = json.load(fh)
     wk = dict(b.get('worker_keys') or {})
-    added = 0
+    now = {}   # 이번에 센 개수. 다시 돌려도 더하지 않고 덮어씀(멱등)
     for rel in only:
         if rel not in files:
             print('워커에 없는 파일: %s' % rel)
@@ -114,12 +114,16 @@ def save_words(base, files, names, only, note):
         s = base64.b64decode(files[rel][1]).decode('utf-8', 'replace')
         for w in hit_eojeols(s, names):
             k = word_key(rel, w)
-            if k not in wk:
-                added += 1
-            wk[k] = wk.get(k, 0) + 1
+            now[k] = now.get(k, 0) + 1
+    added = sum(1 for k in now if k not in wk)
+    wk.update(now)
     b['worker_keys'] = {k: wk[k] for k in sorted(wk)}
     b['worker_key'] = '(워커 경로, %s, 어절) sha256 16자 → a~p' % WORD_KIND
-    b['worker_notes'] = (b.get('worker_notes') or []) + ['%s %s: %s' % (datetime_kst(), ','.join(only), note)]
+    notes = b.get('worker_notes') or []
+    tail = ' %s: %s' % (','.join(only), note)
+    if not any(x.endswith(tail) for x in notes):   # 같은 파일·같은 이유로 다시 돌리면 메모도 안 늘림
+        notes = notes + [datetime_kst() + tail]
+    b['worker_notes'] = notes
     with open(base, 'w', encoding='utf-8') as fh:
         json.dump(b, fh, ensure_ascii=False, indent=0)
         fh.write('\n')
@@ -148,6 +152,9 @@ def main(argv=None):
                     help='(결정 있을 때만, 손으로) --worker 안의 이 파일들에서 지금 걸린 어절을 기준선에 더함')
     ap.add_argument('--note', default='', help='--save-words 이유')
     a = ap.parse_args(argv)
+    if a.save_words is not None and not a.worker:
+        print('경고: --save-words 는 --worker 워커 파일이 있어야 해요. 저장 안 함', file=sys.stderr)
+        return 1
     if a.target in ('vault', 'app'):
         print('hj-app 은 공개 GitHub 라 vault/app 규칙을 쓸 수 없어요. --target github 로 돌려요.', file=sys.stderr)
         return 3
