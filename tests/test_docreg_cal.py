@@ -28,7 +28,7 @@ class Wiring(unittest.TestCase):
         self.assertNotIn('data/docreg.json', c)
 
     def test_cache(self):
-        self.assertIn("var CACHE = 'hj-v85';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v86';", read('sw.js'))
 
 P = os.path.join(R, 'data', 'docreg_calendar.json')
 
@@ -42,6 +42,17 @@ class Data(unittest.TestCase):
         for pat in (r'01[016789]-?\d{3,4}-?\d{4}', r'\d{6}-?[1-4]\d{6}', r'[\w.+-]+@[\w-]+\.[\w.]+', r'\d{3,6}-\d{2,6}-\d{4,8}'):
             self.assertEqual(re.findall(pat, self.raw), [], pat)
         self.assertEqual(re.findall(r'"(?:기안자|결재자|주민|전화|계좌|이메일)[^"]*"\s*:', self.raw), [])
+
+    def test_no_owner_names(self):
+        # 261102 춘식이 결정: 담당자(기안·접수자) 실명은 공개 자료에 넣지 않음, 부서만(meta.dept)
+        for v in (self.d.get('docs_by_day') or {}).values():
+            for x in v:
+                self.assertEqual(sorted(x), ['kind', 'no', 'title'])
+        self.assertTrue((self.d.get('meta') or {}).get('dept'))
+        self.assertNotIn('owner', (self.d.get('meta') or {}).get('fields', {}))
+        c = read('js', 'docreg-cal.js')
+        self.assertNotIn("'owner'", c)
+        self.assertNotIn('x.who', c)
 
     def test_total_label_from_file(self):
         c = read('js', 'docreg-cal.js')
