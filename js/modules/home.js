@@ -169,6 +169,8 @@
     h += '<button class="bs-entry" type="button" data-go="#/coop" id="home-coop"><span class="tile-ic orange">🤝</span><span class="bs-entry-tx"><b>협조리스트 (원큐)</b><span class="tile-sub">오늘 Top5 · 부서·사람 · 규정 · 휴보강 경로</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 그래프(#/charts)·중요문서(#/docs): 대장 kv 261029 19:05 (유진님 「앞으로 앱에 이거 적용」「국토교통부 등 관련문서 앱에서 보일 수 있게」). 261029 21시 「적용해」: 거미줄 자리(협조 바로 아래)로 올림.
     h += '<button class="bs-entry" type="button" data-go="#/charts" id="home-charts"><span class="tile-ic blue">📊</span><span class="bs-entry-tx"><b>그래프</b><span class="tile-sub">일정 달력 · 글로컬 잔액 · 추세 · 강사료 구성</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
+    // 261102 유진님 16:27 「그리고 이거 붙여봐.」: 공공데이터 5셋(#/pubdata)
+    h += '<button class="bs-entry" type="button" data-go="#/pubdata" id="home-pubdata"><span class="tile-ic blue">🗂</span><span class="bs-entry-tx"><b>공공데이터</b><span class="tile-sub">정비사 응시·취득 · 전국 vs 교육원 대조</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     h += '<button class="bs-entry" type="button" data-go="#/docs" id="home-docs"><span class="tile-ic teal">🏛</span><span class="bs-entry-tx"><b>중요문서</b><span class="tile-sub">국토교통부·산업인력공단 등 외부기관 · 웹으로만</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
     // 내일 할 일(#/todo): 한 장 체크리스트(유진님 10.27. 「이런건 앱에 못띄워주나」).
     h += '<button class="bs-entry" type="button" data-go="#/todo" id="home-todo"><span class="tile-ic green">✅</span><span class="bs-entry-tx"><b>내일 할 일</b><span class="tile-sub">10.28 시드 · 한 장 리스트</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
