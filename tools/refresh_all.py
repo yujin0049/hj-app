@@ -17,6 +17,8 @@ SKIP = {'.git', 'dl', 'node_modules', 'tests', 'tools', 'docs'}
 # 미리보기 워커에서 뺄 파일: main 에 있는 dorm.json 은 연수생 이름 칸이 있어 새 주소로 더 퍼뜨리지 않음(기숙사 화면은 미리보기에서 안 열림)
 SKIP_TOP = {'dorm.json'}
 # 261029 대장 kv T=hjapp_차트+중요문서: #/docs 중요문서 추출(볼트 스크립트, 메타데이터만) + #/charts 차트 자료
+# meta.json steps 키는 공개 JSON 이라 개인정보 검사를 받음: 성씨로 시작하는 3글자 낱말(예: 마지막) 쓰지 말 것
+LASTWORK_KEY = '최근 작업 시각'
 DOCS_SCRIPT = '/home/box/obsidian_vault/봇공유/99 봇/스크립트/hj_docs_extract.py'
 
 
@@ -69,12 +71,13 @@ def main(argv=None):
     except Exception as e:
         steps['차트'] = {'ok': False, 'why': type(e).__name__}
     # 261030 대장: 협업 보드 「오래 멈춤」은 실제 마지막 작업 시각으로(일 번호·시각만 씀). 원자료 없으면 예전 파일 유지
+    # 261102: meta.json 단계 키는 「최근 작업 시각」. 「마지막」(성씨 마+3글자)을 hjpii 가 이름으로 봐서 rc2 3연속 → 검사는 그대로, 키 낱말을 바꿈
     try:
         import lastwork
         lrc = lastwork.main(['--out', os.path.join(data, 'lastwork.json')])
-        steps['마지막 작업 시각'] = {'ok': lrc == 0, 'why': '' if lrc == 0 else '원자료 없음(예전 파일 유지)'}
+        steps[LASTWORK_KEY] = {'ok': lrc == 0, 'why': '' if lrc == 0 else '원자료 없음(예전 파일 유지)'}
     except Exception as e:
-        steps['마지막 작업 시각'] = {'ok': False, 'why': type(e).__name__}
+        steps[LASTWORK_KEY] = {'ok': False, 'why': type(e).__name__}
     rc = cal_pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
     if rc:
         steps['개인정보 검사'] = {'ok': False, 'why': '실패'}
