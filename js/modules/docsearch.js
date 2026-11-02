@@ -66,14 +66,15 @@
       '.ds-chips button{min-height:36px;border:1px solid var(--sky-dim);background:#02090D;color:var(--ink);border-radius:999px;padding:6px 12px;font:13px Hahmlet,serif;cursor:pointer}',
       '.ds-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}',
       '.ds-stat{border:1px solid var(--sky-dim);border-radius:12px;padding:10px;text-align:center;background:rgba(0,0,0,.6)}',
-      '.ds-stat b{display:block;font:700 26px/1.1 Hahmlet,serif;color:var(--sky)}',
+      '.ds-stat b{display:block;font:700 26px/1.1 Hahmlet,serif;font-size:clamp(16px,5.4vw,26px);white-space:nowrap;color:var(--sky)}',
       '.ds-stat span{font-size:12px;color:var(--mute)}',
       '.ds-limit{font-size:13px;line-height:1.5;color:#FFD48A;border-left:3px solid #FFB547;padding:6px 10px;margin:8px 0;background:rgba(40,25,0,.55);border-radius:0 8px 8px 0}',
       '.ds-warn{border:1px solid #FFB547;color:#FFD48A;border-radius:12px;padding:10px 12px;margin:10px 0;font-size:14px;background:rgba(40,25,0,.6)}',
       '.ds-swipe{display:none;font-size:12px;color:#7FA9BF;margin:4px 0}',
       '@media(max-width:600px){.ds-swipe{display:block}}',
       '.ds-tw{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--sky-dim);border-radius:12px;background:rgba(0,0,0,.7)}',
-      '.ds table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}',
+      '.ds table{width:100%;border-collapse:collapse;font-size:13px}',
+      '@media(max-width:600px){.ds table{min-width:520px}}',
       '.ds th,.ds td{padding:8px 10px;border-bottom:1px solid var(--sky-faint);text-align:left;white-space:nowrap}',
       '.ds th{color:var(--sky);font:600 12px ui-monospace,Menlo,monospace;letter-spacing:.04em;background:#02101A;position:sticky;top:0}',
       '.ds td.num{text-align:right;font-family:ui-monospace,Menlo,monospace}',
@@ -81,7 +82,7 @@
       '.ds tr.lack td:first-child{box-shadow:inset 3px 0 0 #FFB547}',
       '.ds-foot{font-size:12px;color:var(--mute);margin-top:14px;line-height:1.6}',
       '.ds a{color:var(--sky)}',
-      '@media (max-width:520px){.ds{padding:16px 12px 20px;border-radius:14px}.ds h1{font-size:22px}.ds form{grid-template-columns:1fr}.ds-stat b{font-size:22px}}'
+      '@media (max-width:520px){.ds{padding:16px 12px 20px;border-radius:14px}.ds h1{font-size:22px}.ds form{grid-template-columns:1fr}.ds-stat b{font-size:clamp(16px,5.4vw,22px)}}'
     ].join('');
     document.head.appendChild(s);
   }
@@ -238,7 +239,7 @@
       '<div class="ds-stat"><b id="ds-base">~' + esc(D.md(reg.base)) + '</b><span>기준일</span></div></div>' +
       '<div class="ds-warn" id="ds-lack"><b>부족 ' + lack.length + '곳</b> — ' + lack.map(function (r) {
         return esc(r.dept) + (r.status === '대장 없음' ? '(대장 없음)' : '(' + esc(D.md(r.gap_from)) + '~ 없음)');
-      }).join(', ') + '. 10.31. 이후 공문은 모든 부서가 새 대장 필요(로그인=유진님).</div>' +
+      }).join(', ') + '. 10.31. 이후 공문은 모든 부서가 새 대장 필요(로그인 필요).</div>' +
       '<h2>부서별 대장</h2><p class="ds-swipe">표는 옆으로 밀어 보세요 →</p><div class="ds-tw"><table id="ds-reg"><thead><tr><th>부서</th><th>기간</th><th>건수</th><th>빈 기간(~' + esc(D.md(reg.base)) + ')</th><th>상태</th></tr></thead><tbody>' +
       reg.rows.map(function (r) {
         var isLack = r.status === '부족' || r.status === '대장 없음';
