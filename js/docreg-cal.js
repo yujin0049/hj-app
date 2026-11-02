@@ -50,9 +50,9 @@
   function ymOf(s) { var m = String(s || '').match(/(\d{4})\D?(\d{1,2})/); return m ? m[1] + '-' + ('0' + m[2]).slice(-2) : ''; }
   function doc(x) {
     if (!x || typeof x !== 'object') return null;
-    return { no: String(pick(x, ['no', 'doc_no', '문서번호', 'num']) || ''), t: String(pick(x, ['t', 'title', '제목']) || ''), who: String(pick(x, ['who', 'owner', '담당자', 'person']) || ''), kind: String(pick(x, ['kind', '문서종류']) || '') };
+    return { no: String(pick(x, ['no', 'doc_no', '문서번호', 'num']) || ''), t: String(pick(x, ['t', 'title', '제목']) || ''), kind: String(pick(x, ['kind', '문서종류']) || '') };
   }
-  /* 자료 모양: 월별 건수 · 날짜별 건수 · 날짜별 문서 목록(문서번호·제목·담당자). 키 이름이 조금 달라도 읽음. */
+  /* 자료 모양: 월별 건수 · 날짜별 건수 · 날짜별 문서 목록(문서번호·제목·종류). 키 이름이 조금 달라도 읽음. 담당자(사람 이름) 칸은 자료에 있어도 안 읽음(261102 부서만). */
   function normalize(raw) {
     if (!raw || typeof raw !== 'object') return null;
     if (raw.meta && typeof raw.meta === 'object') raw = Object.assign({}, raw.meta, raw);
@@ -154,7 +154,7 @@
     if (!ls.length) return h + '<div class="dc-empty">목록 없음</div>';
     return h + '<ul class="dc-list" id="dc-list">' + ls.map(function (x) {
       var no = x.no.replace(/^.*?-(\d+)$/, '$1');
-      return '<li><span class="t">' + esc(x.t || '(제목 없음)') + '</span><span class="m"><span title="' + esc(x.no) + '">' + esc(no ? '-' + no : '') + '</span>' + (x.kind ? '<span>' + esc(x.kind) + '</span>' : '') + (x.who ? '<span>담당 ' + esc(x.who) + '</span>' : '') + '</span></li>';
+      return '<li><span class="t">' + esc(x.t || '(제목 없음)') + '</span><span class="m"><span title="' + esc(x.no) + '">' + esc(no ? '-' + no : '') + '</span>' + (x.kind ? '<span>' + esc(x.kind) + '</span>' : '') + (c.title ? '<span>' + esc(c.title) + '</span>' : '') + '</span></li>';
     }).join('') + '</ul>';
   }
   function paint(el, api, c) {
@@ -163,7 +163,7 @@
     el.innerHTML = head +
       '<section class="dc-card" id="dc-trend"><h2>월별 추세<small>막대를 누르면 그 달 달력</small></h2><p class="dc-unit">단위: 건/월 · 흐린 막대 = 달 일부만</p>' + trend(c) + '</section>' +
       '<div class="dc-two"><section class="dc-card" id="dc-cal">' + cal(c, esc) + '</section><section class="dc-card" id="dc-day">' + list(c, esc) + '</section></div>' +
-      '<p class="dc-src">출처: ' + esc(c.source || '항공정비과 문서등록대장') + ' · 사람 이름은 공개된 담당자만, 나머지는 가림</p>';
+      '<p class="dc-src">출처: ' + esc(c.source || '항공정비과 문서등록대장') + ' · 담당자 이름은 싣지 않음(부서만) · 제목 속 이름은 가림</p>';
     el.querySelectorAll('#dc-trend .bar').forEach(function (b) { b.onclick = function () { view.ym = b.getAttribute('data-ym'); view.day = ''; paint(el, api, c); }; });
     var yms = c.months.map(function (x) { return x.ym; });
     function step(k) { var i = yms.indexOf(view.ym) + k; if (i >= 0 && i < yms.length) { view.ym = yms[i]; view.day = ''; paint(el, api, c); } }
