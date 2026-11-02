@@ -1185,5 +1185,13 @@
 "ppbokpdpjoofogmp": 1,
 "pphcmganihhfmnga": 116,
 "pponcichokmcoopa": 1
-}
+},
+"worker_keys": {
+"cpceoahckojlmnbm": 1,
+"nkphpagaedhkkjen": 3
+},
+"worker_key": "(워커 경로, 사람 이름 어절, 어절) sha256 16자 → a~p",
+"worker_notes": [
+"2026-11-02 17:44 KST /data/cause_attach_types.json: 261102 춘식이 결정(안 C): cause_attach_types.json 일반낱말 1어절(rc2_hits 「일반낱말」 판정)"
+]
 }

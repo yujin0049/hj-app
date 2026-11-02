@@ -7,6 +7,7 @@
   볼트·잠긴 앱용 느슨한 규칙(주민번호만 차단)은 공용 스크립트 봇공유/99 봇/스크립트/pii_check.py --target vault|app 을 쓴다."""
 import argparse, base64, glob, json, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # pii_baseline.key (저장소 맨 위)
 import hjpii
 from make_calendar import read_table
 
@@ -50,7 +51,40 @@ def names_from_raws(paths):
     return names
 
 
-def strong(s, names):
+# 261102 춘식이 결정(안 C): 워커 「사람 이름」은 부분일치 그대로 찾되, 이름이 든 「어절 전체」가 그 파일 기준선에 있으면 그 자리만 통과.
+# 어절 = 띄어쓰기로 나눈 덩어리. JSON·HTML 안이라 따옴표·쉼표·<>·\n 같은 이스케이프도 띄어쓰기로 본다.
+# 기준선 = data/pii_baseline.json 의 worker_keys: pii_baseline.key(워커 경로, WORD_KIND, 어절) 해시 → 개수 (원문 없음).
+# 파일 × 어절이라, 같은 어절이라도 다른 파일이면 다시 걸리고, 기준선 어절 안의 이름이 새 어절로 나오면 다시 걸린다. SITE_ALLOW(파일 통째)와 다름.
+WORD_KIND = '사람 이름 어절'
+EOJ_SEP = re.compile(r'(?:\s|\\[nrt]|["\'`,<>])+')
+
+
+def hit_eojeols(s, names):
+    """s 에서 이름(부분일치)이 든 어절 목록(나온 만큼)."""
+    if not any(n in s for n in names):
+        return []
+    out = []
+    for w in EOJ_SEP.split(s):
+        if w and any(n in w for n in names):
+            out.append(w)
+    return out
+
+
+def word_key(rel, w):
+    import pii_baseline   # 열쇠 만드는 법은 이름 의심 기준선과 같은 것(한 곳)
+    return pii_baseline.key(rel, WORD_KIND, w)
+
+
+def load_word_keys(base):
+    """기준선 파일을 한 번만 읽어 worker_keys 집합. 없거나 깨졌으면 빈 집합(= 기준선 없이 엄격)."""
+    try:
+        with open(base, encoding='utf-8') as fh:
+            return set(json.load(fh).get('worker_keys') or {})
+    except (OSError, ValueError):
+        return set()
+
+
+def strong(s, names, rel=None, word_keys=None):
     hits = []
     for kind, rx in hjpii.PATTERNS:
         if rx.search(s):
@@ -59,8 +93,43 @@ def strong(s, names):
         if not hjpii.DATE_LIKE.match(m.group(0)) and sum(c.isdigit() for c in m.group(0)) >= 10 and set(m.group(0)) - set('0-'):
             hits.append('계좌번호'); break
     if any(n in s for n in names):
-        hits.append('사람 이름')
+        if rel and word_keys:
+            if any(word_key(rel, w) not in word_keys for w in hit_eojeols(s, names)):
+                hits.append('사람 이름')
+        else:
+            hits.append('사람 이름')
     return hits
+
+
+def save_words(base, files, names, only, note):
+    """--save-words: 고른 워커 파일(only)에서 지금 걸린 어절만 worker_keys 에 더함. 낱말은 안 찍고 개수만."""
+    with open(base, encoding='utf-8') as fh:
+        b = json.load(fh)
+    wk = dict(b.get('worker_keys') or {})
+    added = 0
+    for rel in only:
+        if rel not in files:
+            print('워커에 없는 파일: %s' % rel)
+            return 2
+        s = base64.b64decode(files[rel][1]).decode('utf-8', 'replace')
+        for w in hit_eojeols(s, names):
+            k = word_key(rel, w)
+            if k not in wk:
+                added += 1
+            wk[k] = wk.get(k, 0) + 1
+    b['worker_keys'] = {k: wk[k] for k in sorted(wk)}
+    b['worker_key'] = '(워커 경로, %s, 어절) sha256 16자 → a~p' % WORD_KIND
+    b['worker_notes'] = (b.get('worker_notes') or []) + ['%s %s: %s' % (datetime_kst(), ','.join(only), note)]
+    with open(base, 'w', encoding='utf-8') as fh:
+        json.dump(b, fh, ensure_ascii=False, indent=0)
+        fh.write('\n')
+    print('워커 어절 기준선 저장: 새 열쇠 %d개 (전체 %d개)' % (added, len(wk)))
+    return 0
+
+
+def datetime_kst():
+    import datetime
+    return datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=9))).strftime('%Y-%m-%d %H:%M KST')
 
 
 def main(argv=None):
@@ -74,6 +143,10 @@ def main(argv=None):
     ap.add_argument('--target', default='github', choices=['github', 'drive', 'vault', 'app'],
                     help='공개 저장소라 github(엄격)만 의미 있음. vault/app 을 주면 거절(종료 코드 3)')
     ap.add_argument('--raw', nargs='*', default=['/workspace/hj_audit/calendar/raw_업무.json', '/workspace/hj_audit/calendar/raw_ojnt.json', '/home/box/vault/봇공유/00 홈/일정총괄.json', '/workspace/hj_audit/ingest/통합일정.json'])
+    ap.add_argument('--baseline', default=os.path.join(root, 'data', 'pii_baseline.json'), help='워커 어절 기준선(worker_keys)이 든 파일')
+    ap.add_argument('--save-words', nargs='*', default=None, metavar='/data/파일.json',
+                    help='(결정 있을 때만, 손으로) --worker 안의 이 파일들에서 지금 걸린 어절을 기준선에 더함')
+    ap.add_argument('--note', default='', help='--save-words 이유')
     a = ap.parse_args(argv)
     if a.target in ('vault', 'app'):
         print('hj-app 은 공개 GitHub 라 vault/app 규칙을 쓸 수 없어요. --target github 로 돌려요.', file=sys.stderr)
@@ -92,12 +165,18 @@ def main(argv=None):
         t = open(a.worker, encoding='utf-8').read()
         m = re.search(r'const F = (\{.*?\});\\nconst H', t, re.S)
         files = json.loads(json.loads('"' + m.group(1) + '"')) if m else {}
+        if a.save_words:
+            if not a.note:
+                print('--save-words 는 --note 이유가 있어야 해요')
+                return 2
+            return save_words(a.baseline, files, names, a.save_words, a.note)
+        word_keys = load_word_keys(a.baseline)   # 한 번만 읽음
         for rel, (typ, b64) in files.items():
             if not re.search(r'text|json|javascript|svg|xml', typ):
                 continue
             n += 1
             s = base64.b64decode(b64).decode('utf-8', 'replace')
-            for k in strong(s, names):
+            for k in strong(s, names, rel, word_keys):
                 if '%s:%s' % (rel, k) in SITE_ALLOW:
                     continue
                 if a.enforce is None or rel in a.enforce:

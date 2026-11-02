@@ -215,7 +215,7 @@
     el.innerHTML = '<section class="card sk" aria-busy="true"><p class="muted">불러오는 중…</p><i></i><i></i><i></i></section>';
     if (!calTried) calTried = new Promise(function (res) {
       var s = document.createElement('script');
-      s.src = new URL('js/docreg-cal.js?v=1', document.baseURI).href;
+      s.src = new URL('js/docreg-cal.js?v=2', document.baseURI).href;
       s.onload = function () { res(true); };
       s.onerror = function () { calTried = null; res(false); };
       document.body.appendChild(s);

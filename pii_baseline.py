@@ -107,11 +107,16 @@ def main(argv=None, root=None, base=None):
     base = base or BASE
     now = scan(root)
     if a.save:
+        keep = {}
+        if os.path.exists(base):   # 워커 어절 기준선(tools/cal_pii_check.py --save-words)은 따로 저장한 것이라 그대로 둠
+            with open(base, encoding='utf-8') as fh:
+                old = json.load(fh)
+            keep = {k: old[k] for k in ('worker_key', 'worker_keys', 'worker_notes') if k in old}
         with open(base, 'w', encoding='utf-8') as fh:
             json.dump({'version': 2, 'key': '(파일, 종류, 걸린 낱말) sha256 16자 → a~p', 'count': len(now),
                        'note': a.note,
                        'saved_at': datetime.datetime.now(KST).strftime('%Y-%m-%d %H:%M KST'),
-                       'keys': {k: now[k]['n'] for k in sorted(now)}}, fh, ensure_ascii=False, indent=0)
+                       'keys': {k: now[k]['n'] for k in sorted(now)}, **keep}, fh, ensure_ascii=False, indent=0)
             fh.write('\n')
         print(f'기준선 저장: 열쇠 {len(now)}개 (걸린 곳 {sum(v["n"] for v in now.values())}군데)')
         return 0

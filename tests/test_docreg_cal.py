@@ -27,8 +27,17 @@ class Wiring(unittest.TestCase):
         self.assertEqual(re.findall(r"fetch\(new URL\('([^']+)'", c), ['data/docreg_calendar.json'])
         self.assertNotIn('data/docreg.json', c)
 
+    def test_dept_once_per_day(self):
+        # 261102: 부서는 날짜 머리(h2#dc-grp)에 한 번만, 목록 줄마다 되풀이 안 함
+        c = read('js', 'docreg-cal.js')
+        body = c[c.index('function list('):c.index('function paint(')]
+        head, rows = body.split("'<ul class=\"dc-list\"", 1)
+        self.assertIn('id=\"dc-grp\"', head)
+        self.assertIn('c.title', head)
+        self.assertNotIn('c.title', rows)
+
     def test_cache(self):
-        self.assertIn("var CACHE = 'hj-v86';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v87';", read('sw.js'))
 
 P = os.path.join(R, 'data', 'docreg_calendar.json')
 

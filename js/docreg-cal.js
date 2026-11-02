@@ -150,11 +150,11 @@
   function list(c, esc) {
     if (!view.day) return '<h2>날짜를 눌러 보세요</h2><p class="dc-unit">달력에서 날짜를 누르면 그날 등록된 문서가 여기 나와요.</p>';
     var ls = c.docs[view.day] || [], n = c.days[view.day] || ls.length;
-    var h = '<h2>' + md(view.day) + '(' + wdOf(view.day) + ') 문서<small>' + n + '건</small></h2>';
+    var h = '<h2 id="dc-grp">' + md(view.day) + '(' + wdOf(view.day) + ')' + (c.title ? ' · ' + esc(c.title) : '') + ' 문서<small>' + n + '건</small></h2>'; /* 부서는 날짜 머리에 한 번만(줄마다 되풀이 안 함) */
     if (!ls.length) return h + '<div class="dc-empty">목록 없음</div>';
     return h + '<ul class="dc-list" id="dc-list">' + ls.map(function (x) {
       var no = x.no.replace(/^.*?-(\d+)$/, '$1');
-      return '<li><span class="t">' + esc(x.t || '(제목 없음)') + '</span><span class="m"><span title="' + esc(x.no) + '">' + esc(no ? '-' + no : '') + '</span>' + (x.kind ? '<span>' + esc(x.kind) + '</span>' : '') + (c.title ? '<span>' + esc(c.title) + '</span>' : '') + '</span></li>';
+      return '<li><span class="t">' + esc(x.t || '(제목 없음)') + '</span><span class="m"><span title="' + esc(x.no) + '">' + esc(no ? '-' + no : '') + '</span>' + (x.kind ? '<span>' + esc(x.kind) + '</span>' : '') + '</span></li>';
     }).join('') + '</ul>';
   }
   function paint(el, api, c) {
