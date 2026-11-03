@@ -34,10 +34,17 @@ ROUTINE_SUBJ = re.compile(r'^\s*(?:data:\s*)?(?:meta|lastwork|refresh)\b', re.I)
 DATA_JSON = re.compile(r'^data/[^/]+\.json$')
 
 
+SELF_FILES = ('tools/lastwork.py', 'tests/test_lastwork.py')   # 이 도구 자신(고치는 커밋은 「그 T 일」이 아니라 이 도구 일)
+
+
 def routine_commit(subject, files):
-    """30분 루틴이 스스로 만든 데이터 커밋인가: 바뀐 파일이 data/*.json 뿐이거나, 제목이 meta/lastwork/refresh 로 시작(앞에 'data:' 있어도).
-    'fix(refresh): …' 같은 진짜 작업 커밋은 아님. 파일 목록이 비면(머지 등) 제목으로만 봄."""
-    return bool(ROUTINE_SUBJ.match(subject)) or (bool(files) and all(DATA_JSON.match(f) for f in files))
+    """T 근거에서 뺄 커밋인가.
+    ① 제목이 meta/lastwork/refresh 로 시작(앞에 'data:' 있어도) — 30분 루틴 데이터 커밋. 'fix(refresh): …' 같은 진짜 작업은 아님
+    ② 바뀐 파일이 전부 data/*.json 또는 이 도구 자신(SELF_FILES) — 루틴·봇이 다시 만든 출력, 또는 lastwork 고치는 커밋
+       (머지·squash 커밋도 같음. 제목에 T번호가 있어도 뺌). 파일 목록이 비면(머지 등) 제목으로만 봄."""
+    if ROUTINE_SUBJ.match(subject):
+        return True
+    return bool(files) and all(DATA_JSON.match(f) or f in SELF_FILES for f in files)
 
 
 def written_values(repo, h, nos):

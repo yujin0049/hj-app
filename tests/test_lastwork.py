@@ -123,6 +123,18 @@ class SelfFeed(unittest.TestCase):
         self.commit('2026-10-30 13:00', 'fix(refresh): T203 단계 이름 고침', {'tools/refresh_all.py': '1', 'data/meta.json': '{}'})
         self.assertEqual(self.got().get('T203'), '2026-10-30 13:00')
 
+    def test_own_tool_commit_ignored_even_with_t_in_subject(self):
+        # 261103: lastwork 고치는 squash 커밋 제목에 T092 가 들어가 17:58 로 끌려간 일. 이 도구 자신만 바꾼 커밋은 근거 아님
+        self.commit('2026-10-30 14:30', 'feat: T300 화면 고침', {'js/a.js': '1'})
+        self.commit('2026-10-30 17:58', 'fix(lastwork): 루틴 커밋 무시 (T300) (#62)',
+                    {'tools/lastwork.py': '1', 'tests/test_lastwork.py': '1'})
+        self.commit('2026-10-30 18:10', 'Merge pull request #63 T300', {'tools/lastwork.py': '2', 'data/meta.json': '{}'})
+        self.assertEqual(self.got().get('T300'), '2026-10-30 14:30')
+
+    def test_own_tool_plus_other_code_counts(self):
+        self.commit('2026-10-30 12:00', 'feat: T301 보드와 lastwork 같이 고침', {'tools/lastwork.py': '1', 'js/board.js': '1'})
+        self.assertEqual(self.got().get('T301'), '2026-10-30 12:00')
+
     def test_routine_rule(self):
         R = lastwork.routine_commit
         self.assertTrue(R('data: meta 261103 1737', ['data/meta.json']))
@@ -132,6 +144,8 @@ class SelfFeed(unittest.TestCase):
         self.assertFalse(R('fix(refresh): 키 이름', ['tools/refresh_all.py']))
         self.assertFalse(R('feat: T5', ['data/a.json', 'js/a.js']))
         self.assertFalse(R('Merge branch x', []))
+        self.assertTrue(R('fix(lastwork): x (#62)', ['tools/lastwork.py', 'tests/test_lastwork.py']))
+        self.assertFalse(R('fix(lastwork): x', ['tools/lastwork.py', 'tools/hjpii.py']))
 
 if __name__ == '__main__':
     unittest.main()
