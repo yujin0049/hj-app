@@ -74,5 +74,64 @@ class Shipped(unittest.TestCase):
         self.assertNotRegex(open(p, encoding='utf-8').read(), r'[A-Z]:[\\/]|/home/|/workspace/')
 
 
+
+class SelfFeed(unittest.TestCase):
+    """261103 T092: 30분 루틴이 만든 데이터 커밋(「data: lastwork T092 갱신·meta …」)의 커밋 시각을 작업 시각으로 읽던 버그."""
+    def setUp(self):
+        import subprocess
+        self.r = tempfile.mkdtemp()
+        self.sp = subprocess
+        self.git('init', '-q')
+
+    def git(self, *a, when=None):
+        env = dict(os.environ, GIT_AUTHOR_NAME='t', GIT_AUTHOR_EMAIL='t@t', GIT_COMMITTER_NAME='t', GIT_COMMITTER_EMAIL='t@t', TZ='Asia/Seoul')
+        if when:
+            env.update(GIT_AUTHOR_DATE=when + ' +0900', GIT_COMMITTER_DATE=when + ' +0900')
+        self.sp.run(['git', '-C', self.r] + list(a), check=True, env=env, capture_output=True)
+
+    def commit(self, when, subject, files):
+        for rel, text in files.items():
+            w(os.path.join(self.r, rel), text)
+        self.git('add', '-A')
+        self.git('commit', '-q', '-m', subject, when=when)
+
+    def lw(self, tasks):
+        return json.dumps({'version': 1, 'tasks': tasks})
+
+    def got(self):
+        return lastwork.collect(os.path.join(self.r, 'no-vault'), os.path.join(self.r, 'no.log'), self.r, NOW)[0]
+
+    def test_routine_commit_time_ignored_real_work_kept(self):
+        self.commit('2026-10-30 14:30', 'feat: T200 화면 고침', {'tools/x.py': '1'})
+        self.commit('2026-10-30 15:11', 'data: lastwork T200 갱신·meta 261030 1511',
+                    {'data/lastwork.json': self.lw({'T200': '2026-10-30 14:30'}), 'data/meta.json': '{"a": 1}'})
+        self.commit('2026-10-30 15:40', 'data: meta 261030 1540', {'data/meta.json': '{"a": 2}'})
+        self.assertEqual(self.got().get('T200'), '2026-10-30 14:30')
+
+    def test_data_only_commit_not_evidence(self):
+        self.commit('2026-10-30 10:00', 'feat: 시작', {'tools/x.py': '1'})
+        self.commit('2026-10-30 15:20', 'chore(data): 현황판 다시 읽음 T201 완료', {'data/status.json': '{}'})
+        self.assertNotIn('T201', self.got())
+
+    def test_value_written_by_routine_kept(self):
+        # 루틴이 lastwork.json 에 실제로 바꿔 쓴 값(정상 근거)은 유지하되, 커밋 시각(16:00)이 아니라 쓴 값(12:00)
+        self.commit('2026-10-30 10:00', 'feat: 시작', {'tools/x.py': '1', 'data/lastwork.json': self.lw({})})
+        self.commit('2026-10-30 16:00', 'data: lastwork T202 갱신', {'data/lastwork.json': self.lw({'T202': '2026-10-30 12:00'})})
+        self.assertEqual(self.got().get('T202'), '2026-10-30 12:00')
+
+    def test_real_fix_commit_with_refresh_scope_counts(self):
+        self.commit('2026-10-30 13:00', 'fix(refresh): T203 단계 이름 고침', {'tools/refresh_all.py': '1', 'data/meta.json': '{}'})
+        self.assertEqual(self.got().get('T203'), '2026-10-30 13:00')
+
+    def test_routine_rule(self):
+        R = lastwork.routine_commit
+        self.assertTrue(R('data: meta 261103 1737', ['data/meta.json']))
+        self.assertTrue(R('lastwork T092', ['tools/x.py']))
+        self.assertTrue(R('meta: 30분 갱신', []))
+        self.assertTrue(R('chore: 수치 T1', ['data/a.json', 'data/b.json']))
+        self.assertFalse(R('fix(refresh): 키 이름', ['tools/refresh_all.py']))
+        self.assertFalse(R('feat: T5', ['data/a.json', 'js/a.js']))
+        self.assertFalse(R('Merge branch x', []))
+
 if __name__ == '__main__':
     unittest.main()
