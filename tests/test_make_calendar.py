@@ -228,7 +228,65 @@ class PII(Base):
         cal['events'][0]['title'] = '가나다 확인'
         json.dump(cal, open(os.path.join(self.out, 'calendar.json'), 'w', encoding='utf-8'), ensure_ascii=False)
         rc4, m4 = run(cal_pii_check.main, ['--data', self.out, '--raw', os.path.join(FX, 'raw_업무.json'), oj_raw])
+
         self.assertEqual(rc4, 2, m4)
+
+    def test_ojnt_new_summary_falls_back_to_row_counts(self):
+        """A2 가 N/N 이 아니면 표 칸을 세고, 가짜 이름은 출력에 안 남는다."""
+        src = os.path.join(FX, 'raw_ojnt_newfmt.json')
+        raw = os.path.join(self.out, 'raw_ojnt_newfmt.json')
+        t = open(src, encoding='utf-8').read()
+        k = [0]
+        def phone(_m):
+            k[0] += 1
+            return J(['0' + '10', '0000', '%04d' % k[0]])
+        import re as _re
+        open(raw, 'w', encoding='utf-8').write(_re.sub(_re.escape(PHONE_SLOT), phone, t))
+        rc, msg = run(make_ojnt_progress.main, ['--raw', raw, '--out', self.out])
+        self.assertEqual(rc, 0, msg)
+        oj = json.load(open(os.path.join(self.out, 'ojnt_progress.json'), encoding='utf-8'))
+        by = {i['label']: i for i in oj['items']}
+        self.assertEqual((by['개인정보 동의서']['done'], by['개인정보 동의서']['total'], by['개인정보 동의서']['cross']), (2, 3, '줄 세기만'))
+        self.assertEqual((by['연수생 서약서']['done'], by['연수생 서약서']['total']), (2, 3))
+        self.assertEqual((by['입사신청서 만듦']['done'], by['입사신청서 만듦']['total']), (3, 3))
+        self.assertEqual((by['기숙사 입사신청서 제출']['done'], by['기숙사 입사신청서 제출']['total']), (3, 3))
+        self.assertEqual((by['실거주 확인서 만듦']['done'], by['실거주 확인서 만듦']['total']), (3, 3))
+        self.assertEqual((by['실거주 확인서 제출']['done'], by['실거주 확인서 제출']['total']), (0, 3))
+        self.assertIn('줄 세기', oj['source'])
+        self.assertEqual([d['label'] for d in oj['deadlines']], ['입사신청서', '실거주 확인서'])
+        blob = json.dumps(oj, ensure_ascii=False)
+        for bad in ('시험학생갑', '시험학생을', '시험학생병', J(['0' + '10', '0000'])):
+            self.assertNotIn(bad, blob)
+
+    def test_cal_pii_check_allows_baseline_ordinary_word(self):
+        """원자료 3글자 이름이 기준선에 올린 일반 낱말 안에만 있으면 통과. 이름 낱말 그대로는 실패."""
+        # 가짜 이름 「무계획」은 일반 낱말 「업무계획」의 부분문자열. 실명 아님.
+        fake_name, ordinary = '무계획', '업무계획'
+        oj_raw = os.path.join(self.out, 'raw_ojnt_allow.json')
+        content = (
+            "OJNT 가짜\r\n제출: 개인정보 동의서 1/1\r\n마감: 입사신청서 10.21.\r\n"
+            "번호,이름,개인정보 동의서\r\n1,%s,O\r\n" % fake_name
+        )
+        json.dump({"spreadsheetId": "FAKE-ALLOW", "ranges": [{"sheet": "입사서류체크", "content": content}]},
+                  open(oj_raw, 'w', encoding='utf-8'), ensure_ascii=False)
+        cal = {'events': [{'id': 'X1', 'title': ordinary + ' 점검'}]}
+        json.dump(cal, open(os.path.join(self.out, 'calendar.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+        base = os.path.join(self.out, 'pii_baseline.json')
+        json.dump({'version': 2, 'keys': {}, 'worker_keys': {}}, open(base, 'w', encoding='utf-8'))
+        raw_args = ['--data', self.out, '--files', 'calendar.json', '--raw', oj_raw, '--baseline', base]
+        rc0, m0 = run(cal_pii_check.main, raw_args)
+        self.assertEqual(rc0, 2, m0)
+        import pii_baseline
+        k = pii_baseline.key('/data/calendar.json', '사람 이름 어절', ordinary)
+        json.dump({'version': 2, 'keys': {}, 'worker_keys': {k: 1}}, open(base, 'w', encoding='utf-8'))
+        rc1, m1 = run(cal_pii_check.main, raw_args)
+        self.assertEqual(rc1, 0, m1)
+        # 같은 이름이 낱말로 단독 등장하면 기준선 낱말과 달라도 실패
+        cal['events'][0]['title'] = fake_name + ' 점검'
+        json.dump(cal, open(os.path.join(self.out, 'calendar.json'), 'w', encoding='utf-8'), ensure_ascii=False)
+        rc2, m2 = run(cal_pii_check.main, raw_args)
+        self.assertEqual(rc2, 2, m2)
+
 
 
 if __name__ == '__main__':
