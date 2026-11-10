@@ -1,52 +1,60 @@
 {
  "version": 1,
- "source": "OJNT 기숙사 입사서류 시트 「입사서류체크」 A2 요약 줄(시트 수식) · 줄 세기로 맞춰 봄",
+ "source": "OJNT 기숙사 입사서류 시트 「입사서류체크」 표 줄 세기(A2 요약 줄을 N/N 으로 못 읽음)",
  "items": [
   {
    "label": "개인정보 동의서",
-   "done": 14,
-   "total": 16,
-   "rate": 88,
+   "done": 10,
+   "total": 12,
+   "rate": 83,
    "note": "",
-   "cross": "일치"
+   "cross": "줄 세기만"
   },
   {
    "label": "연수생 서약서",
-   "done": 14,
-   "total": 16,
-   "rate": 88,
+   "done": 10,
+   "total": 12,
+   "rate": 83,
    "note": "",
-   "cross": "일치"
+   "cross": "줄 세기만"
   },
   {
-   "label": "기숙사 입사신청서",
-   "done": 0,
-   "total": 6,
-   "rate": 0,
-   "note": "작성 중 6",
-   "cross": "일치"
+   "label": "입사신청서 만듦",
+   "done": 12,
+   "total": 12,
+   "rate": 100,
+   "note": "",
+   "cross": "줄 세기만"
+  },
+  {
+   "label": "기숙사 입사신청서 제출",
+   "done": 12,
+   "total": 12,
+   "rate": 100,
+   "note": "",
+   "cross": "줄 세기만"
   },
   {
    "label": "실거주 확인서 만듦",
-   "done": 16,
-   "total": 16,
+   "done": 12,
+   "total": 12,
    "rate": 100,
    "note": "",
-   "cross": "줄 세기 못 함"
+   "cross": "줄 세기만"
   },
   {
-   "label": "제출",
+   "label": "실거주 확인서 제출",
    "done": 0,
-   "total": 16,
+   "total": 12,
    "rate": 0,
    "note": "",
-   "cross": "다름: 줄 세기 0/6"
+   "cross": "줄 세기만"
   }
  ],
  "deadlines": [
   {
-   "label": "입사신청서",
-   "date": "2026-10-21"
+   "label": "입사신청서 제출완료",
+   "date": "2026-10-27"
   },
   {
    "label": "실거주 확인서",
@@ -57,7 +65,5 @@
    "date": "2026-11-05"
   }
  ],
- "checks": [
-  "제출 요약 0/16 · 줄 세기 0/6"
- ]
+ "checks": []
 }
