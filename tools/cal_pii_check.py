@@ -160,13 +160,21 @@ def main(argv=None):
         return 3
     names = names_from_raws(a.raw)
     bad, warn, n = [], [], 0
+    # 데이터 파일도 워커와 같이 기준선 어절(worker_keys)을 본다.
+    # 이름 부분문자열이 허용된 일반 낱말(예: 영어작문) 안에만 있으면 통과. 검사식(n in s)은 그대로.
+    word_keys = load_word_keys(a.baseline)
     for fn in a.files:
         p = os.path.join(a.data, fn)
         if not os.path.exists(p):
             continue
         n += 1
+        rel = '/data/%s' % fn
         for path, s in hjpii.walk_strings(json.load(open(p, encoding='utf-8'))):
             for k in hjpii.find_pii(s, names):
+                if k == '사람 이름' and word_keys:
+                    ejs = hit_eojeols(s, names)
+                    if ejs and all(word_key(rel, w) in word_keys for w in ejs):
+                        continue
                 bad.append('%s %s: %s' % (fn, path, k))
     if a.worker:
         t = open(a.worker, encoding='utf-8').read()
