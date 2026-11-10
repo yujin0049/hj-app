@@ -42,8 +42,9 @@
     if (e === 'rate' || e === 'upstream-rate' || status === 429) return { kind: 'bad', text: '너무 자주 보냈어요. 1분 뒤 다시 보내 주세요' };
     if (e === 'origin') return { kind: 'bad', text: '이 주소에서는 보낼 수 없어요(허용된 앱 주소에서만)' };
     if (e === 'too-long' || e === 'too-big') return { kind: 'bad', text: '글이 너무 길어요(나눠서 보내 주세요)' };
-    if (e === 'key-rejected') return { kind: 'bad', text: 'EXAONE 이 열쇠를 거절했어요(열쇠 확인 필요)' };
-    return { kind: 'bad', text: '답을 못 받았어요(' + (status || '연결 안 됨') + (e ? ' ' + e : '') + ')' };
+    if (e === 'key-rejected') return { kind: 'bad', text: 'EXAONE 이 열쇠를 거절했어요(' + ((j && j.code) || '') + ', 열쇠 확인 필요)' };
+    var d = j && typeof j.detail === 'string' && j.detail ? ' · ' + j.detail.slice(0, 120) : '';
+    return { kind: 'bad', text: '답을 못 받았어요(' + (status || '연결 안 됨') + (e ? ' ' + e : '') + ')' + d };
   }
   function repaint() { if (cur) paint(cur.slot, cur.api); }
   function ask(text) {
