@@ -58,7 +58,9 @@ class ExaoneProxy(unittest.TestCase):
         self.assertEqual(json.loads(out['b']['t'])['error'], '키 미설정')   # 빈칸 열쇠도 없음으로
         d = json.loads(out['b']['t'])['diag']
         self.assertEqual((d['key_present'], d['key_had_space']), (False, True))
-        self.assertTrue(all(isinstance(v, (bool, int)) for v in d.values()))
+        self.assertTrue(all(isinstance(v, bool) for v in d.values()))
+        for tmp in ('key_len', 'key_len_is_46', 'upstream_url', 'header_names', 'auth_bearer_count'):
+            self.assertNotIn(tmp, d)
         self.assertEqual(out['calls'], 0)
         self.assertEqual(err, '')
 
@@ -140,9 +142,8 @@ class ExaoneProxy(unittest.TestCase):
         for s in ('401', '403'):
             self.assertEqual(out[s]['s'], 502)
             self.assertEqual((J[s]['error'], J[s]['code'], J[s]['diag']['upstream_status']), ('key-rejected', int(s), int(s)))
-            self.assertEqual(J[s]['diag']['upstream_url'], 'https://api.exaone.ai/v1/chat/completions')
-            self.assertEqual(J[s]['diag']['header_names'], ['Authorization', 'Content-Type'])
-            self.assertEqual(J[s]['diag']['auth_bearer_count'], 1)
+            for tmp in ('key_len', 'key_len_is_46', 'upstream_url', 'header_names', 'auth_bearer_count'):
+                self.assertNotIn(tmp, J[s]['diag'])
         for s in ('400', '404', '422', '500', '503'):
             self.assertEqual(out[s]['s'], int(s))
             self.assertEqual((J[s]['error'], J[s]['code']), ('upstream', int(s)))
@@ -174,8 +175,10 @@ class ExaoneProxy(unittest.TestCase):
         self.assertTrue(out[1]['diag']['key_had_quotes'])
         self.assertTrue(out[2]['diag']['key_had_bearer'])
         self.assertEqual(out[3]['diag'], {'key_present': True, 'key_had_space': False, 'key_had_quotes': False, 'key_had_bearer': False,
-                                          'key_had_invisible': False, 'key_inner_space': False, 'key_non_ascii': False, 'key_has_equals': False,
-                                          'key_len': len(key), 'key_len_is_46': len(key) == 46})
+                                          'key_had_invisible': False, 'key_inner_space': False, 'key_non_ascii': False, 'key_has_equals': False})
+        for r in out:
+            for tmp in ('key_len', 'key_len_is_46', 'upstream_url', 'header_names', 'auth_bearer_count'):
+                self.assertNotIn(tmp, r['diag'])
         self.assertTrue(out[4]['diag']['key_had_invisible'])
         bad, _ = run_proxy("return [P.cleanKey('ab cd').diag.key_inner_space, P.cleanKey('키abc').diag.key_non_ascii, P.cleanKey('EXAONE_API_KEY=abc').diag.key_has_equals];")
         self.assertEqual(bad, [True, True, True])
