@@ -41,16 +41,18 @@ export function pickAnswer(j) {
   return typeof c === 'string' && c.trim() ? c.trim() : null;
 }
 
-/* 비밀 정리: 앞뒤 공백·줄바꿈, 감싼 따옴표, 실수로 붙인 「Bearer 」 를 떼요.
-   diag 는 참/거짓만(값·길이 없음): 있음, 정리 전과 달랐는지(공백·따옴표·Bearer). */
+/* 비밀 정리: 보이지 않는 글자(0폭 공백·BOM), 앞뒤 공백·줄바꿈, 감싼 따옴표, 실수로 붙인 「Bearer 」 를 떼요.
+   diag 는 참/거짓만(값·길이 없음): 있음, 정리 전과 달랐는지(공백·따옴표·Bearer·보이지 않는 글자), 남은 키에 가운데 공백·ASCII 밖 글자·= 가 있는지. */
 export function cleanKey(raw) {
-  const s = typeof raw === 'string' ? raw : '';
+  const s0 = typeof raw === 'string' ? raw : '';
+  const s = s0.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '');   /* 복사할 때 섞이는 보이지 않는 글자 */
   let k = s.trim();
   const quoted = /^(["']).*\1$/s.test(k);
   if (quoted) k = k.slice(1, -1).trim();
   const bearer = /^bearer\s+/i.test(k);
   if (bearer) k = k.replace(/^bearer\s+/i, '').trim();
-  return { key: k, diag: { key_present: !!k, key_had_space: s !== s.trim(), key_had_quotes: quoted, key_had_bearer: bearer } };
+  return { key: k, diag: { key_present: !!k, key_had_space: s !== s.trim(), key_had_quotes: quoted, key_had_bearer: bearer,
+    key_had_invisible: s0 !== s, key_inner_space: /\s/.test(k), key_non_ascii: /[^\x21-\x7E]/.test(k), key_has_equals: k.indexOf('=') >= 0 } };
 }
 /* 상류 오류 본문 → 짧은 요약(error.message 등, 120자). 열쇠·긴 토큰 모양 글자는 가려요. HTML 이면 title 만. */
 export function summarize(body, key) {

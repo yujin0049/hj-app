@@ -56,7 +56,9 @@ class ExaoneProxy(unittest.TestCase):
         self.assertEqual(json.loads(out['a']['t'])['error'], '키 미설정')
         self.assertEqual(out['a']['acao'], APP)
         self.assertEqual(json.loads(out['b']['t'])['error'], '키 미설정')   # 빈칸 열쇠도 없음으로
-        self.assertEqual(json.loads(out['b']['t'])['diag'], {'key_present': False, 'key_had_space': True, 'key_had_quotes': False, 'key_had_bearer': False})
+        d = json.loads(out['b']['t'])['diag']
+        self.assertEqual((d['key_present'], d['key_had_space']), (False, True))
+        self.assertTrue(all(isinstance(v, bool) for v in d.values()))
         self.assertEqual(out['calls'], 0)
         self.assertEqual(err, '')
 
@@ -156,7 +158,7 @@ class ExaoneProxy(unittest.TestCase):
         key = 'test-' + secrets.token_urlsafe(18)
         out, _ = run_proxy(MOCK_HELPERS + r"""
           P._resetRate(); const res=[];
-          for (const raw of [' '+IN.k+'\n', '\t"'+IN.k+'"\r\n', 'Bearer '+IN.k, IN.k]) {
+          for (const raw of [' '+IN.k+'\n', '\t"'+IN.k+'"\r\n', 'Bearer '+IN.k, IN.k, '\uFEFF'+IN.k+'\u200B']) {
             const r=await post({ALLOW_ORIGINS:'%s',EXAONE_API_KEY:raw},ask,'%s','2.2.2.'+res.length);
             res.push({s:r.s, auth:calls[calls.length-1].auth, diag:P.cleanKey(raw).diag});
           }
@@ -168,7 +170,11 @@ class ExaoneProxy(unittest.TestCase):
         self.assertTrue(out[0]['diag']['key_had_space'])
         self.assertTrue(out[1]['diag']['key_had_quotes'])
         self.assertTrue(out[2]['diag']['key_had_bearer'])
-        self.assertEqual(out[3]['diag'], {'key_present': True, 'key_had_space': False, 'key_had_quotes': False, 'key_had_bearer': False})
+        self.assertEqual(out[3]['diag'], {'key_present': True, 'key_had_space': False, 'key_had_quotes': False, 'key_had_bearer': False,
+                                          'key_had_invisible': False, 'key_inner_space': False, 'key_non_ascii': False, 'key_has_equals': False})
+        self.assertTrue(out[4]['diag']['key_had_invisible'])
+        bad, _ = run_proxy("return [P.cleanKey('ab cd').diag.key_inner_space, P.cleanKey('키abc').diag.key_non_ascii, P.cleanKey('EXAONE_API_KEY=abc').diag.key_has_equals];")
+        self.assertEqual(bad, [True, True, True])
 
     def test_source_has_no_key_and_no_logging(self):
         w = read('worker', 'exaone-proxy', 'index.mjs') + read('worker', 'exaone-proxy', 'wrangler.toml')
