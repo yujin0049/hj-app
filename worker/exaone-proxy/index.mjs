@@ -52,8 +52,7 @@ export function cleanKey(raw) {
   const bearer = /^bearer\s+/i.test(k);
   if (bearer) k = k.replace(/^bearer\s+/i, '').trim();
   return { key: k, diag: { key_present: !!k, key_had_space: s !== s.trim(), key_had_quotes: quoted, key_had_bearer: bearer,
-    key_had_invisible: s0 !== s, key_inner_space: /\s/.test(k), key_non_ascii: /[^\x21-\x7E]/.test(k), key_has_equals: k.indexOf('=') >= 0,
-    key_len: k.length, key_len_is_46: k.length === 46 } };   /* 임시(261110 라운드2): 길이 숫자만. 고친 뒤 뺌 */
+    key_had_invisible: s0 !== s, key_inner_space: /\s/.test(k), key_non_ascii: /[^\x21-\x7E]/.test(k), key_has_equals: k.indexOf('=') >= 0 } };
 }
 /* 상류 오류 본문 → 짧은 요약(error.message 등, 120자). 열쇠·긴 토큰 모양 글자는 가려요. HTML 이면 title 만. */
 export function summarize(body, key) {
@@ -121,9 +120,6 @@ export default {
     const k = cleanKey(env.EXAONE_API_KEY), key = k.key;
     if (!key) return json({ error: NO_KEY, diag: k.diag }, 503, h);
     const headers = { 'Authorization': 'Bearer ' + key, 'Content-Type': 'application/json' };
-    k.diag.upstream_url = UPSTREAM;
-    k.diag.header_names = Object.keys(headers);
-    k.diag.auth_bearer_count = headers.Authorization.split('Bearer ').length - 1;
     let r;
     try {
       r = await doFetch(UPSTREAM, {
