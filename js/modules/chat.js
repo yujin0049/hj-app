@@ -167,7 +167,9 @@
     else if (room === 'fail') body = '<div class="ch-err">방 파일을 못 불러왔어요. 인터넷을 확인하고 새로고침해 주세요.</div>';
     else body = (key && msgs ? openHTML(esc) : lockedHTML(esc)) + gotHTML(esc);
     el.innerHTML = '<div class="ch-wrap"><header class="ch-head"><h1>대장↔클로드 방</h1><p class="ch-why">' + WHY + '</p></header>' + body +
-      '<p class="ch-how">유진님은 방을 열고 아래 칸에서 바로 보내요(암호문만 중계 Worker 로). 클로드·봇은 도구로: <code>node tools/hj_chat.mjs post --from 클로드 --text-file …</code> (열쇠는 HJ_CHAT_KEY 환경변수). <a href="#/bots">봇 현황으로</a></p></div>';
+      '<p class="ch-how">유진님은 방을 열고 아래 칸에서 바로 보내요(암호문만 중계 Worker 로). 클로드·봇은 도구로: <code>node tools/hj_chat.mjs post --from 클로드 --text-file …</code> (열쇠는 HJ_CHAT_KEY 환경변수). <a href="#/bots">봇 현황으로</a></p></div>' +
+      '<div id="ex-slot"></div>';
+    mountEx(el, api);
     var f = el.querySelector('#ch-form');
     if (f) f.onsubmit = function (e) {
       e.preventDefault();
@@ -197,8 +199,22 @@
       send(el, api, t);
     };
   }
+  /* EXAONE 시험 칸(261110, js/modules/exaone.js): 방 아래 따로 붙는 칸. 못 불러와도 방은 그대로 돼요. */
+  function mountEx(el, api) {
+    var slot = el.querySelector('#ex-slot');
+    if (slot && root.HJExaone) root.HJExaone.mount(slot, api);
+  }
+  function loadEx(el, api) {
+    if (root.HJExaone) return;
+    try {
+      var s = document.createElement('script'); s.src = 'js/modules/exaone.js?v=1';
+      s.onload = function () { if (el.querySelector('.ch-wrap')) mountEx(el, api); };
+      document.head.appendChild(s);
+    } catch (e) { /* 칸만 안 보이고 방은 그대로 */ }
+  }
   function render(el, api) {
     style();
+    loadEx(el, api);
     paint(el, api);
     var need = loadCore();
     if (!tried) { tried = true; need = need.then(function () { return fetchRoom().catch(function () { room = 'fail'; tried = false; }); }); }

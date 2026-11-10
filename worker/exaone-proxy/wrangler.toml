@@ -1,0 +1,9 @@
+# 참고용(배포는 Cloudflare API 커넥터로 함). 비밀값 없음.
+# 비밀(Secret) EXAONE_API_KEY 는 Cloudflare 대시보드 > Workers > hj-exaone-proxy > 설정 > 변수와 비밀 에서 유진님이 넣어요.
+name = "hj-exaone-proxy"
+main = "index.mjs"
+compatibility_date = "2026-05-01"
+workers_dev = true
+
+[vars]
+ALLOW_ORIGINS = "https://yujin0049.github.io"
