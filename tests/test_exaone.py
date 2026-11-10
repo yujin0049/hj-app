@@ -53,9 +53,10 @@ class ExaoneProxy(unittest.TestCase):
           const a=await post(env,ask,'%s'); const b=await post(Object.assign({EXAONE_API_KEY:'  '},env),ask,'%s','5.5.5.5');
           return {a,b,calls:calls.length};""" % (APP, APP, APP))
         self.assertEqual(out['a']['s'], 503)
-        self.assertEqual(json.loads(out['a']['t']), {'error': '키 미설정'})
+        self.assertEqual(json.loads(out['a']['t'])['error'], '키 미설정')
         self.assertEqual(out['a']['acao'], APP)
-        self.assertEqual(json.loads(out['b']['t']), {'error': '키 미설정'})   # 빈칸 열쇠도 없음으로
+        self.assertEqual(json.loads(out['b']['t'])['error'], '키 미설정')   # 빈칸 열쇠도 없음으로
+        self.assertEqual(json.loads(out['b']['t'])['diag'], {'key_present': False, 'key_had_space': True, 'key_had_quotes': False, 'key_had_bearer': False})
         self.assertEqual(out['calls'], 0)
         self.assertEqual(err, '')
 
@@ -120,19 +121,54 @@ class ExaoneProxy(unittest.TestCase):
         self.assertEqual(out['empty'], '400:content')
         self.assertEqual(out['field'], '400:shape')
 
-    def test_upstream_errors_do_not_echo_body(self):
-        out, _ = run_proxy(MOCK_HELPERS + r"""
+    def test_upstream_status_mapping(self):
+        """401·403 만 key-rejected. 그 밖 4xx·5xx 는 상류 상태 그대로 + 짧은 detail(열쇠·긴 토큰 가림)."""
+        key = 'test-' + secrets.token_urlsafe(24)
+        out, err = run_proxy(MOCK_HELPERS + r"""
           P._resetRate();
-          const env={ALLOW_ORIGINS:'%s',EXAONE_API_KEY:'test-x'};
-          const mk=(s)=>({fetch:async()=>new Response('{"error":"UPSTREAM-DETAIL"}',{status:s})});
-          const a=await post(env,ask,'%s','1.1.1.1',mk(401)), b=await post(env,ask,'%s','1.1.1.2',mk(500)), c=await post(env,ask,'%s','1.1.1.3',mk(429));
-          const d=await post(env,ask,'%s','1.1.1.4',{fetch:async()=>{throw new Error('down')}});
-          return [a,b,c,d].map(x=>[x.s,x.t]);""" % (APP, APP, APP, APP, APP))
-        self.assertEqual(out[0], [502, '{"error":"key-rejected"}'])
-        self.assertEqual(out[1], [502, '{"error":"upstream","code":500}'])
-        self.assertEqual(out[2][0], 429)
-        self.assertEqual(out[3], [502, '{"error":"upstream-unreachable"}'])
-        self.assertFalse(any('UPSTREAM-DETAIL' in x[1] for x in out))
+          const env={ALLOW_ORIGINS:'%s',EXAONE_API_KEY:IN.k};
+          const mk=(s,b)=>({fetch:async()=>new Response(b||JSON.stringify({error:{message:'bad thing '+IN.k+' '+'x'.repeat(300)}}),{status:s})});
+          const res={}; let i=0;
+          for (const s of [401,403,400,404,422,500,503]) res[s]=await post(env,ask,'%s','1.1.1.'+(i++),mk(s));
+          res.r429=await post(env,ask,'%s','1.1.2.1',mk(429));
+          res.html=await post(env,ask,'%s','1.1.2.2',mk(403,'<html><title>Just a moment...</title></html>'));
+          res.down=await post(env,ask,'%s','1.1.2.3',{fetch:async()=>{throw new Error('down')}});
+          return res;""" % (APP, APP, APP, APP, APP), {'k': key})
+        J = {k: json.loads(v['t']) for k, v in out.items()}
+        for s in ('401', '403'):
+            self.assertEqual(out[s]['s'], 502)
+            self.assertEqual((J[s]['error'], J[s]['code'], J[s]['diag']['upstream_status']), ('key-rejected', int(s), int(s)))
+        for s in ('400', '404', '422', '500', '503'):
+            self.assertEqual(out[s]['s'], int(s))
+            self.assertEqual((J[s]['error'], J[s]['code']), ('upstream', int(s)))
+            self.assertTrue(J[s]['detail'].startswith('bad thing'))
+            self.assertLessEqual(len(J[s]['detail']), 120)
+        self.assertEqual((out['r429']['s'], J['r429']['error']), (429, 'upstream-rate'))
+        self.assertEqual(J['html']['detail'], 'html: Just a moment...')
+        self.assertEqual(out['down']['s'], 502)
+        self.assertEqual(J['down']['error'], 'upstream-unreachable')
+        for v in out.values():
+            self.assertNotIn(key, v['t'])            # 열쇠는 어디에도 안 나옴
+        self.assertNotIn(key, err)
+
+    def test_key_trim_quotes_and_bearer(self):
+        """비밀에 앞뒤 공백·줄바꿈·따옴표·「Bearer 」가 붙어도 상류엔 정확히 'Bearer <열쇠>' 로 가요. diag 는 참/거짓만."""
+        key = 'test-' + secrets.token_urlsafe(18)
+        out, _ = run_proxy(MOCK_HELPERS + r"""
+          P._resetRate(); const res=[];
+          for (const raw of [' '+IN.k+'\n', '\t"'+IN.k+'"\r\n', 'Bearer '+IN.k, IN.k]) {
+            const r=await post({ALLOW_ORIGINS:'%s',EXAONE_API_KEY:raw},ask,'%s','2.2.2.'+res.length);
+            res.push({s:r.s, auth:calls[calls.length-1].auth, diag:P.cleanKey(raw).diag});
+          }
+          return res;""" % (APP, APP), {'k': key})
+        for r in out:
+            self.assertEqual(r['s'], 200)
+            self.assertEqual(r['auth'], 'Bearer ' + key)
+            self.assertTrue(all(isinstance(v, bool) for v in r['diag'].values()))
+        self.assertTrue(out[0]['diag']['key_had_space'])
+        self.assertTrue(out[1]['diag']['key_had_quotes'])
+        self.assertTrue(out[2]['diag']['key_had_bearer'])
+        self.assertEqual(out[3]['diag'], {'key_present': True, 'key_had_space': False, 'key_had_quotes': False, 'key_had_bearer': False})
 
     def test_source_has_no_key_and_no_logging(self):
         w = read('worker', 'exaone-proxy', 'index.mjs') + read('worker', 'exaone-proxy', 'wrangler.toml')

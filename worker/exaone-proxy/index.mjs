@@ -2,7 +2,8 @@
    - 받는 것: POST /chat {messages:[{role:'user'|'assistant', content}]} (최근 8개·합계 4000자 이하).
    - 보내는 곳: EXAONE(OpenAI 호환) POST https://api.exaone.ai/v1/chat/completions, model=k-exaone_v2.5, reasoning_effort=low.
    - 돌려주는 것: {ok:true, text} — 최종 답(choices[0].message.content)만. 추론(reasoning_content)은 버려요.
-   - 열쇠: Worker 비밀 EXAONE_API_KEY 하나뿐(코드·화면·로그에 없음). 없으면 503 {error:'키 미설정'}.
+   - 열쇠: Worker 비밀 EXAONE_API_KEY 하나뿐(코드·화면·로그에 없음). 앞뒤 공백·따옴표·「Bearer 」는 떼고 써요. 없으면 503 {error:'키 미설정'}.
+   - 상류 오류: 401·403 만 key-rejected, 그 밖 4xx·5xx 는 상류 상태 그대로 + detail(오류 문구 120자, 열쇠·긴 토큰 가림). diag 는 참/거짓·상태 숫자만.
    - 막는 것: 허용 출처(ALLOW_ORIGINS, 쉼표) 밖·출처 없는 요청 403, 16KB 넘으면 413, JSON 아니면 415/400,
      IP당 분당 RATE_PER_MIN 번·전체 분당 RATE_ALL_PER_MIN 번(Worker 인스턴스 메모리, 최선 노력) 넘으면 429.
    - 기록 안 함: console 출력 없음, 요청 본문·답을 저장하지 않음(D1·KV 없음).
@@ -38,6 +39,34 @@ export function checkRequest(text) {
 export function pickAnswer(j) {
   const c = j && Array.isArray(j.choices) && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
   return typeof c === 'string' && c.trim() ? c.trim() : null;
+}
+
+/* 비밀 정리: 앞뒤 공백·줄바꿈, 감싼 따옴표, 실수로 붙인 「Bearer 」 를 떼요.
+   diag 는 참/거짓만(값·길이 없음): 있음, 정리 전과 달랐는지(공백·따옴표·Bearer). */
+export function cleanKey(raw) {
+  const s = typeof raw === 'string' ? raw : '';
+  let k = s.trim();
+  const quoted = /^(["']).*\1$/s.test(k);
+  if (quoted) k = k.slice(1, -1).trim();
+  const bearer = /^bearer\s+/i.test(k);
+  if (bearer) k = k.replace(/^bearer\s+/i, '').trim();
+  return { key: k, diag: { key_present: !!k, key_had_space: s !== s.trim(), key_had_quotes: quoted, key_had_bearer: bearer } };
+}
+/* 상류 오류 본문 → 짧은 요약(error.message 등, 120자). 열쇠·긴 토큰 모양 글자는 가려요. HTML 이면 title 만. */
+export function summarize(body, key) {
+  let t = '';
+  try {
+    const j = JSON.parse(body);
+    const e = j && (j.error || j);
+    t = typeof e === 'string' ? e : (e && (e.message || e.detail || e.msg || e.code)) || '';
+    if (typeof t !== 'string') t = JSON.stringify(t);
+  } catch (x) {
+    const m = /<title>([^<]{0,200})<\/title>/i.exec(String(body || ''));
+    t = m ? 'html: ' + m[1] : String(body || '').slice(0, 120);
+  }
+  if (key) t = t.split(key).join('***');
+  t = t.replace(/[A-Za-z0-9_\-.]{24,}/g, '***').replace(/\s+/g, ' ').trim();
+  return t.slice(0, 120);
 }
 
 /* 분당 횟수 세기(이 Worker 인스턴스 메모리). 여러 인스턴스로 갈리면 조금 더 통과할 수 있어요(최선 노력). */
@@ -86,8 +115,8 @@ export default {
     const c = checkRequest(await req.text());
     if (!c.ok) return json({ error: c.error }, c.status, h);
     if (!rateHit(await ipTag(req))) return json({ error: 'rate' }, 429, Object.assign({ 'Retry-After': '60' }, h));
-    const key = typeof env.EXAONE_API_KEY === 'string' ? env.EXAONE_API_KEY.trim() : '';
-    if (!key) return json({ error: NO_KEY }, 503, h);
+    const k = cleanKey(env.EXAONE_API_KEY), key = k.key;
+    if (!key) return json({ error: NO_KEY, diag: k.diag }, 503, h);
     let r;
     try {
       r = await doFetch(UPSTREAM, {
@@ -97,11 +126,15 @@ export default {
         signal: AbortSignal.timeout(TIMEOUT_MS)
       });
     } catch (e) {
-      return json({ error: 'upstream-unreachable' }, 502, h);
+      return json({ error: 'upstream-unreachable', diag: k.diag }, 502, h);
     }
-    if (r.status === 401 || r.status === 403) return json({ error: 'key-rejected' }, 502, h);
-    if (r.status === 429) return json({ error: 'upstream-rate' }, 429, Object.assign({ 'Retry-After': '60' }, h));
-    if (!r.ok) return json({ error: 'upstream', code: r.status }, 502, h);
+    if (!r.ok) {
+      const detail = summarize(await r.text().catch(() => ''), key);
+      const diag = Object.assign({ upstream_status: r.status }, k.diag);
+      if (r.status === 401 || r.status === 403) return json({ error: 'key-rejected', code: r.status, detail, diag }, 502, h);
+      if (r.status === 429) return json({ error: 'upstream-rate', code: 429, detail, diag }, 429, Object.assign({ 'Retry-After': '60' }, h));
+      return json({ error: 'upstream', code: r.status, detail, diag }, r.status >= 400 && r.status < 600 ? r.status : 502, h);
+    }
     let j;
     try { j = await r.json(); } catch (e) { return json({ error: 'upstream-shape' }, 502, h); }
     const text = pickAnswer(j);
