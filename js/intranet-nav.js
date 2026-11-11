@@ -14,6 +14,7 @@
     { group: '그 밖', items: [['#/students', '학생 안내'], ['#/study', '공부'], ['#/more', '더보기']] }
   ];
   root.HJIntranetMenu = MENU;
+  var LOCKS = ['로그인', '결제', '영구삭제', '외부발송', '상신'];
   function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
   function html() {
     var h = '<div class="in-brand"><span class="in-kicker">DATUM · 인트라넷</span><b>행정 업무 연습장</b></div>';
@@ -26,6 +27,8 @@
       });
       h += '</div>';
     });
+    /* AI 전환 1단계: 유보 = 사람 손. 자율도와 상관없이 늘 잠금(링크 아님, 새 화면 없음) */
+    h += '<p class="in-lock" id="in-lock"><span aria-hidden="true">🔒</span> 유보 · 사람 손<br><small>' + LOCKS.map(esc).join(' · ') + '</small></p>';
     return h;
   }
   function current() {

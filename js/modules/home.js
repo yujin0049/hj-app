@@ -143,7 +143,94 @@
       .catch(function () { hbTried = false; return null; });
   }
   var NODATA = '데이터 없음';
+  /* AI 전환 1단계(계획 /ai_transition plan.md · 「어찌 해야하는지 글을 토대로 다른 전문가거를 배껴서 시스템에 적용하자」):
+     현황판 안에 이상치만 빨간 카드 · 자율도 3단 + 유보 잠금 · 경계 안/밖 · 보고 전 검사 · 문서 근거 · 반려 이유.
+     계산은 js/aiflow-core.js. 자료는 이미 있는 json 만, 없으면 「데이터 없음」. 첫 화면이 다 뜬 뒤에 받아요(첫 로드 속도 그대로). */
+  var aiSrc = null, aiTried = false;
+  function aiLoad() {
+    if (aiTried) return Promise.resolve(aiSrc);
+    aiTried = true;
+    function get(f) {
+      return fetch(new URL('data/' + f, document.baseURI).href, { cache: 'no-store' })
+        .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
+    }
+    return Promise.all([get('checks.json'), get('ojnt_progress.json'), get('regular_docs.json'), get('docsearch.json')])
+      .then(function (a) { aiSrc = { checks: a[0], ojnt: a[1], regular_docs: a[2], docsearch: a[3] }; return aiSrc; });
+  }
+  function aiAfterLoad(f) {
+    var go = function () { (window.requestIdleCallback || function (g) { setTimeout(g, 200); })(f); };
+    if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true });
+  }
+  var ATTEND_URL = 'https://hj-attend.yujin06344.workers.dev/';
+  function aiNum(o, esc) { return o == null ? NODATA : esc(String(o)); }
+  function aiPaint(esc, today) {
+    var A = window.HJAIFlow, tasks = hbData && hbData.tasks;
+    if (!A || !tasks) return '';
+    if (!aiSrc) return '<div class="ai" id="hb-ai" aria-busy="true"><p class="ai-h">이상치만 · 자율도 · 검사</p><p class="muted small">불러오는 중…</p></div>';
+    var an = A.anomalies({ tasks: tasks, checks: aiSrc.checks, ojnt: aiSrc.ojnt }, today);
+    var s = A.summary(tasks);
+    var h = '<div class="ai" id="hb-ai"><p class="ai-h">이상치만 <span>정상 건은 숫자만, 이상만 빨간 카드</span></p><div class="ai-alerts">';
+    var quiet = [];
+    [['출석', ATTEND_URL, 'ext'], ['마감', '', 'hb'], ['기숙사', '#/dorm', '']].forEach(function (c) {
+      var k = c[0], list = an[k];
+      if (list === null) { quiet.push(k + ' ' + NODATA); return; }
+      if (!list.length) { quiet.push(k + ' 이상 없음'); return; }
+      var lines = list.slice(0, 3).map(function (x) {
+        return '<li>' + (typeof x === 'string' ? esc(x) : esc(x.title || NODATA) + ' <small>' + (x.late ? '지남' : '임박') + '</small>') + '</li>';
+      }).join('');
+      var head = '<span class="ai-ak">' + k + ' 이상</span><b class="ai-an">' + list.length + '</b>';
+      var sub = k === '마감' ? '<span class="hb-sub">지남 ' + list.filter(function (x) { return x.late; }).length + '</span>' : '';
+      var body = head + sub + '<ul>' + lines + '</ul>' + (list.length > 3 ? '<small class="ai-more">외 ' + (list.length - 3) + '건</small>' : '');
+      if (c[2] === 'hb') h += '<button type="button" class="ai-alert" data-hb="마감임박" aria-label="마감 이상 ' + list.length + '건 · 누르면 목록을 마감임박으로 좁혀요">' + body + '</button>';
+      else if (c[2] === 'ext') h += '<a class="ai-alert" href="' + c[1] + '" target="_blank" rel="noopener">' + body + '</a>';
+      else h += '<button type="button" class="ai-alert" data-go="' + c[1] + '">' + body + '</button>';
+    });
+    h += '</div>';
+    if (quiet.length) h += '<p class="ai-quiet">' + quiet.map(esc).join(' · ') + '</p>';
+    h += '<div class="ai-grid">';
+    /* (a) 자율도 3단 + 유보 잠금 */
+    h += '<section class="ai-p"><h3>자율도 3단 · 유보 잠금</h3><div class="ai-lv">' + A.LEVELS.map(function (k, i) {
+      return '<span><i>' + (i + 1) + '</i>' + esc(k) + ' <b>' + aiNum(s.levels && s.levels[k], esc) + '</b></span>';
+    }).join('') + '</div><p class="ai-locks">' + A.LOCKS.map(function (k) {
+      return '<span class="ai-lock">🔒 ' + esc(k) + ' ' + s.lockBy[k] + '</span>';
+    }).join('') + '</p><p class="ai-n">잠긴 건 ' + s.locked + ' · 유보는 자율도와 상관없이 사람 손(자동 실행 안 함)' +
+      (s.levels ? '' : ' · 건별 자율도 값은 현황판에 없어 ' + NODATA) + '</p></section>';
+    /* (e) 경계 안/밖 */
+    h += '<section class="ai-p"><h3>경계 안 · 밖</h3><div class="ai-lv"><span class="ai-out">경계 밖 <b>' + s.boundary['밖'] + '</b></span><span>경계 안 <b>' + s.boundary['안'] + '</b></span>' +
+      (s.boundary['모름'] ? '<span>' + NODATA + ' <b>' + s.boundary['모름'] + '</b></span>' : '') + '</div>' +
+      '<p class="ai-n">경계 밖 = 사람 판단(유보·유진님 몫·확인·판단). 봇은 선택지·근거만 붙여요. <b>추천이지 결정이 아님.</b></p></section>';
+    /* (c) 보고 전 검사 */
+    h += '<section class="ai-p"><h3>보고 전 검사</h3><table class="ai-ck"><tbody>' + ['근거', '유보', '3줄'].map(function (k) {
+      var c = s.checks[k], has = c.pass + c.fail;
+      return '<tr><th scope="row">' + k + '</th><td>' + (has ? '통과 ' + c.pass + ' · <span class="ai-bad">미달 ' + c.fail + '</span>' + (c.none ? ' · ' + NODATA + ' ' + c.none : '') : NODATA) + '</td></tr>';
+    }).join('') + '<tr><th scope="row">판단요청</th><td>' + (s.judge === null ? NODATA : s.judge.length ? '<span class="ai-bad">' + s.judge.length + '건</span>' : '0건') + '</td></tr></tbody></table>' +
+      '<p class="ai-n">근거 = 현황판 「점검」 칸. 같은 건 ' + A.JUDGE_AFTER + '회 미달이면 다시 쓰지 않고 판단요청으로 올려요.</p></section>';
+    /* (d) 문서·규정 답 근거 */
+    var ds = A.docs({ bot_status: hbData, regular_docs: aiSrc.regular_docs, docsearch: aiSrc.docsearch });
+    h += '<section class="ai-p"><h3>문서·규정 답 근거</h3><ul class="ai-docs">' + ds.map(function (d) {
+      return '<li><b>' + esc(d.name) + '</b> <span>' + (d.date ? esc(hbShort(d.date)) : '없음') + '</span><br><small>' + (d.doc ? esc(d.doc) : '없음') +
+        ' · <a href="' + d.where + '">' + esc(d.whereLabel) + '</a></small></li>';
+    }).join('') + '</ul><p class="ai-n">답은 내부 최신 문서를 먼저 찾고 출처를 붙여요. 내부 문서에 없으면 「없음」.</p></section>';
+    /* (f) 반려 이유 한 줄 누적 */
+    var rj = A.rejects(hbData);
+    h += '<section class="ai-p"><h3>반려 이유 (한 줄씩 누적)</h3>' + (rj === null || !rj.length ? '<p class="muted small">' + NODATA + '</p>' :
+      '<ul class="ai-rj">' + rj.slice(-5).reverse().map(function (r) { return '<li>' + esc(r.why) + '</li>'; }).join('') + '</ul>') +
+      '<p class="ai-n">반려·수정할 때 이유 한 줄이 쌓이면 여기에 최근 5줄이 보여요.</p></section>';
+    h += '</div></div>';
+    return h;
+  }
   function hbShort(s) { var p = String(s || '').split('-'); return p.length === 3 ? (+p[1]) + '.' + (+p[2]) + '.' : ''; }
+  function aiChips(t, esc) {
+    var A = window.HJAIFlow;
+    if (!A || !t) return '';
+    var c = A.locks(t).map(function (k) { return '<span class="ai-chip ai-lock">🔒 ' + esc(k) + '</span>'; });
+    var b = A.boundary(t);
+    if (b === '밖') c.push('<span class="ai-chip ai-out">경계 밖 · 추천만</span>');
+    else if (b === '안') c.push('<span class="ai-chip">경계 안</span>');
+    var l = A.level(t); if (l) c.push('<span class="ai-chip">' + esc(l) + '</span>');
+    if (A.precheck(t).judge) c.push('<span class="ai-chip ai-bad">판단요청</span>');
+    return c.length ? '<span class="ai-chips">' + c.join('') + '</span>' : '';
+  }
   function hbPaint(box, esc) {
     var H = window.HJHomeBoard, B = window.HJBots;
     var tasks = hbData && hbData.tasks;
@@ -160,6 +247,7 @@
         (k === '마감임박' && c ? '<span class="hb-sub" id="hb-late">지남 ' + c['지남'] + '</span>' : '') + '</button>';
     });
     h += '</div>';
+    h += aiPaint(esc, today);
     if (H && tasks) {
       var rows = H.rows(tasks, today, hbFilter);
       var shown = hbAll ? rows : rows.slice(0, 12);
@@ -170,7 +258,7 @@
       shown.forEach(function (r) {
         h += '<tr' + (r.soon ? ' class="hb-soon"' : '') + '>' +
           '<td class="hb-d">' + (r.date ? esc(hbShort(r.date)) : NODATA) + '</td>' +
-          '<td class="hb-t"><span class="hb-st">' + esc(r.status || NODATA) + '</span> ' + esc(r.title || NODATA) + '</td>' +
+          '<td class="hb-t"><span class="hb-st">' + esc(r.status || NODATA) + '</span> ' + esc(r.title || NODATA) + aiChips(r.task, esc) + '</td>' +
           '<td class="hb-o">' + esc(r.owner || NODATA) + '</td>' +
           '<td class="hb-due">' + (r.due ? esc(hbShort(r.due)) + '<small>' + esc(r.dueLabel) + '</small>' : NODATA) + (r.soon ? '<span class="sr-only"> 마감임박</span>' : '') + '</td></tr>';
       });
@@ -346,7 +434,11 @@
     el.innerHTML = h;
     el.classList.add('wide');
     var hbBox = el.querySelector('#home-board');
-    if (hbBox) hbLoad().then(function () { if (hbBox.isConnected) hbPaint(hbBox, api.esc); });
+    if (hbBox) hbLoad().then(function () {
+      if (!hbBox.isConnected) return;
+      hbPaint(hbBox, api.esc);
+      if (!aiSrc) aiAfterLoad(function () { aiLoad().then(function () { if (hbBox.isConnected) hbPaint(hbBox, api.esc); }); });
+    });
     var edit = el.querySelector('#edit-month');
     if (edit) edit.onclick = function () { api.go('#/more/month'); };
     el.querySelectorAll('[data-w]').forEach(function (b) {

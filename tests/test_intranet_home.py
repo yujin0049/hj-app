@@ -32,17 +32,31 @@ class IntranetHome(unittest.TestCase):
         self.assertLess(i.index('js/botstatus-core.js'), i.index('js/homeboard-core.js'))
         self.assertIn('js/intranet-nav.js', i)
         sw = read('sw.js')
-        self.assertIn("var CACHE = 'hj-v91';", sw)
-        self.assertIn('./css/app.css?v=37', sw)
-        self.assertIn('css/app.css?v=37', i)
+        self.assertIn("var CACHE = 'hj-v92';", sw)
+        self.assertIn('./css/app.css?v=38', sw)
+        self.assertIn('css/app.css?v=38', i)
         # 새 모듈도 미리받기 목록에(오프라인에서 메뉴·현황판 유지), index 와 같은 버전
-        for m in re.findall(r'src="(js/(?:homeboard-core|intranet-nav)\.js\?v=\d+)"', i):
+        for m in re.findall(r'src="(js/(?:homeboard-core|aiflow-core|intranet-nav)\.js\?v=\d+)"', i):
             self.assertIn("'./" + m + "'", sw)
-        self.assertEqual(len(re.findall(r'js/(?:homeboard-core|intranet-nav)\.js', i)), 2)
+        self.assertEqual(len(re.findall(r'js/(?:homeboard-core|aiflow-core|intranet-nav)\.js', i)), 3)
+        self.assertLess(i.index('js/homeboard-core.js'), i.index('js/aiflow-core.js'))
 
     def test_late_subline_from_data(self):
         h = read('js', 'modules', 'home.js')
         self.assertIn('id="hb-late">지남 \' + c[\'지남\']', h)  # 숫자는 자료로 셈(박아 넣지 않음)
+
+    def test_ai_transition_stage1(self):
+        """AI 전환 1단계: 현황판 안에서만, 유보 잠금 5개, 자료 없으면 「데이터 없음」"""
+        a = read('js', 'aiflow-core.js')
+        self.assertIn("var LOCKS = ['로그인', '결제', '영구삭제', '외부발송', '상신'];", a)
+        self.assertIn("var LEVELS = ['초안만', '요약보고', '이상치만알림'];", a)
+        h = read('js', 'modules', 'home.js')
+        self.assertIn('id="hb-ai"', h)
+        self.assertIn('h += aiPaint(esc, today);', h)
+        self.assertIn('추천이지 결정이 아님', h)
+        nav = read('js', 'intranet-nav.js')
+        self.assertIn('id="in-lock"', nav)
+        self.assertNotIn("['#/ai", nav)  # 새 화면 없음
 
 if __name__ == '__main__':
     unittest.main()

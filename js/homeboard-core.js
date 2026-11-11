@@ -62,7 +62,8 @@
         dueLabel: d.label,
         status: t.raw || '',
         card: cardOf(t),
-        soon: soon(t, today)
+        soon: soon(t, today),
+        task: t
       };
     });
   }
