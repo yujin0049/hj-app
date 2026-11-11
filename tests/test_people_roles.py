@@ -1,5 +1,5 @@
 """사람현황 앱정본(261111 T1~T4) 시험: python3 -m unittest tests.test_people_roles
-- 공개 people_roles 에 발령일·연락처 칸 없음, 가린 사람은 가린 채, people_changes 는 이름 없이 순번만
+- 공개 people_roles 에 발령일·연락처 칸 없음, 주소록 밖은 가림 또는 결정된 실명(이름만), people_changes 는 이름 없이 순번만
 - coop 팀장 교체는 두 번 넣어도 같음(멱등), 바뀜 비교도 같은 입력 → 같은 출력"""
 import copy, json, os, re, sys, unittest
 R = os.path.join(os.path.dirname(__file__), '..')
@@ -32,8 +32,8 @@ class PeopleRoles(unittest.TestCase):
         pat = [p for p in self.pr['people'] if p.get('as_of')]
         self.assertTrue(pat)
         for p in pat:
-            if not p['in_directory']:
-                self.assertIn('*', p['label'])
+            if not p['in_directory']:   # 가림 또는 유진님 결정 실명(이름만, id=person:이름)
+                self.assertTrue('*' in p['label'] or p['id'] == 'person:' + p['label'])
             if p.get('deputy'):
                 self.assertEqual(set(p['deputy']), {'id', 'label'})
 

@@ -437,7 +437,7 @@ def public_ref(name, vmap, dir_names, real_ok, new_ids):
     return {'id': f'person:{new_ids[name]}', 'label': mask(name), 'in_directory': False, 'merged': None}
 
 
-def apply_people(doc, patches, vmap, dir_names, real_ok, generated):
+def apply_people(doc, patches, vmap, dir_names, real_ok, generated, real_note=''):
     doc = copy.deepcopy(doc)
     people = doc['people']
     by_id = {p['id']: p for p in people}
@@ -507,7 +507,7 @@ def apply_people(doc, patches, vmap, dir_names, real_ok, generated):
         'request': m['request'] + ' · 유진님 11.11. 업무분장(11.1.) 반영 지시',
         'as_of': report['as_of'], 'patches': [pt['meta']['id'] for pt in patches],
         'source_counts': sc, 'rank_note': m['rank_note'] + ' 업무분장 patch 대상 rank=업무분장 직위(rank_evidence에 기준일).',
-        'notice': m['notice'] + ' 업무분장 반영: 소속·직위·담당업무(duties, 원문 그대로)·대리(deputy). 발령일(since)은 공개 안 함. 주소록 밖 인원: 유진님 결정 때까지 가림.',
+        'notice': m['notice'] + ' 업무분장 반영: 소속·직위·담당업무(duties, 원문 그대로)·대리(deputy). 발령일(since)은 공개 안 함. ' + ('주소록 밖 %d명: 유진님 결정(%s)으로 실명(성명 한정), 전화·발령일 없음.' % (len(real_ok), real_note) if real_ok else '주소록 밖 인원: 유진님 결정 때까지 가림.'),
         'fields': dict(m['fields'], duties='업무분장 담당업무(원문 그대로, 오타 같아 보여도 안 고침)', deputy='업무분장 대리(공개 id·label)',
                        as_of='이 사람 줄의 기준일(업무분장 날짜)', status_note='예전 자리 표시(줄 안 지움)', work_at='근무·지원 대상(소속 칸과 다를 때)'),
         'sources': m['sources'] + ['업무분장(%s)' % (report['as_of'] or '날짜 미상')],
@@ -611,7 +611,7 @@ def main(argv=None):
     base = v01_doc(pub, counts, cfg)
     patches = [load_json(p) for p in cfg.get('patches') or []]
     real_ok = set(cfg.get('real_names') or [])
-    doc, rep = apply_people(base, patches, vmap, dir_names, real_ok, cfg.get('generated', '2026-11-11'))
+    doc, rep = apply_people(base, patches, vmap, dir_names, real_ok, cfg.get('generated', '2026-11-11'), cfg.get('real_names_note', ''))
     out_files = {}
     if a.out_base:
         out_files[a.out_base] = dumps(base)
