@@ -130,6 +130,69 @@
       '<p class="muted small">층 버튼을 눌러 보세요. 화면을 누르면 크게 돌려 볼 수 있어요. 호실번호는 3D 사이트에 입력한 값 그대로예요. ' +
       '<a href="https://silseupdong-3d.yujin06344.workers.dev/" target="_blank" rel="noopener">편집은 3D 사이트(PIN) ↗</a></p></section>';
   }
+  /* 홈 현황판(유진님 11.11. 「ㅇㅋ 해」): 위 카드 5개(예정·진행·수정·보류·마감임박) + 건 목록(날짜·제목·담당·마감일).
+     자료 = data/bot_status.json(현황판 시트 「업무」 탭, 30분 갱신 스크립트가 만듦). 새 입력 없음. 매핑 없는 칸은 「데이터 없음」.
+     계산은 js/homeboard-core.js, 마감 D-3 기준은 botstatus-core.js 의 기존 값. */
+  var hbData = null, hbTried = false, hbFilter = '', hbAll = false;
+  function hbLoad() {
+    if (hbTried) return Promise.resolve(hbData);
+    hbTried = true;
+    return fetch(new URL('data/bot_status.json', document.baseURI).href, { cache: 'no-store' })
+      .then(function (r) { if (!r.ok) throw new Error('bot_status'); return r.json(); })
+      .then(function (j) { hbData = j; return j; })
+      .catch(function () { hbTried = false; return null; });
+  }
+  var NODATA = '데이터 없음';
+  function hbShort(s) { var p = String(s || '').split('-'); return p.length === 3 ? (+p[1]) + '.' + (+p[2]) + '.' : ''; }
+  function hbPaint(box, esc) {
+    var H = window.HJHomeBoard, B = window.HJBots;
+    var tasks = hbData && hbData.tasks;
+    var h = '<div class="hb-head"><h2>업무 현황판</h2><span class="hb-src">' +
+      (hbData ? '현황판 시트 · ' + esc(hbData.built_at || '') + ' (KST) 읽음' : '현황판 자료를 불러오지 못했어요') + '</span></div>';
+    var today = B ? B.todayKST() : '';
+    var c = (H && tasks) ? H.counts(tasks, today) : null;
+    h += '<div class="hb-cards" role="group" aria-label="상태별 건수 · 누르면 목록을 그 상태로 좁혀요">';
+    ['예정', '진행', '수정', '보류', '마감임박'].forEach(function (k) {
+      var n = c ? c[k] : null;
+      var none = n === null || n === undefined;
+      h += '<button type="button" class="hb-card' + (k === '마감임박' ? ' hb-hot' : '') + (none ? ' hb-none' : '') + '" data-hb="' + k + '" aria-pressed="' + (hbFilter === k) + '"' + (none ? ' disabled' : '') + '>' +
+        '<span class="hb-k">' + k + '</span><b class="hb-n">' + (none ? NODATA : n) + '</b></button>';
+    });
+    h += '</div>';
+    if (H && tasks) {
+      var rows = H.rows(tasks, today, hbFilter);
+      var shown = hbAll ? rows : rows.slice(0, 12);
+      h += '<p class="hb-cap">' + (hbFilter ? esc(hbFilter) + ' ' : '안 끝난 건 ') + rows.length + '건 · 마감 가까운 순' +
+        (hbFilter ? ' <button type="button" class="linkish hb-clear" data-hbclear="1">전체 보기</button>' : '') + '</p>';
+      h += '<div class="hb-scroll"><table class="hb-table"><thead><tr><th scope="col">날짜</th><th scope="col">제목</th><th scope="col">담당</th><th scope="col">마감일</th></tr></thead><tbody>';
+      if (!shown.length) h += '<tr><td colspan="4" class="muted">' + NODATA + '</td></tr>';
+      shown.forEach(function (r) {
+        h += '<tr' + (r.soon ? ' class="hb-soon"' : '') + '>' +
+          '<td class="hb-d">' + (r.date ? esc(hbShort(r.date)) : NODATA) + '</td>' +
+          '<td class="hb-t"><span class="hb-st">' + esc(r.status || NODATA) + '</span> ' + esc(r.title || NODATA) + '</td>' +
+          '<td class="hb-o">' + esc(r.owner || NODATA) + '</td>' +
+          '<td class="hb-due">' + (r.due ? esc(hbShort(r.due)) + '<small>' + esc(r.dueLabel) + '</small>' : NODATA) + (r.soon ? '<span class="sr-only"> 마감임박</span>' : '') + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+      if (rows.length > 12) h += '<button type="button" class="btn-ghost small" data-hbmore="1">' + (hbAll ? '12건만 보기' : '전체 ' + rows.length + '건 보기') + '</button> ';
+      h += '<button type="button" class="btn-ghost small" data-go="#/bots">봇 작업 현황에서 자세히</button>';
+      h += '<p class="hb-note">날짜 = 현황판 마지막 갱신일 · 담당 = 맡은 봇 · 마감임박 = 마감 D-' + H.SOON_DAYS + ' 이내(오늘·지난 것 포함, 빨간색). 예정 = 「할 일」·「대기」. 「수정」 상태는 현황판에 없어 ' + NODATA + '.</p>';
+    } else {
+      h += '<p class="muted">' + NODATA + '</p>';
+    }
+    box.innerHTML = h;
+    box.removeAttribute('aria-busy');
+    box.querySelectorAll('[data-hb]').forEach(function (b) {
+      b.onclick = function () { var k = b.getAttribute('data-hb'); hbFilter = hbFilter === k ? '' : k; hbAll = false; hbPaint(box, esc); };
+    });
+    var cl = box.querySelector('[data-hbclear]'); if (cl) cl.onclick = function () { hbFilter = ''; hbPaint(box, esc); };
+    var mo = box.querySelector('[data-hbmore]'); if (mo) mo.onclick = function () { hbAll = !hbAll; hbPaint(box, esc); };
+    box.querySelectorAll('[data-go]').forEach(function (b) { b.onclick = function () { location.hash = b.getAttribute('data-go'); }; });
+  }
+  function boardCard() {
+    return '<section class="card hb" id="home-board" aria-busy="true"><div class="hb-head"><h2>업무 현황판</h2><span class="hb-src">불러오는 중…</span></div>' +
+      '<div class="hb-cards">' + ['예정', '진행', '수정', '보류', '마감임박'].map(function (k) { return '<div class="hb-card hb-sk"><span class="hb-k">' + k + '</span><b class="hb-n">–</b></div>'; }).join('') + '</div></section>';
+  }
   function render(el, api) {
     if (!api.unlocked()) return renderPublic(el, api);
     var pack = api.pack();
@@ -156,6 +219,8 @@
     var schedAll = (pack.entities.schedule && pack.entities.schedule.items) || [];
     var schedOpen = schedAll.filter(function (it) { return !it.done; }).length;
     var h = '<section class="hero"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1 class="hero-title">오늘 뭐부터 할까요?</h1></section>';
+    h += boardCard();
+    h += '<div class="home-rest">';
     h += otEntry();
     // 봇 작업 현황(#/bots): 홈 맨 위에서 바로 들어가요. 숫자는 data/bot_status.json 을 읽은 뒤 채워요(유진님 10.21. 20:15 지시).
     h += '<button class="bs-entry" type="button" data-go="#/bots" id="home-bots"><span class="tile-ic purple">🤖</span><span class="bs-entry-tx"><b>봇 작업 현황</b><span class="tile-sub" id="home-bots-sub">지금 도는 일을 한 줄씩</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
@@ -275,8 +340,12 @@
     if (cont.questionId) h += '<button class="btn" type="button" data-go="#/practice/quiz">문제 이어서</button>';
     if (!task && !day && !cont.questionId) h += '<p class="muted">아직 이어갈 기록이 없어요. 공부나 연습장에서 하나를 열어 보세요.</p>';
     h += '</div></section>';
+    h += '</div>';
 
     el.innerHTML = h;
+    el.classList.add('wide');
+    var hbBox = el.querySelector('#home-board');
+    if (hbBox) hbLoad().then(function () { if (hbBox.isConnected) hbPaint(hbBox, api.esc); });
     var edit = el.querySelector('#edit-month');
     if (edit) edit.onclick = function () { api.go('#/more/month'); };
     el.querySelectorAll('[data-w]').forEach(function (b) {
