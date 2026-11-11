@@ -14,13 +14,16 @@ test('유보 잠금 5개는 고정, 꼬리표·제목으로 잠금(결재=상신
   assert.deepEqual(A.locks(T({ yujin: ['KORUS 입력'] })), []);
 });
 
-test('자율도: 값 있을 때만(1~3·이름), 없으면 null', () => {
-  assert.equal(A.level(T({})), null);
+test('자율도: 값 있으면 그 값, 없으면 기본 1단(초안만, 임시)', () => {
+  assert.equal(A.DEFAULT_LEVEL, '초안만');
+  assert.equal(A.level(T({})), '초안만');
+  assert.equal(A.explicitLevel(T({})), null);
   assert.equal(A.level(T({ autonomy: 1 })), '초안만');
   assert.equal(A.level(T({ autonomy: '이상치만알림' })), '이상치만알림');
-  assert.equal(A.level(T({ autonomy: 7 })), null);
-  assert.equal(A.summary([T({})]).levels, null);
-  assert.equal(A.summary([T({ autonomy: 2 })]).levels['요약보고'], 1);
+  assert.equal(A.level(T({ autonomy: 7 })), '초안만');
+  assert.deepEqual(A.summary([T({}), T({ autonomy: 2 })]).levels, { 초안만: 1, 요약보고: 1, 이상치만알림: 0 });
+  assert.equal(A.summary([T({}), T({ autonomy: 2 })]).levelsDefault, 1);
+  assert.deepEqual(A.locks(T({ yujin: ['결재'], autonomy: 3 })), ['상신']); // 자율도와 상관없이 잠금 그대로
 });
 
 test('잠긴 건은 자율도가 있어도 경계 밖(추천만)', () => {
@@ -44,7 +47,7 @@ test('보고 전 검사: 근거=점검 칸, 나머지는 자료 없으면 null, 
 
 test('이상치: 자료 없으면 null, 있으면 이상만', () => {
   const a = A.anomalies({}, today);
-  assert.deepEqual(a, { 출석: null, 마감: null, 기숙사: null });
+  assert.deepEqual(a, { 출석: null, 마감: null, 기숙사: null, 예산: null });
   const b = A.anomalies({ tasks: [T({ due: '2026-11-01' }), T({ due: '2026-12-01' }), T({ state: '끝', raw: '완료', due: '2026-11-01' })],
     checks: [{ id: 'ojnt-x', 항목: '대조', 결과: '일치', 값: '1' }],
     ojnt: { items: [{ label: '서류', done: 12, total: 12 }], deadlines: [{ date: '2026-11-05' }] } }, today);
@@ -72,8 +75,34 @@ test('실제 자료(data/*.json)로: 예시 없이 숫자가 맞물림', () => {
   const d = require('../data/bot_status.json');
   const s = A.summary(d.tasks);
   assert.equal(s.boundary['밖'] + s.boundary['안'] + s.boundary['모름'], s.open);
-  assert.equal(s.levels, null); // 현황판에 자율도 칸 없음 → 데이터 없음
+  assert.equal(s.levels['초안만'], s.open); // 현황판에 자율도 칸 없음 → 모두 기본값(초안만)
+  assert.equal(s.levelsDefault, s.open);
   const an = A.anomalies({ tasks: d.tasks, checks: require('../data/checks.json'), ojnt: require('../data/ojnt_progress.json') }, today);
   assert.equal(an.출석, null); // 출석 대조 자료는 이 앱 json 에 없음
   assert.ok(Array.isArray(an.마감) && Array.isArray(an.기숙사));
+});
+
+test('연말 집행·불용 위험: 파일 없음·빈 파일 → null(「데이터 없음」, 빨강 아님)', () => {
+  assert.equal(A.budgetRisk(null), null);
+  assert.equal(A.budgetRisk(undefined), null);
+  assert.equal(A.budgetRisk([]), null);
+  assert.equal(A.budgetRisk({}), null);
+  assert.equal(A.anomalies({}, today).예산, null);
+});
+
+test('연말 집행·불용 위험: 기준(field·threshold)이 없으면 자료가 있어도 절대 빨강 안 됨', () => {
+  assert.equal(A.BUDGET_RISK.field, null);
+  assert.equal(A.BUDGET_RISK.threshold, null);
+  assert.equal(A.budgetReady(), false);
+  const rows = [{ a: 1 }];
+  assert.equal(A.budgetRisk(rows), null);
+  assert.equal(A.anomalies({ budget: rows }, today).예산, null);
+  assert.equal(A.budgetRisk(rows, { field: 'a', threshold: null }), null);
+  // 기준을 시험용으로 넣었을 때만 넘은 줄을 냄(실제 기준값 아님)
+  assert.equal(A.budgetRisk(rows, { field: 'a', threshold: 0 }).length, 1);
+  assert.deepEqual(A.budgetRisk(rows, { field: 'a', threshold: 1 }), []);
+});
+
+test('예산 위험 자료 파일은 저장소에 만들지 않음(원본 표 생기기 전)', () => {
+  assert.equal(require('node:fs').existsSync(require('node:path').join(__dirname, '..', 'data', 'budget_risk.json')), false);
 });

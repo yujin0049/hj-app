@@ -17,7 +17,20 @@
   var LEVELS = ['초안만', '요약보고', '이상치만알림'];
   /* 경계 밖(사람 판단) 꼬리표 */
   var HUMAN_TAGS = ['확인·판단', '유진님 직접', '재개지시'];
-  var JUDGE_AFTER = 2; /* 같은 건 보고 전 검사 2회 미달 → 판단요청 */
+  var JUDGE_AFTER = 2;
+  /* 연말 집행·불용 위험(2027 사무·여비 절감 안내 맥락). 원본 표(문서봇)는 아직 없음.
+     TODO: 표가 생기면 rows(줄 목록 키, 파일이 배열이면 null)·field(볼 숫자 칸)·label(이름 칸)·threshold(기준 숫자)를 확인 뒤 채움.
+     field·threshold 가 null 이면 절대 빨강이 되지 않고, 홈은 파일도 받지 않음(없는 파일 404 방지). */
+  var BUDGET_RISK = { file: 'data/budget_risk.json', rows: null, field: null, label: null, threshold: null };
+  function budgetReady(cfg) { cfg = cfg || BUDGET_RISK; return !!cfg.field && typeof cfg.threshold === 'number'; }
+  /* null = 자료 없음 또는 기준 없음(「데이터 없음」), 배열 = 기준을 넘은 줄만 */
+  function budgetRisk(data, cfg) {
+    cfg = cfg || BUDGET_RISK;
+    var list = Array.isArray(data) ? data : (data && cfg.rows && Array.isArray(data[cfg.rows]) ? data[cfg.rows] : null);
+    if (!list || !list.length || !budgetReady(cfg)) return null;
+    return list.filter(function (r) { return r && typeof r[cfg.field] === 'number' && r[cfg.field] > cfg.threshold; })
+      .map(function (r) { return String((cfg.label && r[cfg.label]) || cfg.field) + ' · ' + r[cfg.field]; });
+  } /* 같은 건 보고 전 검사 2회 미달 → 판단요청 */
 
   function locks(t) {
     var o = [];
@@ -25,12 +38,15 @@
     TITLE_LOCK.forEach(function (p) { if (p[0].test(t.title || '') && o.indexOf(p[1]) < 0) o.push(p[1]); });
     return LOCKS.filter(function (k) { return o.indexOf(k) >= 0; });
   }
-  function level(t) {
+  /* 자율도 값이 없는 건은 1단(초안만)으로 봄 — 대장 결정(임시, 되돌릴 수 있음). 유보 잠금과는 무관 */
+  var DEFAULT_LEVEL = LEVELS[0];
+  function explicitLevel(t) {
     var a = t.autonomy;
     if (typeof a === 'number' && a >= 1 && a <= 3) return LEVELS[a - 1];
     if (typeof a === 'string' && LEVELS.indexOf(a) >= 0) return a;
     return null;
   }
+  function level(t) { return explicitLevel(t) || DEFAULT_LEVEL; }
   /* 경계: '밖'(사람 판단, 봇은 추천만) · '안'(봇 초안·취합·대조) · null(담당 봇도 없어 모름) */
   function boundary(t) {
     if (locks(t).length) return '밖';
@@ -61,12 +77,12 @@
   /* 홈 요약: 안 끝난 건만 */
   function summary(tasks) {
     var open = (tasks || []).filter(H.isOpen);
-    var lv = {}, lvAny = false;
+    var lv = {}, lvDefault = 0;
     LEVELS.forEach(function (k) { lv[k] = 0; });
     var lk = {}; LOCKS.forEach(function (k) { lk[k] = 0; });
     var lockedN = 0, out = 0, inn = 0, unk = 0, judge = [], failsAny = false;
     open.forEach(function (t) {
-      var l = level(t); if (l) { lv[l] += 1; lvAny = true; }
+      lv[level(t)] += 1; if (!explicitLevel(t)) lvDefault += 1;
       var ls = locks(t); if (ls.length) lockedN += 1;
       ls.forEach(function (k) { lk[k] += 1; });
       var b = boundary(t); if (b === '밖') out += 1; else if (b === '안') inn += 1; else unk += 1;
@@ -74,7 +90,7 @@
     });
     return {
       open: open.length,
-      levels: lvAny ? lv : null,
+      levels: lv, levelsDefault: lvDefault,
       locked: lockedN, lockBy: lk,
       boundary: { '밖': out, '안': inn, '모름': unk },
       checks: {
@@ -88,7 +104,7 @@
   /* 이상치만(빨간 카드): 출석·마감·기숙사. null = 자료 없음, items 빈 배열 = 이상 없음 */
   function anomalies(src, today) {
     src = src || {};
-    var o = { 출석: null, 마감: null, 기숙사: null };
+    var o = { 출석: null, 마감: null, 기숙사: null, 예산: budgetRisk(src.budget, src.budgetCfg) };
     var att = (src.checks || []).filter(function (c) { return /출석/.test(c['항목'] || '') || /^attend/.test(c.id || ''); });
     if (att.length) o.출석 = att.filter(function (c) { return c['결과'] === '불일치'; }).map(function (c) { return c['항목'] + ' · ' + (c['값'] || ''); });
     if (src.tasks) {
@@ -139,6 +155,6 @@
     });
     return any ? out : null;
   }
-  return { LOCKS: LOCKS, TAG_LOCK: TAG_LOCK, LEVELS: LEVELS, JUDGE_AFTER: JUDGE_AFTER,
-    locks: locks, level: level, boundary: boundary, precheck: precheck, summary: summary, anomalies: anomalies, docs: docs, rejects: rejects };
+  return { LOCKS: LOCKS, TAG_LOCK: TAG_LOCK, LEVELS: LEVELS, DEFAULT_LEVEL: DEFAULT_LEVEL, JUDGE_AFTER: JUDGE_AFTER, BUDGET_RISK: BUDGET_RISK,
+    budgetReady: budgetReady, budgetRisk: budgetRisk, locks: locks, level: level, explicitLevel: explicitLevel, boundary: boundary, precheck: precheck, summary: summary, anomalies: anomalies, docs: docs, rejects: rejects };
 });

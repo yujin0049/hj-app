@@ -154,8 +154,10 @@
       return fetch(new URL('data/' + f, document.baseURI).href, { cache: 'no-store' })
         .then(function (r) { return r.ok ? r.json() : null; }).catch(function () { return null; });
     }
-    return Promise.all([get('checks.json'), get('ojnt_progress.json'), get('regular_docs.json'), get('docsearch.json')])
-      .then(function (a) { aiSrc = { checks: a[0], ojnt: a[1], regular_docs: a[2], docsearch: a[3] }; return aiSrc; });
+    /* 연말 집행·불용 위험 표는 기준(aiflow-core BUDGET_RISK)이 채워진 뒤에만 받음 */
+    var A = window.HJAIFlow, bud = A && A.budgetReady() ? get(A.BUDGET_RISK.file.replace(/^data\//, '')) : Promise.resolve(null);
+    return Promise.all([get('checks.json'), get('ojnt_progress.json'), get('regular_docs.json'), get('docsearch.json'), bud])
+      .then(function (a) { aiSrc = { checks: a[0], ojnt: a[1], regular_docs: a[2], docsearch: a[3], budget: a[4] }; return aiSrc; });
   }
   function aiAfterLoad(f) {
     var go = function () { (window.requestIdleCallback || function (g) { setTimeout(g, 200); })(f); };
@@ -167,12 +169,12 @@
     var A = window.HJAIFlow, tasks = hbData && hbData.tasks;
     if (!A || !tasks) return '';
     if (!aiSrc) return '<div class="ai" id="hb-ai" aria-busy="true"><p class="ai-h">이상치만 · 자율도 · 검사</p><p class="muted small">불러오는 중…</p></div>';
-    var an = A.anomalies({ tasks: tasks, checks: aiSrc.checks, ojnt: aiSrc.ojnt }, today);
+    var an = A.anomalies({ tasks: tasks, checks: aiSrc.checks, ojnt: aiSrc.ojnt, budget: aiSrc.budget }, today);
     var s = A.summary(tasks);
     var h = '<div class="ai" id="hb-ai"><p class="ai-h">이상치만 <span>정상 건은 숫자만, 이상만 빨간 카드</span></p><div class="ai-alerts">';
     var quiet = [];
-    [['출석', ATTEND_URL, 'ext'], ['마감', '', 'hb'], ['기숙사', '#/dorm', '']].forEach(function (c) {
-      var k = c[0], list = an[k];
+    [['출석', ATTEND_URL, 'ext'], ['마감', '', 'hb'], ['기숙사', '#/dorm', ''], ['예산', '#/more/budget', '', '연말 집행·불용 위험']].forEach(function (c) {
+      var list = an[c[0]], k = c[3] || c[0];
       if (list === null) { quiet.push(k + ' ' + NODATA); return; }
       if (!list.length) { quiet.push(k + ' 이상 없음'); return; }
       var lines = list.slice(0, 3).map(function (x) {
@@ -194,7 +196,7 @@
     }).join('') + '</div><p class="ai-locks">' + A.LOCKS.map(function (k) {
       return '<span class="ai-lock">🔒 ' + esc(k) + ' ' + s.lockBy[k] + '</span>';
     }).join('') + '</p><p class="ai-n">잠긴 건 ' + s.locked + ' · 유보는 자율도와 상관없이 사람 손(자동 실행 안 함)' +
-      (s.levels ? '' : ' · 건별 자율도 값은 현황판에 없어 ' + NODATA) + '</p></section>';
+      '</p><p class="ai-n" id="ai-lv-default">기본값: ' + esc(A.DEFAULT_LEVEL) + '(임시) · 자율도 값이 없는 건 ' + s.levelsDefault + '</p></section>';
     /* (e) 경계 안/밖 */
     h += '<section class="ai-p"><h3>경계 안 · 밖</h3><div class="ai-lv"><span class="ai-out">경계 밖 <b>' + s.boundary['밖'] + '</b></span><span>경계 안 <b>' + s.boundary['안'] + '</b></span>' +
       (s.boundary['모름'] ? '<span>' + NODATA + ' <b>' + s.boundary['모름'] + '</b></span>' : '') + '</div>' +
@@ -227,7 +229,7 @@
     var b = A.boundary(t);
     if (b === '밖') c.push('<span class="ai-chip ai-out">경계 밖 · 추천만</span>');
     else if (b === '안') c.push('<span class="ai-chip">경계 안</span>');
-    var l = A.level(t); if (l) c.push('<span class="ai-chip">' + esc(l) + '</span>');
+    var l = A.explicitLevel(t); if (l) c.push('<span class="ai-chip">' + esc(l) + '</span>');
     if (A.precheck(t).judge) c.push('<span class="ai-chip ai-bad">판단요청</span>');
     return c.length ? '<span class="ai-chips">' + c.join('') + '</span>' : '';
   }
