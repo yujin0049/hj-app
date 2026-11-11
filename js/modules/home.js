@@ -164,6 +164,43 @@
     if (document.readyState === 'complete') go(); else window.addEventListener('load', go, { once: true });
   }
   var ATTEND_URL = 'https://hj-attend.yujin06344.workers.dev/';
+  /* 남해캠 공지 최신 5건(261111 춘식이 kv 「앱에 적용해」): data/notices.json 목차 → 최신 해 파일부터 5건 찰 때까지. 첫 화면 다 뜬 뒤(쉬는 틈)에 받아요.
+     원문은 남해캠 게시판 새 창, 전체는 #/notice. 자료 없으면 「데이터 없음」. */
+  var ntRows = null, ntIndex = null, ntTried = false;
+  function ntLoad() {
+    if (ntTried) return Promise.resolve(ntRows);
+    ntTried = true;
+    function get(f) { return fetch(new URL(f, document.baseURI).href, { cache: 'no-store' }).then(function (r) { if (!r.ok) throw new Error(f); return r.json(); }); }
+    return get('data/notices.json').then(function (ix) {
+      ntIndex = ix;
+      var ys = (ix && ix.years) || [], out = [];
+      function next(i) {
+        if (out.length >= 5 || i >= ys.length) return out.slice(0, 5);
+        return get(ys[i].file).then(function (j) { out = out.concat((j && j.rows) || []); return next(i + 1); });
+      }
+      return next(0);
+    }).then(function (rows) { ntRows = rows; return rows; }).catch(function () { ntTried = false; ntRows = null; return null; });
+  }
+  function ntUrl(id) {
+    var b = (ntIndex && ntIndex.article_url) || '';
+    return b.indexOf('https://www.namhae.ac.kr/') === 0 && /^\d+$/.test(String(id)) ? b + id : '';
+  }
+  function ntCard() {
+    return '<section class="card nt-home" id="home-notice" aria-busy="true" style="grid-column:1/-1"><h2>남해캠 공지 최신 5</h2><div id="home-notice-list"><p class="muted">불러오는 중…</p></div>' +
+      '<button class="btn-ghost small" type="button" data-go="#/notice">공지 전체 · 검색</button></section>';
+  }
+  function ntPaint(box, esc) {
+    var list = box.querySelector('#home-notice-list');
+    box.removeAttribute('aria-busy');
+    if (!list) return;
+    if (!ntRows || !ntRows.length) { list.innerHTML = '<p class="muted">' + NODATA + '</p>'; return; }
+    list.innerHTML = ntRows.map(function (r) {
+      var u = ntUrl(r.id), d = String(r.d || '').split('-');
+      var when = d.length === 3 ? (+d[1]) + '.' + (+d[2]) + '.' : '';
+      var inner = '<b>' + esc(r.t) + '</b><div class="item-meta">' + esc(when) + ' · ' + esc(r.dept || NODATA) + (u ? ' · 원문 ↗' : '') + '</div>';
+      return u ? '<a class="list-btn" href="' + esc(u) + '" target="_blank" rel="noopener">' + inner + '</a>' : '<div class="list-btn">' + inner + '</div>';
+    }).join('');
+  }
   function aiNum(o, esc) { return o == null ? NODATA : esc(String(o)); }
   function aiPaint(esc, today) {
     var A = window.HJAIFlow, tasks = hbData && hbData.tasks;
@@ -312,6 +349,7 @@
     var h = '<section class="hero"><p class="kicker">' + today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일</p><h1 class="hero-title">오늘 뭐부터 할까요?</h1></section>';
     h += boardCard();
     h += '<div class="home-rest">';
+    h += ntCard();
     h += otEntry();
     // 봇 작업 현황(#/bots): 홈 맨 위에서 바로 들어가요. 숫자는 data/bot_status.json 을 읽은 뒤 채워요(유진님 10.21. 20:15 지시).
     h += '<button class="bs-entry" type="button" data-go="#/bots" id="home-bots"><span class="tile-ic purple">🤖</span><span class="bs-entry-tx"><b>봇 작업 현황</b><span class="tile-sub" id="home-bots-sub">지금 도는 일을 한 줄씩</span></span><span class="bs-entry-go" aria-hidden="true">›</span></button>';
@@ -441,6 +479,8 @@
       hbPaint(hbBox, api.esc);
       if (!aiSrc) aiAfterLoad(function () { aiLoad().then(function () { if (hbBox.isConnected) hbPaint(hbBox, api.esc); }); });
     });
+    var ntBox = el.querySelector('#home-notice');
+    if (ntBox) aiAfterLoad(function () { ntLoad().then(function () { if (ntBox.isConnected) ntPaint(ntBox, api.esc); }); });
     var edit = el.querySelector('#edit-month');
     if (edit) edit.onclick = function () { api.go('#/more/month'); };
     el.querySelectorAll('[data-w]').forEach(function (b) {

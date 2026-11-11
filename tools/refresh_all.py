@@ -23,6 +23,9 @@ DOCS_SCRIPT = '/home/box/obsidian_vault/봇공유/99 봇/스크립트/hj_docs_ex
 # 261111 춘식이 kv 「협조·사람현황 앱정본」 T4: T2(make_people_roles) → T3(make_people_changes). 기준선 밖 이름·연락처 꼴이면 rc 2 로 멈춤
 PEOPLE_CFG = '/home/box/hj-ops/people_roles_inputs.json'
 PEOPLE_KEY = '사람현황'
+# 261111 춘식이 kv 「남해칠 공지사항 탑재」(대장 전달 「앱에 적용해」) ④: 게시판 증분(새 nttId 만) → data/notices(.json). 네트워크 실패면 건너뛰고 예전 원자료로 만듦(rc 그대로)
+NOTICE_SRC = '/workspace/namhae_notice_261111'
+NOTICE_KEY = '공지사항'
 
 
 def stamp(t):
@@ -34,6 +37,8 @@ def main(argv=None):
     ap.add_argument('--raw-dir', default='/workspace/hj_audit/calendar')
     ap.add_argument('--worker', default='hj-pv-calendar')
     ap.add_argument('--no-worker', action='store_true')
+    ap.add_argument('--notices-src', default=NOTICE_SRC, help='남해캠 공지 원자료 폴더(박스 전용). 없으면 공지 단계 건너뜀(예전 파일 유지)')
+    ap.add_argument('--no-notices-fetch', action='store_true', help='공지 증분 수집(인터넷) 안 하고 원자료로만 만듦')
     ap.add_argument('--people-config', default=PEOPLE_CFG, help='사람현황 입력 json(박스 전용). 없으면 사람 단계 건너뜀(예전 파일 유지)')
     a = ap.parse_args(argv)
     raw_w = os.path.join(a.raw_dir, 'raw_업무.json')
@@ -84,6 +89,8 @@ def main(argv=None):
         steps[LASTWORK_KEY] = {'ok': False, 'why': type(e).__name__}
     prc = people_step(a.people_config, data, steps)
     if prc == 2:
+        return finish(meta_p, old, now, steps, False, 2)
+    if notice_step(a.notices_src, data, steps, fetch=not a.no_notices_fetch) == 2:
         return finish(meta_p, old, now, steps, False, 2)
     rc = cal_pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
     if rc:
@@ -140,6 +147,26 @@ def people_step(cfg, data, steps):
                          '--after', os.path.join(data, 'people_roles.json'), '--out', os.path.join(data, 'people_changes.json')]).returncode
     steps[PEOPLE_KEY] = {'ok': t3 == 0, 'why': '' if t3 == 0 else '바뀜 비교 실패(기준판 없음)'}
     return t3
+
+
+def notice_step(src, data, steps, fetch=True):
+    """증분 수집(실패해도 계속) → make_notices. 0 성공 · 2 출력에 개인정보 꼴(멈춤) · 3 원자료 없음(예전 파일 유지)"""
+    if not src or not os.path.exists(os.path.join(src, '_list.json')):
+        steps[NOTICE_KEY] = {'ok': False, 'why': '원자료 없음(예전 파일 유지)'}
+        return 3
+    why = ''
+    if fetch:
+        try:
+            frc = subprocess.run([sys.executable, os.path.join(HERE, 'notices_update.py'), '--src', src], timeout=600).returncode
+        except subprocess.TimeoutExpired:
+            frc = 4
+        if frc:
+            why = '증분 수집 못 함(네트워크) → 있는 원자료로 만듦'
+    mrc = subprocess.run([sys.executable, os.path.join(HERE, 'make_notices.py'), '--src', src, '--out-dir', data]).returncode
+    if mrc:
+        why = {2: '개인정보 꼴이 남아 멈춤', 3: '원자료 없음(예전 파일 유지)'}.get(mrc, '생성 실패')
+    steps[NOTICE_KEY] = {'ok': mrc == 0, 'why': why}
+    return mrc
 
 
 def finish(meta_p, old, now, steps, ok, rc):
