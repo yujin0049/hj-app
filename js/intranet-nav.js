@@ -8,7 +8,7 @@
     { group: '', items: [['#/home', '홈 · 현황판']] },
     { group: '업무', items: [['#/status', '지출·원인행위 건현황'], ['#/ot-attach', '원인행위 붙임'], ['#/board', '업무현황표'], ['#/work', '실무']] },
     { group: '출석', items: [[ATTEND, '출석부 (공식)', 'ext']] },
-    { group: '문서', items: [['#/docs', '중요문서'], ['#/docsearch', '문서대장 찾기'], ['#/docreg', '문서등록대장 학습'], ['#/regular-docs', '정례 문서 달력']] },
+    { group: '문서', items: [['#/docs', '중요문서'], ['#/docsearch', '문서대장 찾기'], ['#/docreg', '문서등록대장 학습'], ['#/regular-docs', '정례 문서 달력'], ['#/notice', '남해캠 공지사항']] },
     { group: '일정', items: [['#/calendar', '계획 달력'], ['#/schedule', '남은 일정'], ['#/todo', '내일 할 일']] },
     { group: '봇보고/현황판', items: [['#/bots', '봇 작업 현황'], ['#/charts', '그래프'], ['#/chat', '대장↔클로드 방']] },
     { group: '그 밖', items: [['#/students', '학생 안내'], ['#/study', '공부'], ['#/more', '더보기']] }
