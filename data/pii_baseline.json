@@ -1,9 +1,9 @@
 {
 "version": 2,
 "key": "(파일, 종류, 걸린 낱말) sha256 16자 → a~p",
-"count": 1180,
-"note": "261030 cause_attach_types.json(PR #42 main + PR #43 미리) 이름 의심 34 = 모두 일반 낱말(서류·비목 낱말) 기준선 추가. 이전: 261030 유진님 OK(PR #40 문서등록대장 달력): docreg_calendar.json 이름 의심 139(people_roles 이름 13·가린 이름 조각 2·일반 낱말 124)",
-"saved_at": "2026-10-30 18:41 KST",
+"count": 1182,
+"note": "261111 업무분장(11.1.) 주소록 밖 2명 실명(성명 한정) — 유진님 대장 질문카드 답 「실명으로 올려」 11.11 17:37 (이름 2개만 더함, 예전 열쇠 그대로). 이전: 261030 cause_attach_types.json(PR #42 main + PR #43 미리) 이름 의심 34 = 모두 일반 낱말(서류·비목 낱말) 기준선 추가. 이전: 261030 유진님 OK(PR #40 문서등록대장 달력): docreg_calendar.json 이름 의심 139(people_roles 이름 13·가린 이름 조각 2·일반 낱말 124)",
+"saved_at": "2026-11-11 18:10 KST",
 "keys": {
 "aagiokckfonggjda": 2,
 "aaiohcbbmplaijnm": 1,
@@ -364,6 +364,7 @@
 "eocjddkedgbpbadn": 2,
 "eockeiocpacekood": 9,
 "eofefddkmndkabpe": 5,
+"eogepemkhoelpheg": 4,
 "eoibonomhlmciiki": 19,
 "eoigadionfaadlfl": 2,
 "eojjhibflkpomkdk": 37,
@@ -956,6 +957,7 @@
 "mpkmbfcbjpolcaal": 1,
 "mpncokomlgempcgm": 1,
 "mpoebgnfnjhpedbf": 2,
+"nabepnjnlfknljme": 4,
 "nadkhnjndfkjloam": 1,
 "nakdjaidhjccgoif": 2,
 "naogeignnagahnma": 1,
