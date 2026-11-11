@@ -55,7 +55,9 @@
     document.head.appendChild(l);
   }
   function build() {
-    font();
+    /* 글꼴은 첫 화면 다 뜬 뒤(load 뒤 쉬는 틈)에만 받아요: 첫 로드 속도 그대로 */
+    var later = function () { (root.requestIdleCallback || function (f) { setTimeout(f, 200); })(font); };
+    if (document.readyState === 'complete') later(); else root.addEventListener('load', later);
     var shell = document.getElementById('shell');
     if (!shell || document.getElementById('side')) return;
     var side = document.createElement('nav');
