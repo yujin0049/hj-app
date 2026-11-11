@@ -32,7 +32,7 @@ class IntranetHome(unittest.TestCase):
         self.assertLess(i.index('js/botstatus-core.js'), i.index('js/homeboard-core.js'))
         self.assertIn('js/intranet-nav.js', i)
         sw = read('sw.js')
-        self.assertIn("var CACHE = 'hj-v92';", sw)
+        self.assertIn("var CACHE = 'hj-v93';", sw)
         self.assertIn('./css/app.css?v=38', sw)
         self.assertIn('css/app.css?v=38', i)
         # 새 모듈도 미리받기 목록에(오프라인에서 메뉴·현황판 유지), index 와 같은 버전
