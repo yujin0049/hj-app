@@ -368,7 +368,7 @@ class ChatSend(unittest.TestCase):
         for w in ('id="ch-text"', 'id="ch-go"', "ME = '유진님'", 'C.compose(key, room, ME', 'C.withRelay(base', "RELAY + '/msgs?since='", 'maxlength'):
             self.assertIn(w, js)
         self.assertIn('chat-crypto.js?v=84', js)
-        self.assertIn("'hj-v91'", read('sw.js'))
+        self.assertIn("'hj-v92'", read('sw.js'))
 
     def test_collect_pulls_relay_without_new_secret(self):
         y = '\n'.join(l for l in read('.github', 'workflows', 'chat-collect.yml').splitlines() if not l.lstrip().startswith('#'))
