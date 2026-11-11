@@ -9,6 +9,7 @@
   var active = []; /* {kind,label,q,kw?} */
   var openId = '';
   var moreOpen = false;
+  var showChanged = false; /* 261111 T3: 「바뀐 사람」 칩(업무분장 반영) 보기 */
   var graph = null; /* HJCoopGraph.build 결과(거미줄+사람별 하는 일). 못 읽으면 null → 데이터 없음 */
   function G() { return root.HJCoopGraph || null; }
   var CSS = [
@@ -239,10 +240,10 @@
   function home(el, api) {
     var esc = api.esc;
     var needle = (q || '').trim().toLowerCase();
-    var hasQuery = !!(needle || active.length);
-    var rows = (data.rows || []).filter(function (r) { return matchRow(r, needle); });
+    var hasQuery = !!(needle || active.length || showChanged);
+    var rows = showChanged ? [] : (data.rows || []).filter(function (r) { return matchRow(r, needle); });
     var cg = G();
-    var graphHtml = hasQuery && cg ? cg.html(graph, cg.search(graph, needle, active)) : '';
+    var graphHtml = showChanged && cg && cg.changedHtml ? cg.changedHtml(graph) : (hasQuery && cg ? cg.html(graph, cg.search(graph, needle, active)) : '');
     var graphNone = hasQuery && (!cg || !graph || (!graph.hasSpider && !graph.hasPeople)) ? '<p class="cp-hint">부서·사람 자료: 데이터 없음</p>' : '';
     var suggest = buildSuggest(q || '');
     var shortcuts = data.shortcuts || [];
@@ -250,7 +251,8 @@
     var activeHtml = active.map(function (c, i) {
       return '<button type="button" class="cp-chip on x kind-' + esc(c.kind || 'kw') + '" data-rm="' + i + '">' +
         esc(c.label || c.q) + '<span class="rm" aria-hidden="true">×</span></button>';
-    }).join('');
+    }).join('') + (showChanged ? '<button type="button" class="cp-chip on x kind-period" data-rm="changed">바뀐 사람<span class="rm" aria-hidden="true">×</span></button>' : '');
+    var nChanged = graph && graph.changes ? graph.changes.length : 0;
 
     var suggestHtml = suggest.map(function (c) {
       return '<button type="button" class="cp-chip kind-' + esc(c.kind || 'kw') + '" data-add="' + esc(chipKey(c)) + '" data-kind="' + esc(c.kind || 'kw') + '" data-label="' + esc(c.label || '') + '" data-q="' + esc(c.q || '') + '" data-kw="' + esc(c.kw || '') + '">' +
@@ -259,7 +261,7 @@
 
     var scHtml = shortcuts.map(function (s) {
       return '<button type="button" class="cp-sc" data-sc="' + esc(s.q || s.label) + '" data-kw="' + esc(s.kw || '') + '">' + esc(s.label) + '</button>';
-    }).join('');
+    }).join('') + (nChanged ? '<button type="button" class="cp-chip kind-period" data-changed="1">바뀐 사람 ' + nChanged + '명</button>' : '');
 
     var results = '';
     if (!hasQuery) {
@@ -339,6 +341,7 @@
     if (inp) {
       inp.oninput = function () {
         q = inp.value || '';
+        showChanged = false;
         home(el, api);
         var again = el.querySelector('#cp-q');
         if (again) { again.focus(); var v = again.value; again.value = ''; again.value = v; }
@@ -349,6 +352,7 @@
       sug.onclick = function (ev) {
         var t = ev.target.closest('[data-add]');
         if (!t) return;
+        showChanged = false;
         toggleChip({ kind: t.getAttribute('data-kind'), label: t.getAttribute('data-label'), q: t.getAttribute('data-q'), kw: t.getAttribute('data-kw') || undefined });
         home(el, api);
         var again = el.querySelector('#cp-q');
@@ -360,6 +364,7 @@
       act.onclick = function (ev) {
         var t = ev.target.closest('[data-rm]');
         if (!t) return;
+        if (t.getAttribute('data-rm') === 'changed') { showChanged = false; home(el, api); return; }
         var i = parseInt(t.getAttribute('data-rm'), 10);
         if (!isNaN(i)) active.splice(i, 1);
         home(el, api);
@@ -368,8 +373,10 @@
     var sc = el.querySelector('#cp-sc');
     if (sc) {
       sc.onclick = function (ev) {
+        if (ev.target.closest('[data-changed]')) { showChanged = true; q = ''; active = []; home(el, api); return; }
         var t = ev.target.closest('[data-sc]');
         if (!t) return;
+        showChanged = false;
         var qq = t.getAttribute('data-sc') || '';
         var kw = t.getAttribute('data-kw') || '';
         q = qq;
@@ -394,6 +401,7 @@
         var name = btn.getAttribute('data-cg-q') || '';
         if (!name) return;
         q = '';
+        showChanged = false;
         active = [{ kind: btn.getAttribute('data-cg-kind') === 'person' ? 'person' : 'dept', label: '#' + name, q: name }];
         home(el, api);
         el.scrollIntoView && el.scrollIntoView({ block: 'start' });

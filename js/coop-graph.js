@@ -59,13 +59,18 @@
       links: arr(raw.links_dept).map(function (l) { return { name: safe(l.dept || l.name), n: Number(l.n) || 0, est: false }; }).filter(function (l) { return l.name; }),
       regs: arr(raw.regs).map(function (r) { return { name: safe(r.name || r.label), n: Number(r.n) || 0 }; }).filter(function (r) { return r.name; }),
       period: [safe(per.first), safe(per.last)].filter(Boolean).join(' ~ '),
+      /* 261111 업무분장 patch: 담당업무·대리·기준일·예전 자리 표시(발령일은 자료에 없음) */
+      duties: arr(raw.duties).map(safe).filter(Boolean),
+      deputy: raw.deputy && typeof raw.deputy === 'object' ? safe(raw.deputy.label) : safe(raw.deputy),
+      asOf: safe(raw.as_of), statusNote: safe(raw.status_note), workAt: safe(raw.work_at),
       appr: [], fromFile: true
     };
   }
 
   /* 두 파일 → 찾기 사전. sp·pr 은 없어도 됨(null) */
-  function build(sp, pr) {
-    var idx = { depts: {}, persons: {}, regs: [], contents: [], hasSpider: !!(sp && sp.nodes), hasPeople: false };
+  function build(sp, pr, pc) {
+    var idx = { depts: {}, persons: {}, regs: [], contents: [], hasSpider: !!(sp && sp.nodes), hasPeople: false, changes: [], changesAsOf: '' };
+    idx.baseLabel = safe(pr && pr.meta && pr.meta.source_counts && pr.meta.source_counts.directory) || '';
     var nodes = {};
     ((sp && sp.nodes) || []).forEach(function (n) { nodes[n.id] = n; });
     var board = {};
@@ -131,6 +136,14 @@
       if (!p) return;
       idx.persons[p.name] = p; idx.hasPeople = true;
     });
+    /* 261111 T3: 바뀐 사람(people_changes.json 은 이름 없이 people[at] 순번만) */
+    var plist = arr(list);
+    ((pc && pc.changes) || []).forEach(function (c) {
+      var raw = plist[c.at];
+      var nm = raw ? safe(pick(raw, F.name)) : '';
+      if (nm && idx.persons[nm]) idx.changes.push({ p: idx.persons[nm], ch: c });
+    });
+    idx.changesAsOf = safe(pc && pc.meta && pc.meta.as_of);
     Object.keys(pnode).forEach(function (id) {
       var n = pnode[id], name = safe(n.label);
       if (!name || idx.persons[name]) return;
@@ -246,9 +259,23 @@
     h += '</div>' + (d.sources.length ? '<p class="cg-src">근거 파일: ' + d.sources.map(e).join(' · ') + '</p>' : '') + '</article>';
     return h;
   }
-  function personCard(p) {
+  var baseLabel = '';
+  function changeText(c) {
+    var t = [];
+    if (c.new) t.push('새로 들어옴');
+    if (c.dept) t.push('소속 ' + (c.dept.from || '없음') + ' → ' + (c.dept.to || '없음'));
+    if (c.rank) t.push('직위 ' + (c.rank.from || '없음') + ' → ' + (c.rank.to || '없음'));
+    if (c.duties) t.push('담당업무 ' + c.duties + '줄');
+    if (c.deputy) t.push('대리 지정');
+    if (c.counts_delta) t.push('대장 건수 바뀜');
+    if (c.period_last) t.push('마지막 문서 ' + (c.period_last.to || '없음'));
+    return t.join(' · ') || '데이터 없음';
+  }
+  function personCard(p, ch) {
     var h = '<article class="cg-card" data-cg-person="' + e(p.name) + '"><h3><span class="cg-kind">#사람</span> ' + e(p.name) +
-      (p.dept || p.rank ? ' <small>' + e(p.dept) + (p.dept && p.rank ? ' · ' : '') + (p.rank ? e(p.rank) + (p.rankGuess ? EST : '') : '') + '</small>' : '') + '</h3>';
+      (p.dept || p.rank ? ' <small>' + e(p.dept) + (p.dept && p.rank ? ' · ' : '') + (p.rank ? e(p.rank) + (p.rankGuess ? EST : '') : '') + '</small>' : '') +
+      (p.statusNote ? ' <span class="cg-tag">' + e(p.statusNote) + '</span>' : '') + '</h3>';
+    if (ch) h += '<p class="cg-chg">바뀜: ' + e(changeText(ch)) + '</p>';
     if (!p.fromFile) h += '<p class="cg-none">하는 일: 데이터 없음 (사람별 자료 없음)</p><div class="cg-grid">';
     else {
       h += '<div class="cg-grid">';
@@ -256,6 +283,10 @@
         return '<li>' + e(r) + '</li>'; }).join('') + '</ul>' + (p.inferred ? INF : '') : '');
       h += row('대장', p.counts.length ? p.counts.map(function (c) { return e(c.label) + ' ' + num(c.n); }).join(' · ') + (p.period ? '<br><small>' + e(p.period) + '</small>' : '') : '');
       h += row('대표 문서', p.docs.slice(0, MAX.docs).map(function (d) { return '<span class="cg-doc">' + e(d) + '</span>'; }).join(''));
+      if (p.duties.length) h += row('담당업무', '<ul class="cg-roles">' + p.duties.map(function (r) { return '<li>' + e(r) + '</li>'; }).join('') + '</ul>');
+      if (p.deputy) h += row('대리', chip({ name: p.deputy }, 'person'));
+      if (p.workAt) h += row('근무·지원', e(p.workAt));
+      h += row('언제 기준', p.asOf ? '업무분장 ' + e(p.asOf) + ' 기준' + (p.statusNote ? ' · ' + e(p.statusNote) : '') : (baseLabel ? e(baseLabel) + ' · 문서대장' : ''));
     }
     h += row('이어진 부서', p.links.slice(0, MAX.links).map(function (l) { return chip(l, 'dept', '건'); }).join(''));
     if (p.fromFile) h += row('관련 추정 규정', p.regs.slice(0, MAX.regs).map(function (r) { return '<span class="cg-reg cg-inf">' + e(r.name) + ' <small>' + num(r.n) + '건</small></span>'; }).join(''));
@@ -270,12 +301,22 @@
       row('하는 사람', g.people.map(function (p) { return chip({ name: p.name, est: p.inferred }, 'person'); }).join('')) +
       '</div><p class="cg-src">부서·규정은 문서대장 제목 낱말로 맞춘 것(거미줄 자료).</p></article>';
   }
+  /* 261111 T3: 「바뀐 사람」 칩 → 바뀐 사람 카드 전부(검색 3장 제한 없이) */
+  function changedHtml(idx) {
+    if (!idx || !idx.changes || !idx.changes.length) return '<div class="cg-wrap"><p class="cg-none">바뀐 사람: 데이터 없음</p></div>';
+    baseLabel = idx.baseLabel || '';
+    return '<div class="cg-wrap"><p class="cg-src">바뀐 사람 ' + idx.changes.length + '명' + (idx.changesAsOf ? ' · 업무분장 ' + e(idx.changesAsOf) + ' 기준' : '') +
+      ' · 발령일·전화 없음</p>' + idx.changes.map(function (x) { return personCard(x.p, x.ch); }).join('') + '</div>';
+  }
   /* idx 없음(파일 못 읽음) → 데이터 없음 한 줄 */
   function html(idx, res) {
     if (!idx || (!idx.hasSpider && !idx.hasPeople)) return '';
+    baseLabel = idx.baseLabel || '';
     var h = '';
     if (res.guide) h += guideCard(res.guide);
-    h += res.depts.map(deptCard).join('') + res.persons.map(personCard).join('');
+    var chBy = {};
+    (idx.changes || []).forEach(function (x) { chBy[x.p.name] = x.ch; });
+    h += res.depts.map(deptCard).join('') + res.persons.map(function (p) { return personCard(p, chBy[p.name]); }).join('');
     return h ? '<div class="cg-wrap">' + h + '</div>' : '';
   }
   var CSS = [
@@ -293,7 +334,8 @@
     '.cg-tag{display:inline-block;font-size:.64rem;font-weight:700;border-radius:999px;padding:0 6px;margin-left:2px;background:#fff4e5;color:#7a4a00;vertical-align:1px;opacity:1}',
     '.cg-none{color:var(--muted)}.cg-card>.cg-none{margin:0 0 6px}',
     '.cg-miss{display:block;font-size:.76rem;color:#9a3b00;margin-top:2px}',
-    '.cg-src{font-size:.74rem;color:var(--muted);margin:8px 0 0}'
+    '.cg-src{font-size:.74rem;color:var(--muted);margin:8px 0 0}',
+    '.cg-chg{font-size:.78rem;color:#1a4d9e;background:#EAF1FC;border-radius:10px;padding:4px 8px;margin:0 0 8px}'
   ].join('\n');
   function style() {
     if (typeof document === 'undefined' || document.getElementById('cg-style')) return;
@@ -305,11 +347,11 @@
       .then(function (r) { if (!r.ok) throw new Error(f); return r.json(); }).catch(function () { return null; });
   }
   function load() {
-    if (!cache) cache = Promise.all([getJSON('data/dept_spider.json'), getJSON('data/people_roles.json')])
-      .then(function (g) { return build(g[0], g[1]); });
+    if (!cache) cache = Promise.all([getJSON('data/dept_spider.json'), getJSON('data/people_roles.json'), getJSON('data/people_changes.json')])
+      .then(function (g) { return build(g[0], g[1], g[2]); });
     return cache;
   }
-  root.HJCoopGraph = { F: F, build: build, search: search, suggest: suggest, regsFor: regsFor, html: html, style: style, load: load,
+  root.HJCoopGraph = { F: F, build: build, search: search, suggest: suggest, regsFor: regsFor, html: html, changedHtml: changedHtml, style: style, load: load,
     safe: safe, fileName: fileName, _reset: function () { cache = null; } };
   if (typeof module !== 'undefined' && module.exports) module.exports = root.HJCoopGraph;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -77,3 +77,17 @@ test('공개 화면 거름: 전화·메일·주민번호 지움, 파일 이름�
   assert.equal(G.safe('a b' + at + 'c.kr ' + ph), 'a');
   assert.equal(G.fileName('10 업무/x_v01.md'), 'x_v01');
 });
+
+// 261111 T3: 「바뀐 사람」 칩 자료 + 사람 카드 「언제 기준」(이름은 people_changes 에 없음)
+test('바뀐 사람: people_changes 순번 → 사람 카드, 언제 기준·바뀜 줄, 전화 없음', () => {
+  const PC = rd('people_changes.json');
+  const ix = G.build(SP, PR, PC);
+  assert.equal(ix.changes.length, PC.changes.length);
+  const h = G.changedHtml(ix);
+  if (!PC.changes.length) { assert.match(h, /데이터 없음/); return; }
+  assert.equal((h.match(/class="cg-card"/g) || []).length, PC.changes.length);
+  assert.match(h, /언제 기준/);
+  assert.match(h, /바뀜: /);
+  assert.doesNotMatch(h, /01[016789]-?\d{3,4}-?\d{4}/);
+  assert.match(G.changedHtml(G.build(SP, PR, null)), /데이터 없음/);
+});

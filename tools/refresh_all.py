@@ -20,6 +20,9 @@ SKIP_TOP = {'dorm.json'}
 # meta.json steps 키는 공개 JSON 이라 개인정보 검사를 받음: 성씨로 시작하는 3글자 낱말(예: 마지막) 쓰지 말 것
 LASTWORK_KEY = '최근 작업 시각'
 DOCS_SCRIPT = '/home/box/obsidian_vault/봇공유/99 봇/스크립트/hj_docs_extract.py'
+# 261111 춘식이 kv 「협조·사람현황 앱정본」 T4: T2(make_people_roles) → T3(make_people_changes). 기준선 밖 이름·연락처 꼴이면 rc 2 로 멈춤
+PEOPLE_CFG = '/home/box/hj-ops/people_roles_inputs.json'
+PEOPLE_KEY = '사람현황'
 
 
 def stamp(t):
@@ -31,6 +34,7 @@ def main(argv=None):
     ap.add_argument('--raw-dir', default='/workspace/hj_audit/calendar')
     ap.add_argument('--worker', default='hj-pv-calendar')
     ap.add_argument('--no-worker', action='store_true')
+    ap.add_argument('--people-config', default=PEOPLE_CFG, help='사람현황 입력 json(박스 전용). 없으면 사람 단계 건너뜀(예전 파일 유지)')
     a = ap.parse_args(argv)
     raw_w = os.path.join(a.raw_dir, 'raw_업무.json')
     raw_o = os.path.join(a.raw_dir, 'raw_ojnt.json')
@@ -78,6 +82,9 @@ def main(argv=None):
         steps[LASTWORK_KEY] = {'ok': lrc == 0, 'why': '' if lrc == 0 else '원자료 없음(예전 파일 유지)'}
     except Exception as e:
         steps[LASTWORK_KEY] = {'ok': False, 'why': type(e).__name__}
+    prc = people_step(a.people_config, data, steps)
+    if prc == 2:
+        return finish(meta_p, old, now, steps, False, 2)
     rc = cal_pii_check.main(['--data', data, '--raw', raw_w, raw_o, make_calendar.MASTER_DEFAULT, make_calendar.INGEST_DIR + '/통합일정.json'])
     if rc:
         steps['개인정보 검사'] = {'ok': False, 'why': '실패'}
@@ -117,6 +124,22 @@ def main(argv=None):
         return 2
     print('배포할 파일:', worker)
     return 0 if ok else 1
+
+
+def people_step(cfg, data, steps):
+    """T2 → T3. 0 성공 · 2 기준선 밖 이름/개인정보 꼴(멈춤) · 그 밖(입력 없음 3 등)은 예전 파일 유지하고 표시만"""
+    if not cfg or not os.path.exists(cfg):
+        steps[PEOPLE_KEY] = {'ok': False, 'why': '입력 설정 없음(예전 파일 유지)'}
+        return 3
+    t2 = subprocess.run([sys.executable, os.path.join(HERE, 'make_people_roles.py'), '--config', cfg,
+                         '--out-people', os.path.join(data, 'people_roles.json'), '--out-coop', os.path.join(data, 'coop.json')]).returncode
+    if t2:
+        steps[PEOPLE_KEY] = {'ok': False, 'why': {2: '기준선 밖 이름 또는 개인정보 꼴(멈춤)', 3: '원자료 없음·보류 입력(예전 파일 유지)'}.get(t2, '생성 실패')}
+        return 2 if t2 == 2 else t2
+    t3 = subprocess.run([sys.executable, os.path.join(HERE, 'make_people_changes.py'),
+                         '--after', os.path.join(data, 'people_roles.json'), '--out', os.path.join(data, 'people_changes.json')]).returncode
+    steps[PEOPLE_KEY] = {'ok': t3 == 0, 'why': '' if t3 == 0 else '바뀜 비교 실패(기준판 없음)'}
+    return t3
 
 
 def finish(meta_p, old, now, steps, ok, rc):

@@ -1,0 +1,147 @@
+{
+ "meta": {
+  "id": "people_changes_D261111_people_roles_v02",
+  "generated": "2026-11-11",
+  "before": "D261029_people_roles_v01",
+  "after": "D261111_people_roles_v02",
+  "as_of": "2026-11-01",
+  "diff_keys": [
+   "new",
+   "gone",
+   "dept",
+   "rank",
+   "duties",
+   "deputy",
+   "counts_delta",
+   "period_last"
+  ],
+  "n_changed": 13,
+  "n_gone": 0,
+  "notice": "at = people_roles.json people 순번(이 파일엔 이름 없음). 발령일·전화 없음. 자료 없으면 「데이터 없음」."
+ },
+ "changes": [
+  {
+   "at": 35,
+   "dept": {
+    "from": "학생상담센터",
+    "to": "글로컬대학사업센터"
+   },
+   "duties": 6,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 36,
+   "duties": 1,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 37,
+   "rank": {
+    "from": "팀장",
+    "to": "~10.31. 센터 팀장(전)"
+   },
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 38,
+   "rank": {
+    "from": "파트장",
+    "to": "선임연구원"
+   },
+   "duties": 5,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 39,
+   "dept": {
+    "from": "경남항공교육원",
+    "to": "글로컬대학사업센터"
+   },
+   "rank": {
+    "from": "기간제(사업)",
+    "to": "주무관"
+   },
+   "duties": 3,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 40,
+   "duties": 1,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 41,
+   "rank": {
+    "from": "기간제",
+    "to": "주무관"
+   },
+   "duties": 3,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 42,
+   "rank": {
+    "from": "기간제",
+    "to": "주무관"
+   },
+   "duties": 5,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 43,
+   "rank": {
+    "from": "기간제",
+    "to": "주무관"
+   },
+   "duties": 5,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 44,
+   "rank": {
+    "from": "기간제",
+    "to": "주무관"
+   },
+   "duties": 3,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 45,
+   "dept": {
+    "from": "평생교육원",
+    "to": "글로컬대학사업센터"
+   },
+   "rank": {
+    "from": "기간제(사업)",
+    "to": "주무관"
+   },
+   "duties": 4,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 134,
+   "new": true,
+   "duties": 3,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  },
+  {
+   "at": 135,
+   "rank": {
+    "from": null,
+    "to": "연구교수"
+   },
+   "duties": 4,
+   "deputy": true,
+   "as_of": "2026-11-01"
+  }
+ ],
+ "gone": []
+}
