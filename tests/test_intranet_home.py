@@ -32,9 +32,17 @@ class IntranetHome(unittest.TestCase):
         self.assertLess(i.index('js/botstatus-core.js'), i.index('js/homeboard-core.js'))
         self.assertIn('js/intranet-nav.js', i)
         sw = read('sw.js')
-        self.assertIn("var CACHE = 'hj-v90';", sw)
-        self.assertIn('./css/app.css?v=36', sw)
-        self.assertIn('css/app.css?v=36', i)
+        self.assertIn("var CACHE = 'hj-v91';", sw)
+        self.assertIn('./css/app.css?v=37', sw)
+        self.assertIn('css/app.css?v=37', i)
+        # 새 모듈도 미리받기 목록에(오프라인에서 메뉴·현황판 유지), index 와 같은 버전
+        for m in re.findall(r'src="(js/(?:homeboard-core|intranet-nav)\.js\?v=\d+)"', i):
+            self.assertIn("'./" + m + "'", sw)
+        self.assertEqual(len(re.findall(r'js/(?:homeboard-core|intranet-nav)\.js', i)), 2)
+
+    def test_late_subline_from_data(self):
+        h = read('js', 'modules', 'home.js')
+        self.assertIn('id="hb-late">지남 \' + c[\'지남\']', h)  # 숫자는 자료로 셈(박아 넣지 않음)
 
 if __name__ == '__main__':
     unittest.main()

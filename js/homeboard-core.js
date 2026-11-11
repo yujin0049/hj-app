@@ -28,15 +28,19 @@
     var c = B.due(t, today).cls;
     return c === 'late' || c === 'today' || c === 'soon';
   }
-  /* 카드 숫자: 매핑 없는 카드는 null */
+  /* 마감 지난 것(안 끝난 건, 마감 < 오늘): 마감임박 카드 아래 「지남 N」 */
+  function overdue(t, today) { return isOpen(t) && B.due(t, today).cls === 'late'; }
+  /* 카드 숫자: 매핑 없는 카드는 null. 지남 = 마감임박 중 이미 지난 것 */
   function counts(tasks, today) {
     var o = {};
     CARDS.forEach(function (k) { o[k] = (k === '마감임박' || MAP[k].length) ? 0 : null; });
+    o['지남'] = 0;
     (tasks || []).forEach(function (t) {
       if (!isOpen(t)) return;
       var k = cardOf(t);
       if (k && o[k] !== null) o[k] += 1;
       if (soon(t, today)) o['마감임박'] += 1;
+      if (overdue(t, today)) o['지남'] += 1;
     });
     return o;
   }
@@ -62,5 +66,5 @@
       };
     });
   }
-  return { SOON_DAYS: SOON_DAYS, MAP: MAP, CARDS: CARDS, isOpen: isOpen, cardOf: cardOf, soon: soon, counts: counts, rows: rows };
+  return { SOON_DAYS: SOON_DAYS, MAP: MAP, CARDS: CARDS, isOpen: isOpen, cardOf: cardOf, soon: soon, overdue: overdue, counts: counts, rows: rows };
 });

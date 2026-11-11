@@ -1219,6 +1219,7 @@ html.in-open .in-dim { opacity: 1; pointer-events: auto; }
 .hb-n { font-family: Hahmlet, Pretendard, serif; font-size: 1.6rem; line-height: 1.1; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .hb-hot .hb-k::before { background: var(--dl-hot); }
 .hb-hot .hb-n { color: var(--dl-hot); }
+.hb-sub { font-size: .74rem; font-weight: 700; color: var(--dl-hot); }
 .hb-none { cursor: default; background: var(--g-50, #F9FAFB); }
 .hb-none .hb-n { font-family: Pretendard, sans-serif; font-size: .82rem; font-weight: 600; color: var(--muted); }
 .hb-none .hb-k::before { background: var(--g-300, #D1D6DB); }

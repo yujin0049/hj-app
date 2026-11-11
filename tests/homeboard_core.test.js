@@ -27,6 +27,15 @@ test('마감임박: D-3 이내·오늘·지난 것은 넣고 D-4·마감 없음�
   assert.deepEqual(H.rows(list, today, '').map((r) => r.soon), [true, true, true, false, false]);
 });
 
+test('지남 N: 마감 지난 안 끝난 건만 셈(오늘·D-3·끝난 건 빼고)', () => {
+  const list = [T({ due: '2026-11-10' }), T({ due: '2026-11-01' }), T({ due: '2026-11-11' }), T({ due: '2026-11-13' }),
+    T({ state: '끝', raw: '완료', due: '2026-11-01' }), T({ raw: '취소', due: '2026-11-01' })];
+  const c = H.counts(list, today);
+  assert.equal(c['지남'], 2);
+  assert.equal(c['마감임박'], 4);
+  assert.ok(c['지남'] <= c['마감임박']);
+});
+
 test('목록 줄: 날짜=갱신일, 담당=봇, 상태 좁히기', () => {
   const rows = H.rows([T({ raw: '보류', bot: '', updated: '' }), T({ raw: '진행 중' })], today, '보류');
   assert.equal(rows.length, 1);
@@ -41,6 +50,7 @@ test('실제 자료(data/bot_status.json)로 돌려도 숫자가 맞물림', () 
   const c = H.counts(d.tasks, today);
   const open = H.rows(d.tasks, today, '');
   assert.equal(c['수정'], null);
+  assert.equal(d.tasks.filter((t) => H.overdue(t, today)).length, c['지남']);
   assert.equal(H.rows(d.tasks, today, '마감임박').length, c['마감임박']);
   assert.ok(c['예정'] + c['진행'] + c['보류'] <= open.length);
 });

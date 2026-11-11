@@ -156,7 +156,8 @@
       var n = c ? c[k] : null;
       var none = n === null || n === undefined;
       h += '<button type="button" class="hb-card' + (k === '마감임박' ? ' hb-hot' : '') + (none ? ' hb-none' : '') + '" data-hb="' + k + '" aria-pressed="' + (hbFilter === k) + '"' + (none ? ' disabled' : '') + '>' +
-        '<span class="hb-k">' + k + '</span><b class="hb-n">' + (none ? NODATA : n) + '</b></button>';
+        '<span class="hb-k">' + k + '</span><b class="hb-n">' + (none ? NODATA : n) + '</b>' +
+        (k === '마감임박' && c ? '<span class="hb-sub" id="hb-late">지남 ' + c['지남'] + '</span>' : '') + '</button>';
     });
     h += '</div>';
     if (H && tasks) {
