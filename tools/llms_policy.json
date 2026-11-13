@@ -1,0 +1,51 @@
+{
+ "_설명": "AI·크롤러용 화면 공개 기준(tools/make_llms.py 가 읽음). 화면 목록 자체는 소스(js/registry.js·js/intranet-nav.js·js/modules/*.js)에서 뽑아요. 여기 없는 새 화면은 자동으로 「비공개」예요(기본 닫힘).",
+ "public": {
+  "students": {
+   "src": "public/guide.json",
+   "kind": "guide"
+  },
+  "library": {
+   "src": "public/library.json",
+   "kind": "library"
+  },
+  "judge": {
+   "src": "public/judge.json",
+   "kind": "judge"
+  },
+  "docgen": {
+   "src": "public/docgen.json",
+   "kind": "docgen"
+  }
+ },
+ "describe": [
+  "home",
+  "work",
+  "study",
+  "practice",
+  "more",
+  "search",
+  "news",
+  "banner",
+  "3d",
+  "docreg",
+  "regular-docs",
+  "docsearch",
+  "notice",
+  "pubdata"
+ ],
+ "desc": {
+  "home": "앱 첫 화면. 오늘 볼 일과 바로 가기 카드를 모아 보여 줘요.",
+  "students": "학생용 안내: 일정·강의실, 서류·신청, 기숙사·생활, FAQ, 공지, LMS 사용법.",
+  "work": "실무 탭: 판정 · 문서 만들기 · 자료함으로 들어가는 입구예요.",
+  "study": "공부 탭: 필독 규정 요지, 변경이력 카드, 주간 공부로 들어가는 입구예요.",
+  "more": "더보기: 앱 안 다른 화면으로 가는 목록이에요.",
+  "search": "앱 안 검색: 학생 안내와 공개 자료를 낱말로 찾아요.",
+  "docsearch": "문서대장 찾기: 문서등록대장 목록을 낱말·부서·날짜로 찾아요.",
+  "notice": "남해캠퍼스 공지 게시판의 공개 글 목록을 찾고 걸러 봐요."
+ },
+ "title": {
+  "search": "검색",
+  "haksa": "통합학사 연습"
+ }
+}
