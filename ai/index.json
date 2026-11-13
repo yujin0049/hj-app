@@ -1,0 +1,278 @@
+{
+ "version": 1,
+ "site": "https://yujin0049.github.io/hj-app/",
+ "generator": "tools/make_llms.py",
+ "llms": "llms.txt",
+ "screens": [
+  {
+   "id": "home",
+   "title": "홈 · 현황판",
+   "group": "홈",
+   "desc": "앱 첫 화면. 오늘 볼 일과 바로 가기 카드를 모아 보여 줘요.",
+   "route": "#/home",
+   "visibility": "공개",
+   "md": "ai/home.md",
+   "body": false
+  },
+  {
+   "id": "students",
+   "title": "학생 안내",
+   "group": "그 밖",
+   "desc": "학생용 안내: 일정·강의실, 서류·신청, 기숙사·생활, FAQ, 공지, LMS 사용법.",
+   "route": "#/students",
+   "visibility": "공개",
+   "md": "ai/students.md",
+   "body": true
+  },
+  {
+   "id": "work",
+   "title": "실무",
+   "group": "업무",
+   "desc": "실무 탭: 판정 · 문서 만들기 · 자료함으로 들어가는 입구예요.",
+   "route": "#/work",
+   "visibility": "공개",
+   "md": "ai/work.md",
+   "body": false
+  },
+  {
+   "id": "board",
+   "title": "업무현황표",
+   "visibility": "비공개"
+  },
+  {
+   "id": "study",
+   "title": "공부",
+   "group": "그 밖",
+   "desc": "공부 탭: 필독 규정 요지, 변경이력 카드, 주간 공부로 들어가는 입구예요.",
+   "route": "#/study",
+   "visibility": "공개",
+   "md": "ai/study.md",
+   "body": false
+  },
+  {
+   "id": "more",
+   "title": "더보기",
+   "group": "그 밖",
+   "desc": "더보기: 앱 안 다른 화면으로 가는 목록이에요.",
+   "route": "#/more",
+   "visibility": "공개",
+   "md": "ai/more.md",
+   "body": false
+  },
+  {
+   "id": "judge",
+   "title": "판정",
+   "group": "그 밖",
+   "desc": "휴보강 해야 하나 · 계약 방법 · 사전승인 필요한가",
+   "route": "#/judge",
+   "visibility": "공개",
+   "md": "ai/judge.md",
+   "body": true
+  },
+  {
+   "id": "docgen",
+   "title": "문서 만들기",
+   "group": "그 밖",
+   "desc": "칸 채우면 기안·계획서 초안 → 복사",
+   "route": "#/docgen",
+   "visibility": "공개",
+   "md": "ai/docgen.md",
+   "body": true
+  },
+  {
+   "id": "library",
+   "title": "자료함",
+   "group": "그 밖",
+   "desc": "규정 · 업무 순서 · 양식 · 어디 있나",
+   "route": "#/library",
+   "visibility": "공개",
+   "md": "ai/library.md",
+   "body": true
+  },
+  {
+   "id": "practice",
+   "title": "연습장",
+   "group": "그 밖",
+   "desc": "과제, 익힐 업무, 문제",
+   "route": "#/practice",
+   "visibility": "공개",
+   "md": "ai/practice.md",
+   "body": false
+  },
+  {
+   "id": "search",
+   "title": "검색",
+   "group": "그 밖",
+   "desc": "앱 안 검색: 학생 안내와 공개 자료를 낱말로 찾아요.",
+   "route": "#/search",
+   "visibility": "공개",
+   "md": "ai/search.md",
+   "body": false
+  },
+  {
+   "id": "news",
+   "title": "교육원 소식",
+   "group": "그 밖",
+   "desc": "행사, 일정, 공지",
+   "route": "#/news",
+   "visibility": "공개",
+   "md": "ai/news.md",
+   "body": false
+  },
+  {
+   "id": "computers",
+   "title": "컴퓨터 현황",
+   "visibility": "비공개"
+  },
+  {
+   "id": "dorm",
+   "title": "기숙사 현황판",
+   "visibility": "비공개"
+  },
+  {
+   "id": "schedule",
+   "title": "남은 일정",
+   "visibility": "비공개"
+  },
+  {
+   "id": "banner",
+   "title": "현수막 만들기",
+   "group": "그 밖",
+   "desc": "기본 시안, 예전 현수막, 4m·5m",
+   "route": "#/banner",
+   "visibility": "공개",
+   "md": "ai/banner.md",
+   "body": false
+  },
+  {
+   "id": "lockers",
+   "title": "사물함",
+   "visibility": "비공개"
+  },
+  {
+   "id": "calendar",
+   "title": "계획 달력",
+   "visibility": "비공개"
+  },
+  {
+   "id": "status",
+   "title": "지출·원인행위 건현황",
+   "visibility": "비공개"
+  },
+  {
+   "id": "filefind",
+   "title": "파일 찾기",
+   "visibility": "비공개"
+  },
+  {
+   "id": "3d",
+   "title": "교육원 전경 3D",
+   "group": "그 밖",
+   "desc": "앱 안에서 보기 · v02 모델",
+   "route": "#/3d",
+   "visibility": "공개",
+   "md": "ai/3d.md",
+   "body": false
+  },
+  {
+   "id": "bots",
+   "title": "봇 작업 현황",
+   "visibility": "비공개"
+  },
+  {
+   "id": "docreg",
+   "title": "문서등록대장 학습",
+   "group": "문서",
+   "desc": "분류별 문제 · 정례 문서 달력 · 틀린 문제 다시",
+   "route": "#/docreg",
+   "visibility": "공개",
+   "md": "ai/docreg.md",
+   "body": false
+  },
+  {
+   "id": "who",
+   "title": "학과·사람별 업무",
+   "visibility": "비공개"
+  },
+  {
+   "id": "regular-docs",
+   "title": "정례 문서 달력",
+   "group": "문서",
+   "desc": "달 격자 · 분류 고르기 · 다가오는 달 예상",
+   "route": "#/regular-docs",
+   "visibility": "공개",
+   "md": "ai/regular-docs.md",
+   "body": false
+  },
+  {
+   "id": "haksa",
+   "title": "통합학사 연습",
+   "visibility": "비공개"
+  },
+  {
+   "id": "coop",
+   "title": "협조리스트 (원큐)",
+   "visibility": "비공개"
+  },
+  {
+   "id": "todo",
+   "title": "내일 할 일",
+   "visibility": "비공개"
+  },
+  {
+   "id": "ot-attach",
+   "title": "원인행위 붙임",
+   "visibility": "비공개"
+  },
+  {
+   "id": "charts",
+   "title": "그래프",
+   "visibility": "비공개"
+  },
+  {
+   "id": "docs",
+   "title": "중요문서",
+   "visibility": "비공개"
+  },
+  {
+   "id": "chat",
+   "title": "대장↔클로드 방",
+   "visibility": "비공개"
+  },
+  {
+   "id": "pubdata",
+   "title": "공공데이터",
+   "group": "그 밖",
+   "desc": "정비사 응시·취득 · ARTS 원서 · 정비조직 · 산림항공 교육",
+   "route": "#/pubdata",
+   "visibility": "공개",
+   "md": "ai/pubdata.md",
+   "body": false
+  },
+  {
+   "id": "docsearch",
+   "title": "문서대장 찾기",
+   "group": "문서",
+   "desc": "문서대장 찾기: 문서등록대장 목록을 낱말·부서·날짜로 찾아요.",
+   "route": "#/docsearch",
+   "visibility": "공개",
+   "md": "ai/docsearch.md",
+   "body": false
+  },
+  {
+   "id": "notice",
+   "title": "남해캠 공지사항",
+   "group": "문서",
+   "desc": "남해캠퍼스 공지 게시판의 공개 글 목록을 찾고 걸러 봐요.",
+   "route": "#/notice",
+   "visibility": "공개",
+   "md": "ai/notice.md",
+   "body": false
+  },
+  {
+   "id": "check",
+   "title": "확인 필요",
+   "visibility": "비공개"
+  }
+ ]
+}
