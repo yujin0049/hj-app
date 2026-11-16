@@ -189,7 +189,8 @@ class Build(unittest.TestCase):
 
 class Wiring(unittest.TestCase):
     def test_home_entry_and_module(self):
-        self.assertIn('data-go="#/bots"', read('js', 'modules', 'home.js'))
+        self.assertIn("id: 'bots'", read('js', 'registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js', 'modules', 'more.js'))
         self.assertIn("'bots'", read('js', 'registry.js'))
         self.assertIn('ShellModules.bots', read('js', 'modules', 'bots.js'))
         self.assertIn('js/botstatus-core.js', read('index.html'))

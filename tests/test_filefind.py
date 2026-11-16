@@ -30,8 +30,9 @@ class T(unittest.TestCase):
 
     def test_wired(self):
         self.assertIn("'filefind'", read('js/registry.js'))
-        self.assertIn("menuBtn('filefind'", read('js/modules/more.js'))
-        self.assertIn("id === 'filefind'", read('js/modules/more.js'))
+        self.assertIn("id: 'filefind'", read('js/registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js/modules/more.js'))
+        self.assertIn('HJNav.byId', read('js/modules/more.js'))
         self.assertIn('js/filefind-core.js', read('index.html'))
         self.assertIn('ShellModules.filefind', read('js/modules/filefind.js'))
 

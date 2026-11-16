@@ -55,8 +55,8 @@ class T자료(unittest.TestCase):
     def test_wired(self):
         self.assertIn("'regular-docs'", read('js/registry.js'))
         self.assertIn('js/regular-docs-core.js', read('index.html'))
-        self.assertIn('data-go="#/regular-docs"', read('js/modules/home.js'))
-        self.assertIn("menuBtn('regular-docs'", read('js/modules/more.js'))
+        self.assertIn("id: 'regular-docs'", read('js/registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js/modules/more.js'))
         self.assertIn("ShellModules['regular-docs']", read('js/modules/regular-docs.js'))
 
 
@@ -86,7 +86,9 @@ class T화면(unittest.TestCase):
         self.assertEqual(len(re.findall(r'class="rd-tag exp"', out)), 10)
 
     def test_home_entry(self):
-        self.assertIn('id="home-regdocs"', self.open('#/home'))
+        # 홈은 오늘 할 일 한 장. 정례 문서 달력은 메뉴 레지스트리·더보기에서 연다.
+        self.assertIn("id: 'regular-docs'", read('js/registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js/modules/more.js'))
 
 
 if __name__ == '__main__':

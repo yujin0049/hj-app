@@ -16,9 +16,10 @@ def read(*p):
 class Wiring(unittest.TestCase):
     def test_module_and_entry(self):
         self.assertIn("'docsearch'", read('js', 'registry.js'))
-        self.assertIn('data-go="#/docsearch"', read('js', 'modules', 'home.js'))
+        self.assertIn("id: 'docsearch'", read('js', 'registry.js'))
         self.assertIn('data-go="#/docsearch"', read('js', 'modules', 'docreg.js'))
-        self.assertIn("id === 'docsearch' ? 'home'", read('js', 'app.js'))
+        self.assertIn("tabOf: 'more'", read('js', 'registry.js'))
+        self.assertIn('HJNav.tabOf', read('js', 'app.js'))
 
     def test_lazy_core(self):
         m = read('js', 'modules', 'docsearch.js')

@@ -24,5 +24,5 @@ class Who(unittest.TestCase):
             self.assertEqual([h for h in hjpii.find_pii(s) if h != '이름 의심'], [], path)
     def test_wired(self):
         self.assertIn("'who'", read('js', 'registry.js'))
-        self.assertIn('data-go="#/who"', read('js', 'modules', 'home.js'))
-        self.assertIn("menuBtn('who'", read('js', 'modules', 'more.js'))
+        self.assertIn("id: 'who'", read('js', 'registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js', 'modules', 'more.js'))

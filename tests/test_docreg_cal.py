@@ -10,12 +10,11 @@ def read(*p):
 
 class Wiring(unittest.TestCase):
     def test_more_button_last(self):
-        m = read('js', 'modules', 'more.js')
-        self.assertEqual(m.count("menuBtn('docreg-cal'"), 1)
-        i = m.index("menuBtn('docreg-cal'")
-        self.assertGreater(i, m.index("menuBtn('settings'"))
-        self.assertEqual(m.count('menuBtn(', i + 1), 1)  # 뒤에 다른 버튼(정의 제외) 없음
-        self.assertIn("id === 'docreg-cal') api.go('#/docreg/cal')", m)
+        r = read('js', 'registry.js')
+        self.assertIn("id: 'docreg-cal'", r)
+        self.assertGreater(r.index("id: 'docreg-cal'"), r.index("id: 'settings'"))
+        self.assertIn('HJNav.moreGroups', read('js', 'modules', 'more.js'))
+        self.assertIn("href: '#/docreg/cal'", r)
 
     def test_lazy(self):
         d = read('js', 'modules', 'docreg.js')
@@ -37,7 +36,7 @@ class Wiring(unittest.TestCase):
         self.assertNotIn('c.title', rows)
 
     def test_cache(self):
-        self.assertIn("var CACHE = 'hj-v96';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v98';", read('sw.js'))
 
 P = os.path.join(R, 'data', 'docreg_calendar.json')
 
