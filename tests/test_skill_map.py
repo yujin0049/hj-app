@@ -66,6 +66,12 @@ class SkillMap(unittest.TestCase):
         self.assertNotIn('기획재정부', by['purchase-03']['explain'])
         self.assertIn('1-7. 계산증명', by['cause-06']['src'])
         self.assertIn('출석한 위원과 교직원의 성명', by['meeting-01']['choices'][0])
+        self.assertTrue(by['meeting-01']['choices'][0].endswith('성명 및 표결수 등'))
+        self.assertEqual(
+            by['meeting-01']['explain'],
+            '제9조제1항은 회의록에 일시·안건·의사·출석한 위원과 교직원의 성명·표결수 등을 적도록 한다.',
+        )
+        self.assertFalse(any('만)만' in c or '생략)만으로' in c for c in by['meeting-01']['choices']))
         self.assertIn('사업연도 보조금 예산', by['glocal-04']['choices'][0])
         self.assertIn('4동·복지동', by['dorm-01']['explain'])
 
