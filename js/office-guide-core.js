@@ -293,10 +293,11 @@
       { t: 'tpl', lines: ['○○ 업무를 진행하면서 ○○까지 확인했는데, 다음 단계에서 ○○ 부분이 이해되지 않아 문의드립니다.'] },
       { t: 'h3', text: '다섯 번째, 처음부터 완벽하려고 하지 않기' },
       { t: 'p', text: '처음에는 모르는 게 당연해요. 중요한 건 모르는 내용을 확인하고, 배운 내용을 기록해서 같은 업무를 점점 혼자 처리할 수 있도록 만드는 거예요.' },
-      { t: 'h2', text: '신입사원 첫 출근 체크리스트' }
+      { t: 'h2', text: '신입사원 첫 출근 체크리스트' },
+      { t: 'checks', from: 0, to: 5 }
     ] },
     { id: 'p10', no: 10, blocks: [
-      { t: 'checks' },
+      { t: 'checks', from: 5, to: 10 },
       { t: 'h2', text: '마지막으로!' },
       { t: 'p', text: '처음부터 모든 걸 잘할 필요는 없어요. 너무 걱정하지 마세요.' },
       { t: 'p', text: '하나씩 배우고 기록하다 보면 어느 순간 혼자 업무를 처리하고 있는 자신을 발견하게 될 거예요.' },
@@ -307,6 +308,10 @@
   function pages() { return PAGES; }
   function navItems() { return NAV; }
   function checklist() { return CHECKLIST; }
+  function checklistSlice(from, to) {
+    var a = from == null ? 0 : from, b = to == null ? CHECKLIST.length : to;
+    return CHECKLIST.slice(a, b);
+  }
   function pageById(id) {
     var i;
     for (i = 0; i < PAGES.length; i++) if (PAGES[i].id === id) return PAGES[i];
@@ -354,6 +359,7 @@
     pages: pages,
     navItems: navItems,
     checklist: checklist,
+    checklistSlice: checklistSlice,
     pageById: pageById,
     href: href,
     pageFromRoute: pageFromRoute,

@@ -36,7 +36,17 @@
     '.og-check input{accent-color:#4CC3FF;width:18px;height:18px;margin-top:3px;flex:0 0 auto}',
     '.og-foot{text-align:center;color:var(--mute);font-size:13px;padding:8px 16px 0}',
     '@media(max-width:760px){.og-wrap{display:block;padding:14px 12px 0}.og-nav{position:static;margin-bottom:14px}.og-nav a{display:inline-block;font-size:12px;min-height:32px}.og-page{padding:18px 14px}.og-page h2{font-size:20px}.og-hero{padding:22px 14px 16px}}',
-    '@media print{.og-nav,.og-tools,.tabs,.in-side,.in-toggle,.top,.og-foot{display:none !important}.og{background:#fff;color:#111;border-radius:0}.og-wrap{display:block}.og-page{border:1px solid #ccc;box-shadow:none;break-inside:avoid;color:#111;background:#fff}.og-page h2,.og-page h3,.og-hero h1{color:#000}.og-hero{background:none;border:0}.og-tpl{background:#f4f4f4;color:#111}}'
+    '@media print{' +
+    '#hj-stamp,.og-nav,.og-tools,.tabs,.in-side,.in-dim,.in-toggle,.top,.og-foot,.toast{display:none !important}' +
+    'html,body,#shell,#view{background:#fff !important;color:#111 !important}' +
+    '.og,.og *{color:#111 !important;-webkit-print-color-adjust:exact;print-color-adjust:exact}' +
+    '.og,.og-hero,.og-page,.og-wrap,.og-check label{background:#fff !important;box-shadow:none !important}' +
+    '.og{border-radius:0}.og-wrap{display:block}.og-hero{background:none !important;border:0}' +
+    '.og-page{border:1px solid #ccc;break-inside:auto;page-break-inside:auto}' +
+    '.og-hero h1,.og-page h2,.og-page h3{color:#000 !important;break-after:avoid;page-break-after:avoid;break-inside:avoid}' +
+    '.og-tpl{background:#f4f4f4 !important;color:#111 !important;break-inside:avoid;page-break-inside:avoid}' +
+    '.og-tbl,table,.og-check{break-inside:avoid;page-break-inside:avoid}' +
+    '}'
   ].join('');
 
   function style() {
@@ -58,7 +68,7 @@
     if (root.HJOfficeGuide) return Promise.resolve(root.HJOfficeGuide);
     return new Promise(function (res, rej) {
       var s = document.createElement('script');
-      s.src = new URL('js/office-guide-core.js?v=1', document.baseURI).href;
+      s.src = new URL('js/office-guide-core.js?v=2', document.baseURI).href;
       s.onload = function () { res(root.HJOfficeGuide); };
       s.onerror = function () { rej(new Error('js/office-guide-core.js')); };
       document.body.appendChild(s);
@@ -102,11 +112,12 @@
     if (b.t === 'checks') return '';
     return '';
   }
-  function checksHtml(esc, G, st) {
-    var items = G.checklist();
+  function checksHtml(esc, G, st, b) {
+    var all = G.checklist();
+    var items = (G.checklistSlice ? G.checklistSlice(b && b.from, b && b.to) : all);
     if (!items.length) return '<p class="og-empty">' + esc(G.NODATA) + '</p>';
     var n = G.checkedCount(st);
-    var h = '<p class="og-note">이 기기에서만 기억해요. ' + n + ' / ' + items.length + '</p><ul class="og-check">';
+    var h = '<p class="og-note">이 기기에서만 기억해요. ' + n + ' / ' + all.length + '</p><ul class="og-check">';
     items.forEach(function (it) {
       h += '<li><label><input type="checkbox" data-og-check="' + esc(it.id) + '"' + (st[it.id] ? ' checked' : '') + '> ' + esc(it.text) + '</label></li>';
     });
@@ -133,7 +144,7 @@
       list.forEach(function (p) {
         h += '<section class="og-page" id="og-' + esc(p.id) + '"><div class="og-lab">PAGE ' + String(p.no).padStart(2, '0') + ' / ' + String(list.length).padStart(2, '0') + '</div>';
         (p.blocks || []).forEach(function (b) {
-          if (b.t === 'checks') h += checksHtml(esc, G, st);
+          if (b.t === 'checks') h += checksHtml(esc, G, st, b);
           else h += blockHtml(esc, b);
         });
         h += '</section>';

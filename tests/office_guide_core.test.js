@@ -63,3 +63,14 @@ test('안내문에 실제 전화 꼴·실명 호칭이 없다', () => {
   assert.equal(/[가-힣]{2,4}\s?(교수님|선생님|주무관|팀장님|과장님)/.test(blob), false);
   assert.ok(blob.indexOf('○○') >= 0);
 });
+
+test('체크리스트는 9쪽에 1–5, 10쪽에 6–10이고 id는 그대로다', () => {
+  const p9 = G.pageById('p9').blocks.filter((b) => b.t === 'checks');
+  const p10 = G.pageById('p10').blocks.filter((b) => b.t === 'checks');
+  assert.equal(p9.length, 1);
+  assert.equal(p10.length, 1);
+  assert.deepEqual(G.checklistSlice(p9[0].from, p9[0].to).map((c) => c.id), ['c1', 'c2', 'c3', 'c4', 'c5']);
+  assert.deepEqual(G.checklistSlice(p10[0].from, p10[0].to).map((c) => c.id), ['c6', 'c7', 'c8', 'c9', 'c10']);
+  assert.deepEqual(G.checklist().map((c) => c.id), ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10']);
+  assert.equal(G.checklistSlice().length, 10);
+});

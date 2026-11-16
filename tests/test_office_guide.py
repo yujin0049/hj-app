@@ -37,5 +37,18 @@ class OfficeGuide(unittest.TestCase):
         self.assertIn('./js/app.js?v=54', sw)
         self.assertIn('./js/intranet-nav.js?v=4', sw)
 
+    def test_print_ink_and_breaks(self):
+        m = read('js', 'modules', 'office-guide.js')
+        self.assertIn('#hj-stamp', m)
+        self.assertIn('.og,.og *{color:#111 !important', m)
+        self.assertIn('.og-page{border:1px solid #ccc;break-inside:auto;page-break-inside:auto}', m)
+        self.assertNotIn('.og-page{border:1px solid #ccc;box-shadow:none;break-inside:avoid', m)
+        c = read('js', 'office-guide-core.js')
+        self.assertIn("{ t: 'checks', from: 0, to: 5 }", c)
+        self.assertIn("{ t: 'checks', from: 5, to: 10 }", c)
+        self.assertIn('function checklistSlice', c)
+        self.assertIn('js/office-guide-core.js?v=2', m)
+
 if __name__ == '__main__':
+
     unittest.main()
