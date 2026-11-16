@@ -270,6 +270,11 @@
    "body": false
   },
   {
+   "id": "office-guide",
+   "title": "신입 업무 가이드",
+   "visibility": "비공개"
+  },
+  {
    "id": "check",
    "title": "확인 필요",
    "visibility": "비공개"

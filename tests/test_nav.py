@@ -20,8 +20,9 @@ class Nav(unittest.TestCase):
         m = read('js', 'modules', 'more.js')
         self.assertIn("menuBtn('charts', '그래프'", m)
         self.assertIn("menuBtn('docs', '중요문서'", m)
-        self.assertIn("id === 'charts' || id === 'docs') api.go('#/' + id)", m)
+        self.assertIn("menuBtn('office-guide', '신입 업무 가이드'", m)
+        self.assertIn("id === 'charts' || id === 'docs' || id === 'office-guide') api.go('#/' + id)", m)
 
     def test_docs_stay_network_only(self):
         self.assertIn("var NO_STORE = ['/data/docs_important.json', '/js/modules/docs.js'];", read('sw.js'))
-        self.assertIn("var CACHE = 'hj-v95';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v96';", read('sw.js'))
