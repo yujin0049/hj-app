@@ -191,15 +191,28 @@ test('정답 보기는 오답보다 짧지 않거나, 긴 문항은 오답 길�
   assert.ok(shortOk.length >= 1);
 });
 
-test('정답이 유일하게 가장 긴 문항은 전체의 36%(84문항이면 30개)를 넘지 않는다', () => {
-  let strict = 0;
+test('정답이 유일하게 가장 길거나 가장 짧은 문항은 각각 전체의 36%(84문항이면 30개)를 넘지 않고, 길이 순위 칸은 고르다', () => {
+  let strictLong = 0;
+  let strictShort = 0;
+  const buckets = [0, 0, 0, 0];
   bank.questions.forEach((q) => {
     const lens = q.choices.map((c) => [...c].length);
     const al = lens[q.answer];
-    const mxWrong = Math.max(...lens.filter((_, i) => i !== q.answer));
-    if (al > mxWrong) strict += 1;
+    const others = lens.filter((_, i) => i !== q.answer);
+    const mxWrong = Math.max(...others);
+    const mnWrong = Math.min(...others);
+    const nLonger = others.filter((n) => n > al).length;
+    if (al > mxWrong) strictLong += 1;
+    if (al < mnWrong) strictShort += 1;
+    if (nLonger <= 3) buckets[nLonger] += 1;
   });
   const n = bank.questions.length;
   const cap = n === 84 ? 30 : Math.floor(n * 0.36);
-  assert.ok(strict <= cap, 'strict-longest ' + strict + '/' + n + ' cap ' + cap);
+  assert.ok(strictLong <= cap, 'strict-longest ' + strictLong + '/' + n + ' cap ' + cap);
+  assert.ok(strictShort <= cap, 'strict-shortest ' + strictShort + '/' + n + ' cap ' + cap);
+  const lo = n === 84 ? 12 : Math.floor(n * 12 / 84);
+  const hi = n === 84 ? 32 : Math.ceil(n * 32 / 84);
+  buckets.forEach((c, r) => {
+    assert.ok(c >= lo && c <= hi, 'rank bucket ' + r + ' = ' + c + ' not in ' + lo + '–' + hi);
+  });
 });
