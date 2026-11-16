@@ -4,6 +4,17 @@
   function daysOf(api) { return api.pack().entities.study_days || []; }
   function doneMap(api) { return (api.records().study && api.records().study.done) || {}; }
 
+  function cpName(api, id) {
+    var list = (api.pack().catalogs && api.pack().catalogs.competencies) || [];
+    var i;
+    for (i = 0; i < list.length; i++) if (list[i] && list[i].id === id) return list[i].name || id;
+    return id || '';
+  }
+  function quizHash(cps) {
+    var ids = (cps || []).filter(Boolean);
+    return ids.length ? '#/skill-map/quiz/' + encodeURIComponent(ids.join(',')) : '#/skill-map/quiz';
+  }
+
   function render(el, api) {
     var parts = api.route().parts;
     if (parts[1] === 'day' && parts[2]) return dayView(el, api, Number(parts[2]));
@@ -42,7 +53,8 @@
       week.learn.forEach(function (it) { h += '<li>' + api.esc(it.id) + ' · ' + api.esc(it.name || '') + '</li>'; });
       h += '</ul>';
     }
-    h += '<button class="btn-ghost block" id="go-week" type="button">이번 주 study_days</button>' +
+    h += '<button class="btn-ghost block" id="go-week" type="button">이번 주 카드 열기</button>' +
+      '<button class="btn-ghost block" id="go-skill-map" type="button">역량맵</button>' +
       '<button class="btn-ghost block" id="go-wrong-deck" type="button">오답 복습</button>';
     var wids = Object.keys(week.allWeeks || {}).sort();
     if (wids.length > 1) {
@@ -92,6 +104,8 @@
     if (gc) gc.onclick = function () { api.go('#/study/changelog'); };
     var gw = el.querySelector('#go-week');
     if (gw) gw.onclick = function () { api.go('#/study/week'); };
+    var gsm = el.querySelector('#go-skill-map');
+    if (gsm) gsm.onclick = function () { api.go('#/skill-map'); };
     var gf = el.querySelector('#go-force');
     if (gf) gf.onclick = function () {
       var id = (week.forceTask && week.forceTask.id) || week.force || 't020';
@@ -136,9 +150,14 @@
     if (d.basis) h += '<p class="muted"><b>근거</b><br>' + api.esc(d.basis) + '</p>';
     if (d.link) h += '<p>' + api.esc(d.link) + '</p>';
     if (d.review) h += '<h2>단계 종합 확인</h2><div class="pre">' + api.esc(d.review) + '</div>';
+    if (d.competency_id) {
+      h += '<button class="btn-ghost block" id="go-skill-quiz" type="button">이 역량 퀴즈 3문제</button>';
+    }
     h += '<button class="btn block" id="did" type="button">' + (on ? '함 (다시 누르면 취소)' : '함') + '</button></section>';
     el.innerHTML = h;
     el.querySelector('#back').onclick = function () { api.go('#/study'); };
+    var gsq = el.querySelector('#go-skill-quiz');
+    if (gsq) gsq.onclick = function () { api.go(quizHash([d.competency_id])); };
     el.querySelectorAll('[data-ans]').forEach(function (b) {
       b.onclick = function () {
         var box = document.getElementById('ans-' + b.getAttribute('data-ans'));
@@ -156,18 +175,27 @@
   function weekView(el, api) {
     var week = (api.weekEngine && api.weekEngine()) || { weekId: '', label: '', days: [] };
     var done = doneMap(api);
+    var cpLine = (week.cps || []).map(function (c) { return c + ' ' + cpName(api, c); }).join(' · ');
     var h = '<button class="linkish" id="back" type="button">← 공부</button><section class="card">' +
       '<p class="kicker">주간 엔진 · 남은 주 ' + (week.N || '?') + '</p><h1>' + api.esc(week.ladderLabel || week.label || week.weekId || '이번 주') + '</h1>' +
-      '<p class="muted">강제 ' + api.esc(week.force || '없음') + ' · 주당 ' + (week.hours || 3) + 'h · CP ' + api.esc((week.cps || []).join(', ')) + '</p></section>';
+      '<p class="muted">강제 ' + api.esc(week.force || '없음') + ' · 주당 ' + (week.hours || 3) + 'h</p>' +
+      '<p class="muted">이번 철 사다리 ' + api.esc(cpLine || '데이터 없음') + '</p>' +
+      '<button class="btn block" id="go-skill-map" type="button">역량맵에서 보기</button>' +
+      '<button class="btn-ghost block" id="go-skill-quiz" type="button">이 역량 퀴즈 3문제</button></section>';
     (week.days || []).forEach(function (d) {
+      var cn = d.competency_id ? (d.competency_id + ' ' + cpName(api, d.competency_id)) : '';
       h += '<button class="day" type="button" data-day="' + d.day + '"><span class="n">' + d.day + '</span><span><b>' + api.esc(d.title) + '</b>' +
         (done[d.day] ? ' <span class="badge ok">함</span>' : '') +
-        (d.competency_id ? ' <span class="muted">' + api.esc(d.competency_id) + '</span>' : '') +
+        (cn ? ' <span class="muted">' + api.esc(cn) + '</span>' : '') +
         '</span></button>';
     });
     if (!(week.days || []).length) h += '<section class="card"><p>이번 주 카드가 없어요. competency_map_v02.json 을 확인해 주세요.</p></section>';
     el.innerHTML = h;
     el.querySelector('#back').onclick = function () { api.go('#/study'); };
+    var gsm = el.querySelector('#go-skill-map');
+    if (gsm) gsm.onclick = function () { api.go('#/skill-map'); };
+    var gsq = el.querySelector('#go-skill-quiz');
+    if (gsq) gsq.onclick = function () { api.go(quizHash(week.cps || [])); };
     el.querySelectorAll('[data-day]').forEach(function (b) {
       b.onclick = function () { api.go('#/study/day/' + b.getAttribute('data-day')); };
     });

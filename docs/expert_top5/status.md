@@ -1,12 +1,13 @@
 # 전문가검토 top5 인수인계 — status
 
 구독 종료(2026-11-16) 대비. 이 문서만 읽고 이어서 할 수 있게 적는다.
-③(역량맵)은 PR #79에서 다루며 이 브랜치에는 넣지 않았다.
+③(역량맵)은 main에 합쳐진 PR #79·#81을 이 브랜치에 `git merge origin/main`으로 들여왔다(rebase·force 없음).
 
 ## 지금
 
-- 브랜치 `feature/expert-top5-261116` (main `75a45b4`에서). draft PR https://github.com/yujin0049/hj-app/pull/80 (합치지 않음). 작업 클론 `/workspace/hjapp_top5_261116/repo`. 다른 클론·`/workspace/hj-app-inventory`는 건드리지 않음.
-- CACHE `hj-v98` (main은 hj-v96, PR #79는 hj-v97). css `?v=39`, app.js `?v=56`, registry `?v=38`, intranet-nav `?v=5`, modules `?v=51`, freshness `?v=3`.
+- 브랜치 `feature/expert-top5-261116`. draft PR https://github.com/yujin0049/hj-app/pull/80 (합치지 않음). 작업 클론 `/workspace/hjapp_top5_261116/repo`. 다른 클론·`/workspace/hj-app-inventory`는 건드리지 않음.
+- main은 `92a53a32` (PR #81, live CACHE `hj-v98`). 이 브랜치는 CACHE `hj-v99`. css `?v=39`, app.js `?v=57`, registry `?v=39`, intranet-nav `?v=5`, modules `?v=51`, freshness `?v=3`.
+- main 머지 충돌 처리: `js/app.js`·`intranet-nav.js`·`modules/more.js`·`registry.js`는 메뉴 한 곳(HJNav/MENU)을 유지하고, 역량맵을 MENU에 넣음(tabOf study, 더보기「공부·규정」, 왼쪽「그 밖」). main의 weekEngine(사다리 겹침 주 우선, `lad.cps`로 study_days 걸러 냄)은 `app.js`에 옮김. 시험·llms 훅은 새 registry 형식에 맞춤. `data/skill_map/questions.json`은 충돌 없이 main과 동일(purchase-02 보기4에서 ‘매각’ 없음). CACHE 핀은 모두 `hj-v99`.
 - 미리보기(live 아님, `dorm.json`·3d 제외. 홈·현황·할일용으로 `data/status.json`·`data/todo.json`과 `public-pack.json`만 포함): https://hj-pv-top5-261116.yujin06344.workers.dev/#/home
   - 워커 version `146310b8-22e3-4f7d-9f8d-5bd629a97839` **100%**, 재배포 시각 2026-11-16 10:46:52 (Asia/Seoul). 배포 id `01c235d7-2153-4076-92da-2926dd051f26`. (직전 `63eaba78` 10:40:43, 그 앞 `8088c44b` 10:34:20.)
 - 화면 갈무리(커밋하지 않음): `/workspace/hjapp_top5_261116/shots/` — home·status·todo·budget·more·work 각각 390·1280. 현황·할 일·예산 390은 source_at 반영 뒤 다시 찍음.
@@ -16,15 +17,15 @@
   - 할 일·예산은 생성 스크립트가 없어 `tools/built_at.py --git-source`가 내용이 바뀐 마지막 git 커밋 `%cI`를 `source_at`으로 넣음(stamp만 바꾼 커밋은 건너뜀). 할 일 `2026-11-10T15:31:53+09:00` → 「마지막 수정 11.10. 15:31 / 6일 전 자료」. 예산 `2026-10-29T20:31:51+09:00` → 「마지막 수정 10.29. 20:31 / 18일 전 자료」. 시각은 손으로 넣지 않음.
 - **④ 탭·왼쪽 메뉴·홈 바로가기 후보·더보기를 `js/registry.js`의 MENU 한 곳에서 만듦.** 이름 겹침 없음. 실무 도구(판정·문서 만들기·자료함·지출·원인행위 건현황·협조리스트·원인행위 붙임·그래프·대화방)는 실무 탭이 켜진다. 출석부는 공식 주소이고 모듈이 아니다. 3D 새/옛 전환은 `#/3d`로 옮김. `tools/make_llms.py`도 같은 MENU를 읽는다. 시험: `tests/menu_registry.test.js`, `tests/test_nav.py`, `tests/test_intranet_home.py`, `tests/test_llms.py`.
 - **⑤ 390px에서 선언 글자 크기 최소 12.8px.** `--fs-min: 12.8px`, `--fs-xs: 0.8rem`, html 16px. 브랜드 C(`#4CC3FF`)·Hahmlet 유지. IBM Carbon 간격(`--sp-*`)은 그대로. 시험: `tests/test_min_font.py`.
-- 시험: `node --test tests/freshness_core.test.js` 5/5, `python3 -m unittest tests.test_built_at tests.test_make_calendar.BuiltAt tests.test_expert_top5` OK. (기존 깨진 3개는 main과 같고 이번 범위 밖.)
-- 개인정보: 이번 후속 변경 파일(팩 제외) `pii_check --target github` rc0. `public-pack.json`은 `source_at` 한 칸만 추가했고 본문은 그대로다. 이 파일의 github 규칙 10건은 main/HEAD에도 그대로 있음(이번 추가가 아님).
-- **main 머지·live(GitHub Pages) 안 함.** PR은 draft로만 연다. 제목: 「[미리보기·합치지 말 것] 전문가검토 top5(홈·읽은시각·메뉴하나·글자)」.
+- 시험(main 머지 뒤): `node --test tests/freshness_core.test.js` 5/5, `tests/skill_map_core.test.js` 12/12, `python3 -m unittest tests.test_built_at tests.test_make_calendar.BuiltAt tests.test_expert_top5 tests.test_office_guide tests.test_skill_map tests.test_skill_map_contrast` 및 CACHE 핀 시험 OK. (기존 깨진 3개 `test_p002_schema`·`test_ot_attach_pack`·`test_worker_pii_word`는 main과 같고 이번 범위 밖.)
+- 개인정보: 이번 머지·핀 변경 파일 29개 `pii_check --target github` rc0. `public-pack.json`의 github 규칙 10건은 main에 원래 있던 것이며 이번 커밋에서 그 파일을 건드리지 않음. `data/meta.json`·`data/lastwork.json`은 커밋하지 않음.
+- **PR 합치기·live(GitHub Pages) 안 함.** PR은 draft로만 둔다. 제목: 「[미리보기·합치지 말 것] 전문가검토 top5(홈·읽은시각·메뉴하나·글자)」.
 
 ## 다음
 
-1. 검수(홈 한 장, 읽은 시각 줄, 메뉴 한 곳, 390 글자, 미리보기).
-2. squash·rebase·live 여부는 다음 판단. 지금은 올리지 않음.
-3. PR #79와 같이 합치면 충돌이 날 파일: `js/registry.js`, `js/app.js`, `js/intranet-nav.js`, `js/modules/more.js`, `sw.js`, `index.html`, CACHE를 고정한 시험, `llms.txt`·`ai/*`, `tools/make_llms.py`. 이 브랜치에 skill-map을 넣지 말 것. 나중에 합치는 쪽에서 CACHE를 한 단계 더 올리면 된다.
+1. 검수(홈 한 장, 읽은 시각 줄, 메뉴 한 곳, 390 글자, 역량맵이 메뉴에 보이는지, 미리보기).
+2. squash·rebase·live 여부는 다음 판단. 지금은 올리지 않음. rebase·force push 하지 말 것.
+3. main(`92a53a32`, PR #81)은 이미 `git merge origin/main`으로 이 브랜치에 들어왔다. 역량맵은 MENU 한 줄로 연결됨. 다음 main이 오면 같은 방식으로 merge만 하고 CACHE를 한 단계 더 올린다.
 4. 할 일·예산 JSON을 만드는 스크립트가 생기면 그 스크립트가 `source_at`을 원자료 시각으로 쓰게 한다. 지금은 `tools/built_at.py --git-source`로 마지막 내용 커밋 시각을 넣는다. 손으로 시각을 넣지 말 것. 시트 원자료(`raw_업무.json`) mtime은 2026-11-11 19:14이라 현황은 「5일 전 자료」가 맞다.
 
 ## 막힘

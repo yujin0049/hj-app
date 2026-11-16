@@ -198,13 +198,19 @@
       h += '<li class="q-card" data-jump="' + api.esc(r.field || '') + '"><span class="badge ' + cls + '">' + mark + '</span> <b>' + api.esc(r.rule) + '</b> ' + api.esc(r.label) +
         '<div>' + api.esc(r.explain) + '</div><div class="item-meta">' + api.esc(ruleText(r.rule)) + '</div></li>';
     });
-    h += '</ul><button class="btn-ghost block" id="sample" type="button">모범 답 채우기</button></section>';
+    h += '</ul><button class="btn-ghost block" id="sample" type="button">모범 답 채우기</button>';
+    if (task.competency_id) {
+      h += '<button class="btn block" id="go-skill-quiz" type="button">이 역량 퀴즈 3문제</button>';
+    }
+    h += '</section>';
     var box = el.querySelector('#result');
     box.innerHTML = h;
     box.querySelector('#sample').onclick = function () {
       api.records().drafts[task.id] = JSON.parse(JSON.stringify(task.sample || initDraft(task)));
       taskView(el, api, task.id);
     };
+    var gsq = box.querySelector('#go-skill-quiz');
+    if (gsq) gsq.onclick = function () { api.go('#/skill-map/quiz/' + encodeURIComponent(task.competency_id)); };
     box.scrollIntoView();
   }
 

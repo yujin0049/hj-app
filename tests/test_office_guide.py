@@ -32,11 +32,11 @@ class OfficeGuide(unittest.TestCase):
     def test_cache_and_script_versions(self):
         sw = read('sw.js')
         i = read('index.html')
-        self.assertIn("var CACHE = 'hj-v98';", sw)
-        self.assertIn('js/registry.js?v=38', i)
-        self.assertIn('js/app.js?v=56', i)
+        self.assertIn("var CACHE = 'hj-v99';", sw)
+        self.assertIn('js/registry.js?v=39', i)
+        self.assertIn('js/app.js?v=57', i)
         self.assertIn('js/intranet-nav.js?v=5', i)
-        self.assertIn('./js/app.js?v=56', sw)
+        self.assertIn('./js/app.js?v=57', sw)
         self.assertIn('./js/intranet-nav.js?v=5', sw)
 
     def test_print_ink_and_breaks(self):

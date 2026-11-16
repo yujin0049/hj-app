@@ -275,6 +275,11 @@
    "visibility": "비공개"
   },
   {
+   "id": "skill-map",
+   "title": "역량맵",
+   "visibility": "비공개"
+  },
+  {
    "id": "check",
    "title": "확인 필요",
    "visibility": "비공개"

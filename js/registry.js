@@ -52,6 +52,7 @@
     { id: 'docsearch', href: '#/docsearch', name: '문서대장 찾기', tabOf: 'more', sideGroup: '문서', moreGroup: '공부·규정', moreSub: '키워드 · 질문 · 부족 부서' },
     { id: 'notice', href: '#/notice', name: '남해캠 공지사항', tabOf: 'more', sideGroup: '문서', moreGroup: '일상·현장', moreSub: '최신 공지 · 검색' },
     { id: 'office-guide', href: '#/office-guide', name: '신입 업무 가이드', tabOf: 'more', sideGroup: '그 밖', moreGroup: '계획·현황', moreSub: '직급·전화·메신저·메일' },
+    { id: 'skill-map', href: '#/skill-map', name: '역량맵', tabOf: 'study', sideGroup: '그 밖', moreGroup: '공부·규정', moreSub: '일 글 붙여 찾기 · 약한 칸 · 일 끝내기 퀴즈' },
 
     { id: 'attend', href: ATTEND, name: '출석부', ext: true, sideGroup: '출석' },
 

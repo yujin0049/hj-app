@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "empty": "데이터 없음",
+  "pending": "문제 준비 중(데이터 없음)",
+  "minQuestions": 5,
+  "branches": [
+    {
+      "id": "money",
+      "name": "돈",
+      "items": [
+        "budget",
+        "cause",
+        "pay",
+        "purchase"
+      ]
+    },
+    {
+      "id": "docs",
+      "name": "문서",
+      "items": [
+        "official",
+        "regs",
+        "meeting",
+        "records"
+      ]
+    },
+    {
+      "id": "people",
+      "name": "사람",
+      "items": [
+        "haksa",
+        "dorm",
+        "civil",
+        "coop"
+      ]
+    },
+    {
+      "id": "ops",
+      "name": "운영",
+      "items": [
+        "glocal",
+        "ato",
+        "schedule",
+        "excel"
+      ]
+    }
+  ],
+  "competencies": [
+    {
+      "id": "budget",
+      "name": "예산·집행률",
+      "branch": "money",
+      "branchName": "돈"
+    },
+    {
+      "id": "cause",
+      "name": "원인행위·지출결의",
+      "branch": "money",
+      "branchName": "돈"
+    },
+    {
+      "id": "pay",
+      "name": "강사료·시수",
+      "branch": "money",
+      "branchName": "돈"
+    },
+    {
+      "id": "purchase",
+      "name": "구매·검수",
+      "branch": "money",
+      "branchName": "돈"
+    },
+    {
+      "id": "official",
+      "name": "공문·기안·결재",
+      "branch": "docs",
+      "branchName": "문서"
+    },
+    {
+      "id": "regs",
+      "name": "규정·법령",
+      "branch": "docs",
+      "branchName": "문서"
+    },
+    {
+      "id": "meeting",
+      "name": "회의자료·보고",
+      "branch": "docs",
+      "branchName": "문서"
+    },
+    {
+      "id": "records",
+      "name": "문서대장·기록",
+      "branch": "docs",
+      "branchName": "문서"
+    },
+    {
+      "id": "haksa",
+      "name": "학사·휴보강",
+      "branch": "people",
+      "branchName": "사람"
+    },
+    {
+      "id": "dorm",
+      "name": "기숙사·학생관리",
+      "branch": "people",
+      "branchName": "사람"
+    },
+    {
+      "id": "civil",
+      "name": "민원·소통",
+      "branch": "people",
+      "branchName": "사람"
+    },
+    {
+      "id": "coop",
+      "name": "협조·부서연결",
+      "branch": "people",
+      "branchName": "사람"
+    },
+    {
+      "id": "glocal",
+      "name": "글로컬사업·성과지표",
+      "branch": "ops",
+      "branchName": "운영"
+    },
+    {
+      "id": "ato",
+      "name": "항공교육 인가(ATO·국토부)",
+      "branch": "ops",
+      "branchName": "운영"
+    },
+    {
+      "id": "schedule",
+      "name": "일정·마감관리",
+      "branch": "ops",
+      "branchName": "운영"
+    },
+    {
+      "id": "excel",
+      "name": "엑셀·데이터",
+      "branch": "ops",
+      "branchName": "운영"
+    }
+  ],
+  "groupingNote": "돈은 예산·원인행위·강사료·구매처럼 돈의 흐름, 문서는 기안·규정·회의·대장, 사람은 학사·생활관·민원·협조, 운영은 사업·인가·기한·자료 관리."
+}
