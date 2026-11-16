@@ -18,7 +18,7 @@
 - **④ 탭·왼쪽 메뉴·홈 바로가기 후보·더보기를 `js/registry.js`의 MENU 한 곳에서 만듦.** 이름 겹침 없음. 실무 도구(판정·문서 만들기·자료함·지출·원인행위 건현황·협조리스트·원인행위 붙임·그래프·대화방)는 실무 탭이 켜진다. 출석부는 공식 주소이고 모듈이 아니다. 3D 새/옛 전환은 `#/3d`로 옮김. `tools/make_llms.py`도 같은 MENU를 읽는다. 시험: `tests/menu_registry.test.js`, `tests/test_nav.py`, `tests/test_intranet_home.py`, `tests/test_llms.py`.
 - **⑤ 390px에서 선언·computed 글자 크기 최소 12.8px.** `--fs-min: 12.8px`, `--fs-xs: 0.8rem`, html 16px, `small{font-size:var(--fs-min)}`. 역량맵의 `.72/.76/.78rem`과 `.sm-kicker`는 `0.8rem`으로 맞춤. 현황 `.st-steps small` 등도 12.8px(UA `smaller`가 10.67px로 줄지 않게). 390·768·1024·1280에서 현황·역량맵 가로넘침·잘림 0, computed 최솟값 12.8px. 브랜드 C(`#4CC3FF`)·Hahmlet 유지. IBM Carbon 간격(`--sp-*`)은 그대로. 시험: `tests/test_min_font.py`.
 - 시험(검수 수정 뒤 전체): `node --test tests/*.js` 122/122. python 322개 중 통과 나머지, 실패 3은 기존 main과 같은 `test_p002_schema`·`test_ot_attach_pack`·`test_worker_pii_word`. 환경 제한으로 `T화면` 5개는 headless Chrome `--dump-dom` 90초 타임아웃(이번 글자 수정과 무관, 예전에도 이 환경에서 같음). `tests/menu_registry.test.js`는 skill-map을 moduleExtra에 넣는 쪽으로 고침.
-- 개인정보: 이번 변경 파일 11개 `pii_check --target github` rc0. `tests/test_built_at.py`의 `t@example.com` 픽스처는 `git-test.invalid`로 바꿈. main과 같은 오탐 15건은 이번 파일이 아님. `data/meta.json`·`data/lastwork.json`은 커밋하지 않음.
+- 개인정보: 이번 변경 파일 11개 `pii_check --target github` rc0. `tests/test_built_at.py`의 이메일 형태 테스트 값은 `git-test.invalid`로 바꿈. main과 같은 오탐 15건은 이번 파일이 아님. `data/meta.json`·`data/lastwork.json`은 커밋하지 않음.
 - **PR 합치기·live(GitHub Pages) 안 함.** PR은 draft로만 둔다. 제목: 「[미리보기·합치지 말 것] 전문가검토 top5(홈·읽은시각·메뉴하나·글자)」.
 
 ## 다음
