@@ -6,20 +6,21 @@
     '#sm{max-width:1100px;margin:0 auto;padding:0 0 56px;box-sizing:border-box;color:#EAF6FF;font-family:Hahmlet,Pretendard,sans-serif}',
     '#sm *{box-sizing:border-box}',
     '#sm .sm-head{padding:6px 0 10px}',
-    '#sm .sm-kicker{margin:0;font-size:.72rem;letter-spacing:.14em;color:#4CC3FF;font-weight:700}',
+    '#sm .sm-kicker{margin:0;font-size:.72rem;letter-spacing:.14em;color:#0A5A7A;font-weight:700}',
     '#sm h1{margin:2px 0 6px;font-size:1.38rem;letter-spacing:-.03em;color:#05121A;font-weight:800}',
     '#sm .sm-lead{margin:0;font-size:.86rem;color:#3A4A55;line-height:1.5}',
     '#sm .sm-paste{background:#0B1C26;border:1px solid #1E3A4A;border-radius:16px;padding:12px;margin:10px 0 14px}',
     '#sm .sm-paste label{display:block;font-size:.8rem;font-weight:700;color:#4CC3FF;margin:0 0 6px}',
-    '#sm #sm-text{width:100%;min-height:110px;resize:vertical;border:1px solid #2A4A5C;border-radius:12px;background:#05121A;color:#EAF6FF;font:inherit;font-size:16px;padding:10px 12px;line-height:1.5}',
-    '#sm #sm-text::placeholder{color:#6E8796}',
+    '#sm textarea,#sm input,#sm select,#sm #sm-text{background-color:#05121A !important;color:#EAF6FF !important;-webkit-text-fill-color:#EAF6FF;caret-color:#4CC3FF;font:inherit}',
+    '#sm #sm-text{width:100%;min-height:110px;resize:vertical;border:1px solid #2A4A5C;border-radius:12px;font-size:16px;padding:10px 12px;line-height:1.5}',
+    '#sm #sm-text::placeholder{color:#A8C0CE !important;-webkit-text-fill-color:#A8C0CE;opacity:1}',
     '#sm #sm-text:focus{outline:2px solid #4CC3FF;outline-offset:1px}',
     '#sm .sm-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 0}',
     '#sm .sm-btn{min-height:44px;padding:0 14px;border-radius:12px;border:1px solid #4CC3FF;background:transparent;color:#4CC3FF;font:inherit;font-weight:700;cursor:pointer}',
     '#sm .sm-btn.pri{background:#4CC3FF;color:#05121A;border-color:#4CC3FF}',
-    '#sm .sm-btn:disabled{opacity:.45;cursor:not-allowed}',
+    '#sm .sm-btn:disabled{opacity:1;cursor:not-allowed;background:#0B1C26;color:#7EB8D0;border-color:#3A6A7C}',
     '#sm .sm-hint{margin:8px 0 0;font-size:.8rem;color:#9BB0C0;line-height:1.45}',
-    '#sm .sm-legend{display:flex;flex-wrap:wrap;gap:10px 14px;font-size:.78rem;color:#9BB0C0;margin:0 0 12px}',
+    '#sm .sm-legend{display:flex;flex-wrap:wrap;gap:10px 14px;font-size:.78rem;color:#3A4A55;margin:0 0 12px}',
     '#sm .sm-dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px;vertical-align:middle}',
     '#sm .sm-dot.on{background:#4CC3FF}',
     '#sm .sm-dot.weak{background:#E8A317}',
@@ -46,12 +47,22 @@
     '#sm .sm-choice.no{border-color:#E85D4C;background:#2A1210}',
     '#sm .sm-exp{margin:8px 0 0;font-size:.84rem;color:#C9D9E4;line-height:1.5}',
     '#sm .sm-src{margin:4px 0 0;font-size:.76rem;color:#8AA0AE}',
-    '#sm .sm-result{font-weight:800;color:#4CC3FF;margin:0 0 8px}'
+    '#sm .sm-result{font-weight:800;color:#4CC3FF;margin:0 0 8px}',
+    '#sm .sm-cp{background:#0B1C26;border:1px solid #1E3A4A;border-radius:16px;padding:12px;margin:0 0 14px}',
+    '#sm .sm-cp h2{margin:0 0 6px;font-size:.95rem;color:#4CC3FF}',
+    '#sm .sm-cp p{margin:0 0 8px;font-size:.8rem;color:#C9D9E4;line-height:1.45}',
+    '#sm .sm-cp-row{display:flex;flex-wrap:wrap;gap:8px}',
+    '#sm .sm-cp-btn{min-height:44px;padding:6px 10px;border-radius:12px;border:1px solid #2A4A5C;background:#05121A;color:#EAF6FF;font:inherit;font-size:.78rem;font-weight:700;cursor:pointer;text-align:left}',
+    '#sm .sm-cp-btn.on{border-color:#4CC3FF;box-shadow:inset 0 0 0 1px #4CC3FF}',
+    '#sm .sm-cp-btn.lad{color:#FFD789;border-color:#E8A317}',
+    '#sm .sm-cp-btn small{display:block;font-weight:600;color:#A8C0CE}',
+    '#sm .sm-weeklink{margin:10px 0 0}',
+    '#sm .sm-node .sm-cpids{display:block;font-weight:600;font-size:.72rem;color:#A8C0CE;margin-top:3px}'
   ].join('');
 
   var st = {
-    meta: null, kw: null, bank: null, text: '', hits: [],
-    scores: { scores: {} }, quiz: null, picks: [], graded: false, err: ''
+    meta: null, kw: null, bank: null, cpMap: null, text: '', hits: [],
+    scores: { scores: {} }, quiz: null, picks: [], graded: false, err: '', quizKey: ''
   };
 
   function style() {
@@ -69,7 +80,7 @@
     if (root.HJSkillMap) return Promise.resolve(root.HJSkillMap);
     return new Promise(function (res, rej) {
       var s = document.createElement('script');
-      s.src = new URL('js/skill-map-core.js?v=1', document.baseURI).href;
+      s.src = new URL('js/skill-map-core.js?v=2', document.baseURI).href;
       s.onload = function () { res(root.HJSkillMap); };
       s.onerror = function () { rej(new Error('js/skill-map-core.js')); };
       document.body.appendChild(s);
@@ -90,6 +101,52 @@
 
   function hitIds() { return st.hits.map(function (h) { return h.id; }); }
 
+  function cpsFromRoute(api) {
+    var r = (api && api.route && api.route()) || {};
+    var list = [], parts = r.parts || [];
+    if (parts[2]) String(parts[2]).split(',').forEach(function (x) { if (x) list.push(x); });
+    if (r.query) {
+      String(r.query).split('&').forEach(function (pair) {
+        var kv = pair.split('=');
+        if (kv[0] === 'cps' || kv[0] === 'cp') {
+          try {
+            decodeURIComponent(kv[1] || '').split(',').forEach(function (x) { if (x) list.push(x); });
+          } catch (e) { /* keep raw */ }
+        }
+      });
+    }
+    return list;
+  }
+  function routeKey(api) {
+    var r = (api && api.route && api.route()) || {};
+    return (r.parts || []).join('/') + '?' + (r.query || '');
+  }
+  function ladderCps(api) {
+    if (!api || !api.weekEngine) return [];
+    var w = api.weekEngine() || {};
+    return w.cps || [];
+  }
+  function setHitsFromIds(ids) {
+    st.hits = (ids || []).map(function (id) { return { id: id, terms: [] }; });
+  }
+  function maybeStartQuiz(api) {
+    var M = C();
+    var r = (api && api.route && api.route()) || {};
+    var parts = r.parts || [];
+    if (parts[1] !== 'quiz') return;
+    var key = routeKey(api);
+    if (st.quizKey === key && st.quiz) return;
+    var cps = cpsFromRoute(api);
+    var ids = M.expandToSkillIds(st.cpMap, cps);
+    if (!ids.length) ids = M.skillIdsForCps(st.cpMap, ladderCps(api));
+    if (!ids.length) ids = hitIds();
+    setHitsFromIds(ids);
+    st.quiz = M.drawQuiz(st.bank, ids, 3, Math.random, st.cpMap);
+    st.picks = st.quiz.map(function () { return null; });
+    st.graded = false;
+    st.quizKey = key;
+  }
+
   function nodeClass(id) {
     var M = C(), cls = 'sm-node';
     if (hitIds().indexOf(id) >= 0) cls += ' on';
@@ -107,6 +164,37 @@
     return (M.isWeak(st.scores.scores, id) ? '약함 · ' : '') + '최근 정답률 ' + pct + '%';
   }
 
+  function paintCp(esc, api) {
+    var M = C();
+    var rows = (st.cpMap && st.cpMap.map) || [];
+    if (!rows.length) return '';
+    var lad = ladderCps(api);
+    var onSkills = hitIds();
+    var h = '<section class="sm-cp"><h2>기존 역량 10</h2>';
+    h += '<p>주간 엔진·사다리(CP01~CP10, 목표 2027-02-28) 위에 16칸을 올렸습니다. 칸을 누르면 짝이 되는 16칸이 밝아집니다. 이번 철 사다리는 금색 테두리입니다.</p>';
+    h += '<div class="sm-cp-row">';
+    rows.forEach(function (row) {
+      var mapped = M.skillIdsForCps(st.cpMap, [row.cp]);
+      var on = mapped.some(function (id) { return onSkills.indexOf(id) >= 0; });
+      var isLad = lad.indexOf(row.cp) >= 0;
+      var cls = 'sm-cp-btn' + (on ? ' on' : '') + (isLad ? ' lad' : '');
+      h += '<button type="button" class="' + cls + '" data-cp="' + esc(row.cp) + '">' + esc(row.cp + ' ' + (row.name || ''));
+      h += '<small>' + esc((row.skillIds || []).join(' · ') + (isLad ? ' · 이번 철' : '')) + '</small></button>';
+    });
+    h += '</div>';
+    var noCp = (st.cpMap && st.cpMap.noCp) || [];
+    if (noCp.length) {
+      var names = noCp.map(function (id) {
+        var c = M.compById(st.meta, id);
+        return c ? c.name : id;
+      }).join(' · ');
+      h += '<p style="margin-top:10px">기존 10에 없는 16칸: ' + esc(names || M.EMPTY) + '</p>';
+    }
+    h += '<div class="sm-weeklink"><button type="button" class="sm-btn" id="sm-week">이번 주 카드 보기</button></div>';
+    h += '</section>';
+    return h;
+  }
+
   function paintMap(esc) {
     var M = C(), h = '', branches = (st.meta && st.meta.branches) || [];
     if (!branches.length) return '<p class="sm-empty">' + M.EMPTY + '</p>';
@@ -118,7 +206,10 @@
         var c = M.compById(st.meta, id);
         var name = c ? c.name : id;
         var note = nodeNote(id);
+        var cps = M.cpsForSkill(st.cpMap, id) || [];
+        var cpids = cps.map(function (row) { return row.cp; }).join(' · ');
         h += '<div class="' + nodeClass(id) + '" data-id="' + esc(id) + '">' + esc(name);
+        if (cpids) h += '<span class="sm-cpids">' + esc(cpids) + '</span>';
         if (note) h += '<small>' + esc(note) + '</small>';
         h += '</div>';
       });
@@ -167,13 +258,15 @@
 
   function paint(el, api) {
     var M = C(), esc = api.esc;
+    maybeStartQuiz(api);
     var canQuiz = hitIds().some(function (id) { return M.isReady(st.bank, id); });
-    var hint = '칸은 이 앱 안의 낱말 사전으로만 찾습니다. 점수는 이 기기에만 남습니다.';
+    var hint = '칸은 이 앱 안의 낱말 사전으로만 찾습니다. 점수는 이 기기에만 남습니다. 퀴즈 문항은 나중에 고치기 쉽게 칸 id로 붙어 있습니다.';
     if (st.text && !st.hits.length) hint = '맞는 칸이 없습니다. ' + M.EMPTY;
     else if (st.hits.length) hint = '찾은 칸 ' + st.hits.length + '개. 「일 끝내기」로 그 칸에서 문항 3개를 풉니다.';
     el.innerHTML = '<div id="sm">' +
       '<header class="sm-head"><p class="sm-kicker">SKILL MAP</p><h1>역량맵</h1>' +
-      '<p class="sm-lead">새 일 글을 붙여 넣으면 16개 칸 가운데 관련된 것을 밝힙니다. 갈래는 돈·문서·사람·운영입니다.</p></header>' +
+      '<p class="sm-lead">이미 있는 주간 엔진과 역량 10(CP01~CP10) 위에 16칸 맵을 올렸습니다. 새 일 글을 붙여 넣으면 관련된 칸이 밝아지고, 일을 끝내면 그 칸에서 퀴즈 3문항을 풉니다.</p></header>' +
+      paintCp(esc, api) +
       '<div class="sm-paste"><label for="sm-text">새 일 글</label>' +
       '<textarea id="sm-text" placeholder="새 일 글을 붙여 넣으세요. 보기 글은 넣지 않습니다.">' + esc(st.text) + '</textarea>' +
       '<div class="sm-actions">' +
@@ -186,14 +279,16 @@
     el.querySelector('#sm-find').onclick = function () {
       st.text = ta.value;
       runMatch();
+      st.quizKey = '';
       paint(el, api);
     };
     el.querySelector('#sm-quiz-btn').onclick = function () {
       st.text = ta.value;
       runMatch();
-      st.quiz = M.drawQuiz(st.bank, hitIds(), 3);
+      st.quiz = M.drawQuiz(st.bank, hitIds(), 3, Math.random, st.cpMap);
       st.picks = st.quiz.map(function () { return null; });
       st.graded = false;
+      st.quizKey = 'manual';
       paint(el, api);
       var box = el.querySelector('#sm-quiz');
       if (box && box.scrollIntoView) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -222,6 +317,16 @@
         if (box && box.scrollIntoView) { /* keep place: no jump */ }
       };
     });
+    el.querySelectorAll('[data-cp]').forEach(function (b) {
+      b.onclick = function () {
+        var cp = b.getAttribute('data-cp');
+        setHitsFromIds(M.skillIdsForCps(st.cpMap, [cp]));
+        st.quiz = null; st.picks = []; st.graded = false; st.quizKey = '';
+        paint(el, api);
+      };
+    });
+    var wk = el.querySelector('#sm-week');
+    if (wk) wk.onclick = function () { api.go('#/study/week'); };
   }
 
   function render(el, api) {
@@ -232,11 +337,14 @@
       return Promise.all([
         getJson('data/skill_map/competencies.json'),
         getJson('data/skill_map/keywords.json'),
-        getJson('data/skill_map/questions.json')
+        getJson('data/skill_map/questions.json'),
+        getJson('data/skill_map/cp_map.json').catch(function () { return { map: [], noCp: [] }; }),
+        getJson('data/competency_map_v02.json').catch(function () { return null; })
       ]);
     }).then(function (a) {
       if (!a[0] || !(a[0].competencies || []).length) throw new Error('empty');
-      st.meta = a[0]; st.kw = a[1]; st.bank = a[2];
+      st.meta = a[0]; st.bank = a[2]; st.cpMap = a[3] || { map: [], noCp: [] };
+      st.kw = C().mergeCpKeywords(a[1], st.cpMap);
       reloadScores();
       if (el.isConnected) paint(el, api);
     }).catch(function () {

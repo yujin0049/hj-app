@@ -106,3 +106,87 @@ test('빈 자료 안내 문구는 고정', () => {
   assert.equal(M.EMPTY, '데이터 없음');
   assert.equal(M.PENDING, '문제 준비 중(데이터 없음)');
 });
+
+const cpMap = JSON.parse(fs.readFileSync(path.join(root, 'data/skill_map/cp_map.json'), 'utf8'));
+
+test('기존 역량 10을 16칸에 모두 올리고, 없는 칸을 밝힌다', () => {
+  const cps = cpMap.map.map((r) => r.cp);
+  assert.deepEqual(cps, ['CP01', 'CP02', 'CP03', 'CP04', 'CP05', 'CP06', 'CP07', 'CP08', 'CP09', 'CP10']);
+  cpMap.map.forEach((row) => {
+    assert.ok(IDS.includes(row.primary), row.cp + ' primary ' + row.primary);
+    (row.skillIds || []).forEach((id) => assert.ok(IDS.includes(id), row.cp + ' ' + id));
+  });
+  (cpMap.noCp || []).forEach((id) => assert.ok(IDS.includes(id), id));
+  const mapped = new Set();
+  cpMap.map.forEach((row) => (row.skillIds || []).forEach((id) => mapped.add(id)));
+  const noCp = new Set(cpMap.noCp || []);
+  IDS.forEach((id) => {
+    assert.equal(mapped.has(id) || noCp.has(id), true, id);
+  });
+  const got = M.skillIdsForCps(cpMap, ['CP03', 'CP09']);
+  assert.ok(got.includes('official'), got);
+  assert.ok(got.includes('budget'), got);
+  assert.ok(got.includes('schedule'), got);
+  const quiz = M.drawQuiz(bank, ['CP03'], 3, () => 0.2, cpMap);
+  assert.equal(quiz.length, 3);
+  quiz.forEach((q) => assert.equal(q.competency, 'official'));
+  const kw2 = M.mergeCpKeywords(kw, cpMap);
+  const hit = M.highlightIds('이번 일은 지출 1사이클과 공문 꼴을 다시 본다', kw2);
+  assert.ok(hit.includes('cause'), hit);
+  assert.ok(hit.includes('official'), hit);
+});
+
+test('주간 카드는 사다리와 같은 역량만 남긴다', () => {
+  const days = [
+    { day: 1, competency_id: 'CP01' },
+    { day: 2, competency_id: 'CP02' },
+    { day: 13, competency_id: 'CP05' },
+    { day: 18, competency_id: 'CP08' }
+  ];
+  const kept = M.filterDaysByLadder(days, ['CP02', 'CP03', 'CP05']);
+  assert.deepEqual(kept.map((d) => d.day), [2, 13]);
+  const weeks = {
+    W1: { cps: ['CP01', 'CP02'] },
+    W2: { cps: ['CP02'] },
+    W3: { cps: ['CP05', 'CP04', 'CP08', 'CP09'] },
+    W4: { cps: ['CP07', 'CP04', 'CP10'] }
+  };
+  assert.equal(M.pickWeekForLadder(weeks, ['CP02', 'CP03', 'CP05'], 'W3'), 'W1');
+});
+
+test('보기 순서를 여러 번 섞으면 정답 위치가 흩어지고, 채점은 새 인덱스를 따른다', () => {
+  const q = bank.questions.find((x) => x.id === 'budget-02');
+  assert.equal(q.answer, 0);
+  const counts = [0, 0, 0, 0];
+  let i;
+  for (i = 0; i < 200; i++) {
+    const sh = M.shuffleChoices(q, Math.random);
+    assert.equal(sh.choices[sh.answer], q.choices[q.answer]);
+    assert.equal(sh.choices.length, q.choices.length);
+    assert.deepEqual(sh.choices.slice().sort(), q.choices.slice().sort());
+    counts[sh.answer] += 1;
+    const results = M.applyResults({ scores: {} }, [{ competency: sh.competency, correct: true }]);
+    assert.equal(results.scores[sh.competency].ok, 1);
+  }
+  counts.forEach((n, idx) => assert.ok(n >= 20, 'pos ' + idx + ' = ' + n));
+  const quiz = M.drawQuiz(bank, ['budget', 'cause', 'official'], 3, Math.random);
+  quiz.forEach((item) => {
+    const orig = bank.questions.find((x) => x.id === item.id);
+    assert.ok(orig);
+    assert.equal(item.choices[item.answer], orig.choices[orig.answer]);
+  });
+});
+
+test('정답 보기는 오답보다 짧지 않거나, 긴 문항은 오답 길이가 비슷하다', () => {
+  const shortOk = [];
+  const longFail = [];
+  bank.questions.forEach((q) => {
+    const al = [...q.choices[q.answer]].length;
+    const others = q.choices.map((c, i) => (i === q.answer ? null : [...c].length)).filter((n) => n != null);
+    const mn = Math.min(...others);
+    if (al >= 20 && mn / al < 0.45) longFail.push(q.id + ' ' + mn + '/' + al);
+    if (al < 20) shortOk.push(q.id);
+  });
+  assert.deepEqual(longFail, []);
+  assert.ok(shortOk.length >= 1);
+});

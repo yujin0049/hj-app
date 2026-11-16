@@ -42,5 +42,32 @@ class SkillMap(unittest.TestCase):
         self.assertIn("root.MODULE_EXTRA = [", read('js', 'registry.js'))
         self.assertRegex(read('js', 'registry.js'), r"'skill-map'\]")
 
+    def test_cp10_connected(self):
+        cmap = json.loads(read('data', 'skill_map', 'cp_map.json'))
+        self.assertEqual([r['cp'] for r in cmap['map']], ['CP%02d' % i for i in range(1, 11)])
+        self.assertTrue(os.path.exists(os.path.join(R, 'data', 'competency_map_v02.json')))
+        study = read('js', 'modules', 'study.js')
+        self.assertIn("api.go('#/skill-map')", study)
+        self.assertIn('#/skill-map/quiz/', study)
+        self.assertIn('이번 주 카드 열기', study)
+        self.assertNotIn('이번 주 study_days', study)
+        prac = read('js', 'modules', 'practice.js')
+        self.assertIn('#/skill-map/quiz/', prac)
+        app = read('js', 'app.js')
+        self.assertIn('lad.cps.indexOf(sd.competency_id)', app)
+        self.assertIn("getJson('data/competency_map_v02.json')", app)
+        ui = read('js', 'modules', 'skill-map.js')
+        self.assertIn('background-color:#05121A !important', ui)
+        self.assertIn('color:#EAF6FF !important', ui)
+        self.assertIn('기존 역량 10', ui)
+        bank = json.loads(read('data', 'skill_map', 'questions.json'))
+        by = {q['id']: q for q in bank['questions']}
+        self.assertIn('재정경제부장관', by['purchase-03']['explain'])
+        self.assertNotIn('기획재정부', by['purchase-03']['explain'])
+        self.assertIn('1-7. 계산증명', by['cause-06']['src'])
+        self.assertIn('출석한 위원과 교직원의 성명', by['meeting-01']['choices'][0])
+        self.assertIn('사업연도 보조금 예산', by['glocal-04']['choices'][0])
+        self.assertIn('4동·복지동', by['dorm-01']['explain'])
+
 if __name__ == '__main__':
     unittest.main()
