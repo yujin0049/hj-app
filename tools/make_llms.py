@@ -10,7 +10,7 @@
 
 화면 목록은 손으로 쓰지 않고 소스에서 뽑아요:
   js/registry.js (MODULE_LIST·MODULE_EXTRA) + js/modules/*.js 의 ShellModules 등록 → 화면 id 전부
-  js/intranet-nav.js MENU → 한글 제목·묶음,  js/modules/more.js menuBtn → 제목·한 줄 설명,  ShellModules tab → 마지막 제목
+  js/registry.js MENU(id·name·sideGroup·moreSub) → 한글 제목·묶음·한 줄 설명,  ShellModules tab → 마지막 제목
 공개 기준: tools/llms_policy.json. 거기 없는 화면은 자동으로 「비공개」(기본 닫힘).
 본문은 public/*.json(공개용으로 만든 자료)만 써요. data/*.json 원본은 읽지 않아요.
 위치(업무폴더·볼트 경로)·이메일·전화·이름 의심 줄은 빼요(tools/hjpii.py).
@@ -59,12 +59,26 @@ def ok(s):
 
 
 # ── 소스에서 화면 목록 뽑기 ──
+def menu_blocks(reg):
+    """js/registry.js 의 MENU 항목({ ... })을 순서대로 돌려 준다."""
+    return re.findall(r"\{[^{}]*id:\s*'[^']+'[^{}]*\}", reg)
+
+
+def module_ids(reg):
+    ids = []
+    for body in menu_blocks(reg):
+        if 'module: false' in body or 'ext: true' in body:
+            continue
+        sid = re.search(r"id:\s*'([\w-]+)'", body)
+        href = re.search(r"href:\s*'#/", body)
+        if sid and href:
+            ids.append(sid.group(1))
+    return ids
+
+
 def screens():
     reg = read('js', 'registry.js')
-    ids = []
-    for name in ('MODULE_LIST', 'MODULE_EXTRA'):
-        m = re.search(name + r"\s*=\s*\[([^\]]*)\]", reg)
-        ids += re.findall(r"'([^']+)'", m.group(1)) if m else []
+    ids = module_ids(reg)
     tabs = {}
     mdir = os.path.join(ROOT, 'js', 'modules')
     for f in sorted(os.listdir(mdir)):
@@ -73,18 +87,23 @@ def screens():
         src = read('js', 'modules', f)
         for m in re.finditer(r"ShellModules(?:\.([\w$]+)|\[['\"]([\w-]+)['\"]\])\s*=\s*\{([^}]*)\}", src):
             sid = m.group(1) or m.group(2)
-            t = re.search(r"tab:\s*'([^']*)'", m.group(3))
-            tabs[sid] = t.group(1) if t else ''
+            tb = re.search(r"tab:\s*'([^']*)'", m.group(3))
+            tabs[sid] = tb.group(1) if tb else ''
             if sid not in ids:
                 ids.append(sid)
     nav = {}
-    for g, body in re.findall(r"\{\s*group:\s*'([^']*)',\s*items:\s*\[(.*?)\]\s*\}", read('js', 'intranet-nav.js'), re.S):
-        for href, label in re.findall(r"\[\s*'(#/[^']+)',\s*'([^']+)'", body):
-            nav[href[2:]] = (label, g)
-    more = {i: (t, s) for i, t, s in re.findall(r"menuBtn\('([^']+)',\s*'([^']+)',\s*'([^']*)'\)", read('js', 'modules', 'more.js'))}
-    # 실무 탭 입구 카드(['#/judge', '판정', '한 줄 설명']) 같은 세 칸 목록도 제목·설명 소스
-    for i, t, sub in re.findall(r"\[\s*'#/([\w-]+)',\s*'([^']+)',\s*'([^']+)'\s*\]", read('js', 'modules', 'work.js')):
-        more.setdefault(i, (t, sub))
+    more = {}
+    for body in menu_blocks(reg):
+        sid = re.search(r"id:\s*'([\w-]+)'", body)
+        name = re.search(r"name:\s*'([^']+)'", body)
+        if not sid or not name:
+            continue
+        sid, title = sid.group(1), name.group(1)
+        g = re.search(r"sideGroup:\s*'([^']*)'", body)
+        nav[sid] = (title, g.group(1) if g else '')
+        sub = re.search(r"moreSub:\s*'([^']*)'", body)
+        if sub or re.search(r"moreGroup:", body):
+            more[sid] = (title, sub.group(1) if sub else '')
     pol = json.loads(read('tools', 'llms_policy.json'))
     out = []
     for sid in ids:
