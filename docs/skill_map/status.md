@@ -8,8 +8,8 @@
 - 브랜치 `feature/skill-map-261116`. PR #79 DRAFT(합치지 않음, live 안 올림). 작업 클론 `/workspace/hjapp_skillmap_261116/repo`.
 - main(`75a45b4`, PR #78)을 **rebase가 아니라 merge 커밋**으로 넣음. force push 없음.
 - 코드 head: `e5fef78d47bb0a8904e67250b68d219551a23857` (짧게 `e5fef78`; 이 status를 올린 뒤 브랜치 끝에 문서 커밋이 한 번 더 붙음). CACHE `hj-v97`(main은 아직 hj-v96, 올리지 않음).
-- 미리보기(live 아님, `dorm.json` 없음, `data/skill_map` + `data/competency_map_v02.json` 포함): https://hj-pv-skillmap-261116.yujin06344.workers.dev/#/skill-map
-  - 워커 version `eaab567e-fecd-4e08-98cb-4c1875704d26` **100%**, 배포 시각 2026-11-16 10:28:38 (Asia/Seoul)
+- 미리보기(live 아님, `dorm.json` 없음, `data/skill_map` + `data/competency_map_v02.json` + 루트 `public-pack.json` 포함): https://hj-pv-skillmap-261116.yujin06344.workers.dev/#/skill-map
+  - 워커 version `0d981fa0-faaa-4ed3-98f3-7cce9612b9ba` **100%**, 배포 시각 2026-11-16 10:31:04 (Asia/Seoul)
 - **충돌을 풀어 두 기능을 모두 유지**한 파일(앞선 merge): `js/registry.js`, `js/app.js`, `js/intranet-nav.js`, `js/modules/more.js`, `tests/test_llms.py`, `llms.txt`, `ai/index.json`. MODULE_EXTRA 끝은 `office-guide`, `skill-map`.
 - **③ 기존 역량 10 위에 연결**(전문가 검토). 전용 화면은 원래 없었고, 자료는 `data/competency_map_v02.json`, 주간 엔진은 `js/app.js` `weekEngine`/`applyCompetencyMap`, 화면은 `#/study/week`(`js/modules/study.js`). 보조: `data/t020_zero_tolerance.json`, `data/wrong_anki_seed.json`, `tests/test_p002_schema.py`. 맵·붙여넣기·퀴즈 3문항은 `#/skill-map` 한 입구. 주간 카드·연습장 채점 뒤에 퀴즈로 이어짐. 레지스트리에서 메뉴를 지우거나 파일을 `_archive`로 옮기지 않음(중복 화면이 없었음).
 - **CP01~CP10 → 16칸 짝**(`data/skill_map/cp_map.json`):
@@ -29,6 +29,7 @@
 - **대비(춘식이3 HIGH)**: 전역 `textarea{background-color:#F2F4F6 !important}`에 밀려 `#sm-text`가 `#EAF6FF` on `#F2F4F6`(1.00:1)였음. 입력 배경 `#05121A`·글자 `#EAF6FF`를 `!important`로 고정. 계산 스타일 실측 **17.26:1**. `#sm` 안 입력·글자 64개 모두 4.5:1 이상(`tests/test_skill_map_contrast.py`).
 - **길이 추측 보완**(春食이): 앞선 맞춤은 오답을 정답 길이 이하로만 늘려, 정답이 유일하게 가장 긴 문항이 67/84(동률 포함 75)였음. 정답·해설·출처는 그대로 두고(meeting-01 해설만 예외), 같은 출처 문서의 다른 조·절차명·가까운 금액·기관·기한으로 오답을 늘림. 발명한 사실을 참으로 적지 않음. **이전** 유일하게 가장 김 67 · 동률 포함 75 · 아님 9, 최단오답/정답 최소 0.29·1사분위 0.57·중앙 0.65·3사분위 0.75·최대 2.25. **이후** 유일하게 가장 김 **0/84** · 동률 포함 **0** · 아님 84, 최단오답/정답 최소 0.60·1사분위 1.12·중앙 1.32·3사분위 1.84·최대 6.00(정답 문구를 못 바꾸는 짧은 문항). 출처 용어 없이 늘릴 수 없었던 문항은 없음. 시험이 36%(84문항이면 30개) 상한을 고정.
 - **meeting-01**(문서봇, 회계법 제9조① 확인): 해설을 정확히 「제9조제1항은 회의록에 일시·안건·의사·출석한 위원과 교직원의 성명·표결수 등을 적도록 한다.」로 바꿈. 정답 끝은 「성명 및 표결수 등」(이미 있음). 보기 3의 ‘만’ 중복(「생략)만으로」)을 고침. 새 해설의 「성명·표결수」는 `pii_check --target github` NAME_LABEL에 걸리지 않음(허용 목록을 넣지 않음).
+- **미리보기 `public-pack.json` 누락**: slim 제외 규칙이 루트 공개 자료를 `data` 나머지와 같이 빼 버려, preview에서 `/public-pack.json`이 404였다(live는 200, 저장소에도 있음). 그래서 연습 제출·주간/일자 카드의 퀴즈 링크를 끝까지 따라갈 수 없었다. live에 이미 공개된 `public-pack.json`만 slim에 넣었고 `dorm.json`은 그대로 제외. 배포 뒤 브라우저 UA로 curl: `/public-pack.json` **200**(303695바이트, 저장소와 같음, study_days 24·tasks 16), `/#/skill-map`(서버는 `/`) **200**.
 - 시험: node skill_map+office_guide **18/18**(길이 상한 시험 포함), python skill_map+office_guide+nav+intranet_home+llms 및 대비 시험 OK, CACHE 고정 46 OK. pii 변경 파일 rc0.
 - 하는 일: 새 일 글을 붙여 넣으면 앱 안 낱말 사전으로 16칸 가운데 맞는 것을 밝힘. 「일 끝내기」는 밝힌 칸에서 객관식 3문항. 점수는 이 기기 localStorage에 칸 id와 득점만.
 - **네 갈래 묶음**(판단 기록):
@@ -53,7 +54,7 @@
 1. 검수(갈래 묶음, 문제 근거, 390·1280 화면, 미리보기).
 2. squash·rebase·live 여부는 다음 판단. 지금은 올리지 않음.
 3. 엑셀 공식·시트 조작처럼 규정에 없는 내용은 넣지 않음. 엑셀·데이터 칸의 5문항은 학적·출석 자료 보관과 개인정보 안전조치·파기다.
-4. 미리보기 워커는 앱 껍데기+JS/CSS/icons/public + `data/skill_map` + `data/competency_map_v02.json`. data 나머지·3d·dorm.json 제외.
+4. 미리보기 워커는 앱 껍데기+JS/CSS/icons/public + `data/skill_map` + `data/competency_map_v02.json` + 루트 `public-pack.json`. data 나머지·3d·dorm.json 제외. `public-pack.json`은 live에도 있는 공개 자료라 빼지 않는다.
 
 ## 막힘
 
