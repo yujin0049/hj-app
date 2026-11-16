@@ -216,3 +216,18 @@ test('정답이 유일하게 가장 길거나 가장 짧은 문항은 각각 전
     assert.ok(c >= lo && c <= hi, 'rank bucket ' + r + ' = ' + c + ' not in ' + lo + '–' + hi);
   });
 });
+
+test('하지 않는다·하지 않다고 끝나는 오답은 전체 오답의 25%를 넘지 않는다', () => {
+  const re = /하지 않(는다|다)$/;
+  let n = 0;
+  let total = 0;
+  bank.questions.forEach((q) => {
+    q.choices.forEach((c, i) => {
+      if (i === q.answer) return;
+      total += 1;
+      if (re.test(c)) n += 1;
+    });
+  });
+  assert.ok(total > 0);
+  assert.ok(n / total <= 0.25, 'negation-tail ' + n + '/' + total);
+});
