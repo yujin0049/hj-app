@@ -23,7 +23,7 @@
     '.nt-t{display:block;font-size:.94rem;font-weight:700;line-height:1.4;color:var(--ink);text-decoration:none;word-break:keep-all;overflow-wrap:anywhere;min-height:24px}',
     '.nt-t:hover{text-decoration:underline}',
     '.nt-s{font-size:.86rem;color:var(--ink-2);line-height:1.45;margin:4px 0 0;overflow-wrap:anywhere}',
-    '.nt-tag{display:inline-block;border-radius:6px;padding:2px 7px;font-size:.78rem;font-weight:700;background:var(--soft);color:var(--ink-2)}',
+    '.nt-tag{display:inline-block;border-radius:6px;padding:2px 7px;font-size:0.8rem;font-weight:700;background:var(--soft);color:var(--ink-2)}',
     '.nt-tag.pii{background:var(--warnbg);color:var(--warn)}',
     '.nt-f{font-size:.8rem;color:var(--muted);margin:4px 0 0;overflow-wrap:anywhere}',
     '.nt-more{width:100%;min-height:44px;margin-top:8px;border:1px solid var(--line);background:#fff;border-radius:12px;font:inherit;font-weight:700;color:var(--navy);cursor:pointer}',

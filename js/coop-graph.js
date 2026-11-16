@@ -322,8 +322,8 @@
   var CSS = [
     '.cg-wrap{margin:4px 0 8px}',
     '.cg-card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin:0 0 10px;font-size:.86rem;line-height:1.45;overflow-wrap:anywhere}',
-    '.cg-card h3{margin:0 0 8px;font-size:1rem;line-height:1.35}.cg-card h3 small{font-weight:600;color:var(--muted);font-size:.78rem}',
-    '.cg-kind{font-size:.7rem;font-weight:800;border-radius:999px;padding:1px 7px;background:#e7f6ef;color:#0d5c3d;vertical-align:2px}',
+    '.cg-card h3{margin:0 0 8px;font-size:1rem;line-height:1.35}.cg-card h3 small{font-weight:600;color:var(--muted);font-size:0.8rem}',
+    '.cg-kind{font-size:0.8rem;font-weight:800;border-radius:999px;padding:1px 7px;background:#e7f6ef;color:#0d5c3d;vertical-align:2px}',
     '[data-cg-person] .cg-kind{background:#f3e8ff;color:#5b2d8e}.cg-guide h3{color:#1a4d9e}',
     '.cg-grid{display:grid;grid-template-columns:5.2rem 1fr;gap:5px 8px}.cg-grid .k{color:var(--muted);font-weight:700;font-size:.8rem}.cg-grid .v{color:var(--ink-2);min-width:0}',
     '.cg-c{display:inline-block;margin:0 5px 4px 0;padding:2px 9px;border-radius:999px;border:1px solid var(--line);background:var(--soft);font-size:.8rem;color:var(--ink);cursor:pointer}',
@@ -331,11 +331,11 @@
     '.cg-reg,.cg-ap,.cg-doc{display:inline-block;margin:0 8px 2px 0}.cg-doc{font-weight:700}',
     '.cg-roles{margin:0;padding-left:1.05em}.cg-roles li{margin:1px 0}',
     '.cg-inf{color:var(--muted);opacity:.88}',
-    '.cg-tag{display:inline-block;font-size:.64rem;font-weight:700;border-radius:999px;padding:0 6px;margin-left:2px;background:#fff4e5;color:#7a4a00;vertical-align:1px;opacity:1}',
+    '.cg-tag{display:inline-block;font-size:0.8rem;font-weight:700;border-radius:999px;padding:0 6px;margin-left:2px;background:#fff4e5;color:#7a4a00;vertical-align:1px;opacity:1}',
     '.cg-none{color:var(--muted)}.cg-card>.cg-none{margin:0 0 6px}',
-    '.cg-miss{display:block;font-size:.76rem;color:#9a3b00;margin-top:2px}',
-    '.cg-src{font-size:.74rem;color:var(--muted);margin:8px 0 0}',
-    '.cg-chg{font-size:.78rem;color:#1a4d9e;background:#EAF1FC;border-radius:10px;padding:4px 8px;margin:0 0 8px}'
+    '.cg-miss{display:block;font-size:0.8rem;color:#9a3b00;margin-top:2px}',
+    '.cg-src{font-size:0.8rem;color:var(--muted);margin:8px 0 0}',
+    '.cg-chg{font-size:0.8rem;color:#1a4d9e;background:#EAF1FC;border-radius:10px;padding:4px 8px;margin:0 0 8px}'
   ].join('\n');
   function style() {
     if (typeof document === 'undefined' || document.getElementById('cg-style')) return;
