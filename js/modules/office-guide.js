@@ -43,7 +43,8 @@
     '.og,.og-hero,.og-page,.og-wrap,.og-check label{background:#fff !important;box-shadow:none !important}' +
     '.og{border-radius:0}.og-wrap{display:block}.og-hero{background:none !important;border:0}' +
     '.og-page{border:1px solid #ccc;break-inside:auto;page-break-inside:auto}' +
-    '.og-hero h1,.og-page h2,.og-page h3{color:#000 !important;break-after:avoid;page-break-after:avoid;break-inside:avoid}' +
+    '.og-hero h1,.og-page h2,.og-page h3,.og-lab{color:#000 !important;break-after:avoid;page-break-after:avoid;break-inside:avoid}' +
+    '.og-keep{break-inside:avoid;page-break-inside:avoid}' +
     '.og-tpl{background:#f4f4f4 !important;color:#111 !important;break-inside:avoid;page-break-inside:avoid}' +
     '.og-tbl,table,.og-check{break-inside:avoid;page-break-inside:avoid}' +
     '}'
@@ -123,6 +124,25 @@
     });
     return h + '</ul>';
   }
+  function renderBlocks(esc, G, st, blocks) {
+    var h = '', i = 0, b, n;
+    blocks = blocks || [];
+    while (i < blocks.length) {
+      b = blocks[i];
+      n = blocks[i + 1];
+      if ((b.t === 'h2' || b.t === 'h3') && n && n.t === 'checks') {
+        h += '<div class="og-keep">' + blockHtml(esc, b) + checksHtml(esc, G, st, n) + '</div>';
+        i += 2;
+      } else if (b.t === 'checks') {
+        h += checksHtml(esc, G, st, b);
+        i += 1;
+      } else {
+        h += blockHtml(esc, b);
+        i += 1;
+      }
+    }
+    return h;
+  }
   function paint(el, api, G) {
     var esc = api.esc;
     var list = G.pages();
@@ -142,11 +162,14 @@
       });
       h += '</nav><main>';
       list.forEach(function (p) {
-        h += '<section class="og-page" id="og-' + esc(p.id) + '"><div class="og-lab">PAGE ' + String(p.no).padStart(2, '0') + ' / ' + String(list.length).padStart(2, '0') + '</div>';
-        (p.blocks || []).forEach(function (b) {
-          if (b.t === 'checks') h += checksHtml(esc, G, st, b);
-          else h += blockHtml(esc, b);
-        });
+        var blocks = p.blocks || [];
+        var lab = '<div class="og-lab">PAGE ' + String(p.no).padStart(2, '0') + ' / ' + String(list.length).padStart(2, '0') + '</div>';
+        h += '<section class="og-page" id="og-' + esc(p.id) + '">';
+        if (blocks[0] && blocks[0].t === 'checks') {
+          h += '<div class="og-keep">' + lab + checksHtml(esc, G, st, blocks[0]) + '</div>' + renderBlocks(esc, G, st, blocks.slice(1));
+        } else {
+          h += lab + renderBlocks(esc, G, st, blocks);
+        }
         h += '</section>';
       });
       h += '</main></div><p class="og-foot">신입사원 필수 업무 가이드 · 회사마다 규정이 다를 수 있어요</p></div>';

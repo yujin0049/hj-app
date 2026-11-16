@@ -48,6 +48,9 @@ class OfficeGuide(unittest.TestCase):
         self.assertIn("{ t: 'checks', from: 5, to: 10 }", c)
         self.assertIn('function checklistSlice', c)
         self.assertIn('js/office-guide-core.js?v=2', m)
+        self.assertIn('.og-keep{break-inside:avoid;page-break-inside:avoid}', m)
+        self.assertIn('.og-lab{color:#000 !important;break-after:avoid', m)
+        self.assertIn('class="og-keep">\' + lab + checksHtml', m)
 
 if __name__ == '__main__':
 
