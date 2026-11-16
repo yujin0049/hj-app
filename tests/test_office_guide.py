@@ -30,7 +30,7 @@ class OfficeGuide(unittest.TestCase):
     def test_cache_and_script_versions(self):
         sw = read('sw.js')
         i = read('index.html')
-        self.assertIn("var CACHE = 'hj-v96';", sw)
+        self.assertIn("var CACHE = 'hj-v97';", sw)
         self.assertIn('js/registry.js?v=37', i)
         self.assertIn('js/app.js?v=54', i)
         self.assertIn('js/intranet-nav.js?v=4', i)

@@ -11,7 +11,7 @@
     { group: '문서', items: [['#/docs', '중요문서'], ['#/docsearch', '문서대장 찾기'], ['#/docreg', '문서등록대장 학습'], ['#/regular-docs', '정례 문서 달력'], ['#/notice', '남해캠 공지사항']] },
     { group: '일정', items: [['#/calendar', '계획 달력'], ['#/schedule', '남은 일정'], ['#/todo', '내일 할 일']] },
     { group: '봇보고/현황판', items: [['#/bots', '봇 작업 현황'], ['#/charts', '그래프'], ['#/chat', '대장↔클로드 방']] },
-    { group: '그 밖', items: [['#/students', '학생 안내'], ['#/office-guide', '신입 업무 가이드'], ['#/study', '공부'], ['#/more', '더보기']] }
+    { group: '그 밖', items: [['#/skill-map', '역량맵'], ['#/students', '학생 안내'], ['#/office-guide', '신입 업무 가이드'], ['#/study', '공부'], ['#/more', '더보기']] }
   ];
   root.HJIntranetMenu = MENU;
   var LOCKS = ['로그인', '결제', '영구삭제', '외부발송', '상신'];

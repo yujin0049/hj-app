@@ -47,7 +47,7 @@ class Generator(unittest.TestCase):
             for d in ('js', 'tools', 'public'):
                 shutil.copytree(os.path.join(ROOT, d), os.path.join(tmp, d))
             p = os.path.join(tmp, 'js', 'registry.js')
-            s = open(p, encoding='utf-8').read().replace("'office-guide']", "'office-guide', 'zzsecret']")
+            s = open(p, encoding='utf-8').read().replace("'skill-map']", "'skill-map', 'zzsecret']")
             open(p, 'w', encoding='utf-8').write(s)
             m = load(tmp)
             m.ROOT = tmp
@@ -153,7 +153,7 @@ class Html(unittest.TestCase):
         self.assertRegex(h, r'<link rel="alternate" type="text/markdown" href="llms.txt"')
         self.assertIn('href="ai/index.json"', h)
         self.assertIn('<a href="llms.txt">', h)
-        self.assertIn("var CACHE = 'hj-v96';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v97';", read('sw.js'))
         self.assertTrue(os.path.exists(os.path.join(ROOT, '.nojekyll')), '.nojekyll 유지(Jekyll 이 파일을 먹지 않게)')
 
 

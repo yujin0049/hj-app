@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "source": "data/competency_map_v02.json",
+  "deadline": "2027-02-28",
+  "note": "기존 역량 10(CP01~CP10, 주간 엔진·사다리)을 16칸 위에 올려 짝을 밝힌다. 퀴즈 문항은 16칸 id를 쓰므로, CP를 고르면 아래 skillIds로 풀어 문제를 뽑는다.",
+  "map": [
+    {
+      "cp": "CP01",
+      "name": "지출 1사이클",
+      "primary": "cause",
+      "skillIds": ["cause", "budget"],
+      "terms": ["지출 1사이클", "지출사이클"],
+      "why": "지출 한 바퀴(품의·원인행위·검수·지출결의·지급)의 본칸은 원인행위·지출결의이고, 예산 흐름과도 맞닿는다."
+    },
+    {
+      "cp": "CP02",
+      "name": "견적·원인행위",
+      "primary": "cause",
+      "skillIds": ["cause", "purchase"],
+      "terms": ["견적·원인행위", "견적4칸"],
+      "why": "원인행위가 본칸. 견적·비교견적은 구매·검수에도 해당한다."
+    },
+    {
+      "cp": "CP03",
+      "name": "공문 꼴",
+      "primary": "official",
+      "skillIds": ["official"],
+      "terms": ["공문 꼴"],
+      "why": "공문·기안·결재 칸과 같다."
+    },
+    {
+      "cp": "CP04",
+      "name": "카드·증빙",
+      "primary": "cause",
+      "skillIds": ["cause"],
+      "terms": ["카드·증빙"],
+      "why": "16칸에 카드 전용 칸이 없어, 지출 증빙으로 원인행위·지출결의에 둔다."
+    },
+    {
+      "cp": "CP05",
+      "name": "재원·과목 분리",
+      "primary": "budget",
+      "skillIds": ["budget"],
+      "terms": ["재원·과목 분리", "재원분리"],
+      "why": "예산·집행률 칸의 재원·과목 구분이다."
+    },
+    {
+      "cp": "CP06",
+      "name": "재료(글로컬)",
+      "primary": "glocal",
+      "skillIds": ["glocal", "purchase"],
+      "terms": ["재료(글로컬)"],
+      "why": "글로컬 재료비는 사업 칸이 본이고, 구매·검수도 겹친다."
+    },
+    {
+      "cp": "CP07",
+      "name": "특강",
+      "primary": "pay",
+      "skillIds": ["pay"],
+      "terms": ["특강"],
+      "why": "특강 강사료·시수가 본칸이다."
+    },
+    {
+      "cp": "CP08",
+      "name": "기자재",
+      "primary": "purchase",
+      "skillIds": ["purchase"],
+      "terms": ["기자재"],
+      "why": "기자재 구매·검수이다."
+    },
+    {
+      "cp": "CP09",
+      "name": "예산·정산·마감",
+      "primary": "budget",
+      "skillIds": ["budget", "schedule"],
+      "terms": ["예산·정산·마감"],
+      "why": "예산·정산은 예산 칸, 마감은 일정·마감관리와 겹친다."
+    },
+    {
+      "cp": "CP10",
+      "name": "일정·보고",
+      "primary": "schedule",
+      "skillIds": ["schedule", "meeting"],
+      "terms": ["일정·보고"],
+      "why": "일정·마감이 본칸. 보고는 회의자료·보고와 겹친다."
+    }
+  ],
+  "noCp": ["regs", "records", "haksa", "dorm", "civil", "coop", "ato", "excel"]
+}

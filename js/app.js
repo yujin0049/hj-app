@@ -336,7 +336,7 @@
     if (id === 'tomorrow') id = 'todo';
     if (id === 'spider') id = 'coop'; /* 261029 거미줄 화면은 협조 검색으로 합침(_archive/spider) */
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'office-guide' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs' || id === 'pubdata' || id === 'notice' || id === 'docsearch' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' ? 'study' : id)));
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'office-guide' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs' || id === 'pubdata' || id === 'notice' || id === 'docsearch' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'skill-map' ? 'study' : id)));
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
@@ -554,12 +554,34 @@
     else if (ids.length) {
       var start = new Date(now.getFullYear(), now.getMonth(), 1);
       var diff = Math.floor((now - start) / 86400000);
-      weekId = ids[Math.min(ids.length - 1, Math.floor(diff / 7))] || ids[0];
+      var cal = ids[Math.min(ids.length - 1, Math.floor(diff / 7))] || ids[0];
+      weekId = cal;
+      /* 달력 주차보다 사다리와 겹치는 주를 우선한다 */
+      if ((lad.cps || []).length) {
+        var best = cal, bestN = -1;
+        ids.forEach(function (wid) {
+          var n = 0;
+          ((weeks[wid] && weeks[wid].cps) || []).forEach(function (c) {
+            if (lad.cps.indexOf(c) >= 0) n += 1;
+          });
+          if (n > bestN) { bestN = n; best = wid; }
+        });
+        if (bestN > 0) weekId = best;
+      }
     }
     var meta = weeks[weekId] || {};
     var want = {};
     (meta.study_days || []).forEach(function (x) { want[x] = 1; });
     var days = (pack.entities.study_days || []).filter(function (sd) { return want[sd.day]; });
+    /* 주간 카드는 사다리와 같은 역량만 보여 준다 */
+    if ((lad.cps || []).length) {
+      days = days.filter(function (sd) { return sd && lad.cps.indexOf(sd.competency_id) >= 0; });
+      if (!days.length) {
+        days = (pack.entities.study_days || []).filter(function (sd) {
+          return sd && lad.cps.indexOf(sd.competency_id) >= 0;
+        });
+      }
+    }
     var learn = (pack.entities.learning_items || []).filter(function (it) {
       return it && lad.cps && lad.cps.indexOf(it.competency_id) >= 0;
     }).slice(0, hours < 3 ? 1 : 2);
