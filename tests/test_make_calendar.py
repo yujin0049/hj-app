@@ -370,9 +370,14 @@ class DoneHide(unittest.TestCase):
 
 
 class BuiltAt(Base):
-    def test_built_at_iso_kst(self):
+    def test_built_at_and_source_at(self):
         rc, msg, cal, st = self.make()
         self.assertEqual(rc, 0, msg)
         pat = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$'
         self.assertRegex(st['built_at'], pat)
         self.assertEqual(cal['built_at'], st['built_at'])
+        self.assertRegex(st['source_at'], pat)
+        self.assertEqual(cal['source_at'], st['source_at'])
+        import built_at
+        raw = os.path.join(FX, 'raw_업무.json')
+        self.assertEqual(st['source_at'], built_at.from_raw(raw))
