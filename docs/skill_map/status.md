@@ -6,9 +6,12 @@
 
 - 화면: `#/skill-map` (역량맵). 브랜드 C(`#4CC3FF`, Hahmlet).
 - 브랜치 `feature/skill-map-261116`. PR #79 DRAFT(합치지 않음, live 안 올림). 작업 클론 `/workspace/hjapp_skillmap_261116/repo`.
-- head: `3f65f70` (아래 「근거」의 전체 sha는 이 status를 올린 뒤 브랜치 끝에 한 번 더 붙음). CACHE `hj-v96`.
+- main(`75a45b4`, PR #78)을 **rebase가 아니라 merge 커밋**으로 넣음. force push 없음.
+- 코드 head: `4913d6bc0048c75eee3ec1620b581691111e4f38` (짧게 `4913d6b`). CACHE `hj-v97`.
 - 미리보기(live 아님, `dorm.json` 없음, `data/skill_map`만 포함): https://hj-pv-skillmap-261116.yujin06344.workers.dev/#/skill-map
-  - 워커 version `3dd801fd-7ca7-4c84-a3b4-7c2bcf12cbba` **100%**, 배포 시각 2026-11-16 10:02:18 (Asia/Seoul)
+  - 워커 version `737b594a-ac00-46de-9f14-f519979fc873` **100%**, 배포 시각 2026-11-16 10:05:23 (Asia/Seoul)
+- **충돌을 풀어 두 기능을 모두 유지**한 파일: `js/registry.js`, `js/app.js`, `js/intranet-nav.js`, `js/modules/more.js`, `tests/test_llms.py`, `llms.txt`, `ai/index.json`. MODULE_EXTRA 끝은 `office-guide`, `skill-map`.
+- 시험(합친 뒤): `node --test tests/skill_map_core.test.js tests/office_guide_core.test.js` 13/13, `python3 -m unittest tests.test_skill_map tests.test_office_guide tests.test_nav tests.test_intranet_home tests.test_llms` 28 OK, CACHE 고정(chat·docreg_cal·collab_board) 46 OK. 개인정보 변경 파일 rc0.
 - 하는 일: 새 일 글을 붙여 넣으면 앱 안 낱말 사전으로 16칸 가운데 맞는 것을 밝힘. 「일 끝내기」는 밝힌 칸에서 객관식 3문항. 점수는 이 기기 localStorage에 칸 id와 득점만.
 - **네 갈래 묶음**(판단 기록):
   - **돈**: 예산·집행률, 원인행위·지출결의, 강사료·시수, 구매·검수 — 예산이 나가 정산되기까지의 돈의 흐름.
