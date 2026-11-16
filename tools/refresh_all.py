@@ -111,6 +111,12 @@ def main(argv=None):
         finish(meta_p, old, now, steps, False, 1)
         return 1
     steps['볼트 경로 검사'] = {'ok': True}
+    # 공개 팩 일정 owner 가 시트에서 다시 들어오면 역할명만 남긴다(tools/mask_pack.py).
+    import mask_pack
+    pack = os.path.join(ROOT, 'public-pack.json')
+    if os.path.isfile(pack):
+        mask_pack.apply_file(pack)
+    steps['공개 팩 담당 가림'] = {'ok': True}
     finish(meta_p, old, now, steps, ok, 0)
     if a.no_worker:
         return 0 if ok else 1

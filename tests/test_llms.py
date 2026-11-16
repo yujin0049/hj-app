@@ -156,7 +156,7 @@ class Html(unittest.TestCase):
         self.assertRegex(h, r'<link rel="alternate" type="text/markdown" href="llms.txt"')
         self.assertIn('href="ai/index.json"', h)
         self.assertIn('<a href="llms.txt">', h)
-        self.assertIn("var CACHE = 'hj-v99';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v100';", read('sw.js'))
         self.assertTrue(os.path.exists(os.path.join(ROOT, '.nojekyll')), '.nojekyll 유지(Jekyll 이 파일을 먹지 않게)')
 
 
