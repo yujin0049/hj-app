@@ -1079,6 +1079,9 @@ html.v3d-on .tabs, html.v3d-on .top { visibility: hidden; }
   --radius: var(--r-lg); --shadow: var(--shadow-card);
 }
 
+/* UA small(smaller)이 12.8px 부모에서 10.67px로 줄지 않게 */
+small { font-size: var(--fs-min, 12.8px); }
+
 /* 카드 한 모양: 흰 바탕 · 20px 모서리 · 아주 옅은 그림자 */
 .card, .bs-entry, .tile, .stu-tile { border-radius: var(--r-lg); box-shadow: var(--shadow-card); }
 .card { padding: var(--sp-5) var(--sp-5); margin: var(--sp-3) 0; }

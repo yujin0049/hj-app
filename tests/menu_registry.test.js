@@ -7,7 +7,7 @@ test('탭·모듈 목록이 레지스트리에서 나온다', () => {
   assert.deepEqual(N.moduleList(), ['home', 'students', 'work', 'board', 'study', 'more']);
   assert.ok(N.moduleExtra().includes('office-guide'));
   assert.ok(N.moduleExtra().includes('status'));
-  assert.ok(!N.moduleExtra().includes('skill-map'));
+  assert.ok(N.moduleExtra().includes('skill-map'));
 });
 
 test('이름이 겹치지 않는다', () => {
@@ -25,6 +25,7 @@ test('실무 도구는 실무 탭이 켜지고, 예전처럼 홈 탭이 켜지�
   });
   assert.equal(N.tabOf('todo'), 'more');
   assert.equal(N.tabOf('docreg'), 'study');
+  assert.equal(N.tabOf('skill-map'), 'study');
   assert.equal(N.tabOf('home'), 'home');
 });
 
@@ -37,6 +38,11 @@ test('탭·왼쪽 메뉴·홈 바로가기·더보기가 같은 MENU 에서 나�
   assert.ok(N.sideGroups().some((g) => g.group === '업무'));
   assert.ok(N.moreGroups().some((g) => g.group === '일상·현장' && g.items.length));
   assert.ok(N.homeShortcuts().length >= 1);
+  const sm = N.byId('skill-map');
+  assert.equal(sm.name, '역량맵');
+  assert.equal(sm.href, '#/skill-map');
+  assert.ok(N.sideGroups().some((g) => g.group === '그 밖' && g.items.some((m) => m.id === 'skill-map')));
+  assert.ok(N.moreGroups().some((g) => g.group === '공부·규정' && g.items.some((m) => m.id === 'skill-map')));
 });
 
 test('출석부는 공식 주소이고 모듈이 아니다', () => {

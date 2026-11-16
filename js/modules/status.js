@@ -19,6 +19,7 @@
     '.b-확인필요{background:#F3EEFF;color:#6D28D9}.b-보류,.b-대기{background:var(--warnbg);color:var(--warn)}',
     '.st-steps{font-size:12.8px;color:var(--ink-2);margin-top:6px}.st-steps summary{cursor:pointer;color:var(--navy);font-weight:600}',
     '.st-steps li{margin:3px 0}.st-steps .l-prof{color:#6D28D9}.st-steps .l-ref{color:var(--muted)}',
+    '.st-steps small,.st-tbl small,.oj-row small,small.muted{font-size:12.8px}',
     '.oj-row{margin:10px 0}.oj-row .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}',
     '.oj-bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}.oj-bar i{display:block;height:100%;background:var(--navy);border-radius:5px}',
     '@media (max-width:640px){.st-tbl thead{display:none}.st-tbl tr{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;padding:10px 0;border-bottom:1px solid var(--line)}',

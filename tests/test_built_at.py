@@ -38,7 +38,7 @@ class FromGit(unittest.TestCase):
         with tempfile.TemporaryDirectory() as td:
             subprocess.check_call(['git', 'init', '-q'], cwd=td)
             subprocess.check_call(['git', 'config', 'user.name', 'test'], cwd=td)
-            subprocess.check_call(['git', 'config', 'user.email', 't@example.com'], cwd=td)
+            subprocess.check_call(['git', 'config', 'user.email', 'git-test.invalid'], cwd=td)
             p = os.path.join(td, 'todo.json')
             with open(p, 'w', encoding='utf-8') as f:
                 json.dump({'version': 'v01', 'items': [1]}, f)

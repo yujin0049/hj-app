@@ -34,8 +34,8 @@ class IntranetHome(unittest.TestCase):
         self.assertIn('js/intranet-nav.js', i)
         sw = read('sw.js')
         self.assertIn("var CACHE = 'hj-v99';", sw)
-        self.assertIn('./css/app.css?v=39', sw)
-        self.assertIn('css/app.css?v=39', i)
+        self.assertIn('./css/app.css?v=40', sw)
+        self.assertIn('css/app.css?v=40', i)
         # 새 모듈도 미리받기 목록에(오프라인에서 메뉴·현황판 유지), index 와 같은 버전
         for m in re.findall(r'src="(js/(?:homeboard-core|aiflow-core|intranet-nav)\.js\?v=\d+)"', i):
             self.assertIn("'./" + m + "'", sw)

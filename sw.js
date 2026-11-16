@@ -5,7 +5,7 @@ var NO_STORE = ['/data/docs_important.json', '/js/modules/docs.js'];
 self.addEventListener('install', function (e) {
   self.skipWaiting();
   e.waitUntil(caches.open(CACHE).then(function (c) {
-    return c.addAll(['./', './index.html', './css/app.css?v=39', './js/app.js?v=57', './js/homeboard-core.js?v=3', './js/aiflow-core.js?v=2', './js/intranet-nav.js?v=5', './js/freshness.js?v=3', './js/home-core.js?v=1', './js/registry.js?v=39']).catch(function () {});
+    return c.addAll(['./', './index.html', './css/app.css?v=40', './js/app.js?v=58', './js/homeboard-core.js?v=3', './js/aiflow-core.js?v=2', './js/intranet-nav.js?v=5', './js/freshness.js?v=3', './js/home-core.js?v=1', './js/registry.js?v=39']).catch(function () {});
   }));
 });
 self.addEventListener('activate', function (e) {

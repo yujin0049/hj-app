@@ -72,8 +72,8 @@ class OneMenu(unittest.TestCase):
         sw = read('sw.js')
         i = read('index.html')
         self.assertIn("var CACHE = 'hj-v99';", sw)
-        self.assertIn('css/app.css?v=39', i)
-        self.assertIn('./css/app.css?v=39', sw)
+        self.assertIn('css/app.css?v=40', i)
+        self.assertIn('./css/app.css?v=40', sw)
         self.assertIn("var CACHE = 'hj-v99';", sw)
 
 

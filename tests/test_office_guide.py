@@ -34,9 +34,9 @@ class OfficeGuide(unittest.TestCase):
         i = read('index.html')
         self.assertIn("var CACHE = 'hj-v99';", sw)
         self.assertIn('js/registry.js?v=39', i)
-        self.assertIn('js/app.js?v=57', i)
+        self.assertIn('js/app.js?v=58', i)
         self.assertIn('js/intranet-nav.js?v=5', i)
-        self.assertIn('./js/app.js?v=57', sw)
+        self.assertIn('./js/app.js?v=58', sw)
         self.assertIn('./js/intranet-nav.js?v=5', sw)
 
     def test_print_ink_and_breaks(self):
