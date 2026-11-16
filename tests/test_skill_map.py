@@ -23,7 +23,7 @@ class SkillMap(unittest.TestCase):
         self.assertNotIn("menuBtn('skill-map', '역량맵'", more)
         app = read('js', 'app.js')
         self.assertIn('HJNav.tabOf', app)
-        self.assertIn("var CACHE = 'hj-v99';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v100';", read('sw.js'))
         self.assertTrue(os.path.exists(os.path.join(R, 'js', 'modules', 'skill-map.js')))
         self.assertTrue(os.path.exists(os.path.join(R, 'js', 'skill-map-core.js')))
 

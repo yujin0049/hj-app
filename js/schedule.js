@@ -13,6 +13,20 @@
   ];
 
   function norm(s) { return String(s == null ? '' : s).replace(/\s+/g, ' ').trim(); }
+  /* 시트·팩에서 온 담당 칸: 직함이 있으면 직함만, 없으면 담당자. 본인·빈 칸은 그대로. */
+  var OWNER_TITLES = ['교수님', '팀장', '주무관', '강사', '학생', '담당자', '교수'];
+  var OWNER_KEEP = { '': 1, '본인': 1, '담당자': 1, '교수님': 1, '팀장': 1, '주무관': 1, '강사': 1, '학생': 1 };
+  function maskOwner(raw) {
+    var s = norm(raw);
+    if (OWNER_KEEP[s]) return s;
+    var found = [];
+    OWNER_TITLES.forEach(function (t) {
+      if (s.indexOf(t) < 0) return;
+      var role = t === '교수' ? '교수님' : t;
+      if (found.indexOf(role) < 0) found.push(role);
+    });
+    return found.length ? found.join('·') : '담당자';
+  }
   function ymd(d) {
     var z = function (n) { return (n < 10 ? '0' : '') + n; };
     return d.getFullYear() + '-' + z(d.getMonth() + 1) + '-' + z(d.getDate());
@@ -38,7 +52,7 @@
       date: date,
       end: end,
       title: norm(raw.title),
-      owner: norm(raw.owner),
+      owner: maskOwner(raw.owner),
       memo: norm(raw.memo),
       done: raw.done === true || raw.done === 'Y' || raw.done === '완료',
       needsConfirm: raw.needsConfirm === true || raw.needsConfirm === 'Y',
@@ -255,6 +269,7 @@
   }
 
   root.APSchedule = {
+    maskOwner: maskOwner,
     cleanItem: cleanItem,
     createState: createState,
     hydrate: hydrate,
@@ -278,4 +293,5 @@
     writeBox: writeBox,
     boxKey: BOX
   };
+  if (typeof module === 'object' && module.exports) module.exports = root.APSchedule;
 })(typeof globalThis !== 'undefined' ? globalThis : this);
