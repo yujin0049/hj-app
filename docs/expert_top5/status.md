@@ -5,7 +5,7 @@
 
 ## 지금
 
-- 브랜치 `feature/expert-top5-261116` (main `75a45b4`에서). 작업 클론 `/workspace/hjapp_top5_261116/repo`. 다른 클론·`/workspace/hj-app-inventory`는 건드리지 않음.
+- 브랜치 `feature/expert-top5-261116` (main `75a45b4`에서). draft PR https://github.com/yujin0049/hj-app/pull/80 (합치지 않음). 작업 클론 `/workspace/hjapp_top5_261116/repo`. 다른 클론·`/workspace/hj-app-inventory`는 건드리지 않음.
 - CACHE `hj-v98` (main은 hj-v96, PR #79는 hj-v97). css `?v=39`, app.js `?v=55`, registry `?v=38`, intranet-nav `?v=5`, modules `?v=51`.
 - 미리보기(live 아님, `dorm.json`·3d 제외. 홈·현황·할일용으로 `data/status.json`·`data/todo.json`과 `public-pack.json`만 포함): https://hj-pv-top5-261116.yujin06344.workers.dev/#/home
   - 워커 version `8088c44b-0ae6-4831-a5b0-c487fb4aeb30` **100%**, 배포 시각 2026-11-16 10:34:20 (Asia/Seoul). 배포 id `c064ea30-593e-41d3-b617-828bcd6a3ce9`.
