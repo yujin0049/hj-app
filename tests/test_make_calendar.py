@@ -367,3 +367,12 @@ class DoneHide(unittest.TestCase):
         sur = '황'  # 성 한 글자+호칭 → 호칭만
         self.assertEqual(hjpii.scrub('참석 원장님·' + sur + '교수님', set())[0], '참석 원장님·교수님')
         self.assertEqual(hjpii.scrub('학과장교수님', set())[0], '학과장교수님')
+
+
+class BuiltAt(Base):
+    def test_built_at_iso_kst(self):
+        rc, msg, cal, st = self.make()
+        self.assertEqual(rc, 0, msg)
+        pat = r'^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+09:00$'
+        self.assertRegex(st['built_at'], pat)
+        self.assertEqual(cal['built_at'], st['built_at'])

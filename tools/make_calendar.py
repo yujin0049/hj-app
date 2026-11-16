@@ -3,12 +3,14 @@
 사용: make_calendar.py [--raw 덤프경로] [--extra data/calendar_extra.json] [--out data] [--today YYYY-MM-DD] [--log 지운낱말경로]
 - 덤프: 커넥터 read_range 결과(JSON, 앞뒤 글자 있어도 됨) 또는 CSV. 원자료는 저장소 밖(/workspace/hj_audit/calendar/)에 둔다.
 - 남기는 것: T번호·업무 이름(사람 이름 지움)·분야·상태·마감일·담당 1봇·유진님 할 일 표시. 담당·상대·근거·다음 행동 글은 버림.
+- 최상위 built_at 은 이 스크립트가 끝난 시각(ISO, +09:00). 손으로 넣지 않음.
 - 출력에 전화·주민번호·계좌·이메일·사람 이름 모양이 보이면 파일을 쓰지 않고 종료 코드 2.
 다시 돌리면 = 갱신."""
 import argparse, csv, io, json, os, re, sys, datetime as dt
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import hjpii
 import vaultpath  # 공개 JSON 에 볼트·PC 경로 안 씀(261029)
+import built_at
 
 def safe_bot(bot, hjpii_mod=None):
     """담당 1봇: 역할어만. 이름 의심(사람)이면 빈칸. ALLOW의 문서봇 등은 유지."""
@@ -633,6 +635,9 @@ def main(argv=None):
     cal, st, removed, names = build(raw, extra, a.today, year, master, iev, itd, mnotes, mwho, decisions)
     cal['master_read'] = master is not None
     cal['ingest_read'] = {'통합일정': iev is not None, '통합할일': itd is not None}
+    ts = built_at.now()
+    cal['built_at'] = ts
+    st['built_at'] = ts
     bad = check_outputs({'calendar.json': cal, 'status.json': st}, names)
     if bad:
         print('개인정보 모양이 보여 멈춤(파일 안 씀):', file=sys.stderr)
