@@ -1,5 +1,5 @@
 /* 숫자 신선도: built_at 기준 「읽은 시각 / 오늘 사용 가능」. 없으면 「데이터 없음」.
-   브라우저·node 같이 씀. 하루(한국 날짜)가 지나면 오늘 사용 불가. */
+   브라우저·node 같이 씀. built_at의 한국 날짜가 오늘이면 오늘 사용 가능, 아니면 N일 전 자료. */
 (function (root, factory) {
   var api = factory();
   if (typeof module === 'object' && module.exports) module.exports = api;
@@ -42,6 +42,13 @@
     if (m[4] != null) t += ' ' + m[4] + ':' + m[5];
     return t + ' (KST)';
   }
+  function daysBetween(from, to) {
+    var a = String(from || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    var b = String(to || '').match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (!a || !b) return 0;
+    var ms = Date.UTC(+b[1], +b[2] - 1, +b[3]) - Date.UTC(+a[1], +a[2] - 1, +a[3]);
+    return Math.round(ms / 86400000);
+  }
   function freshness(obj, nowMs) {
     var raw = builtAtOf(obj);
     if (!raw) {
@@ -51,14 +58,18 @@
     if (!d) {
       return { missing: true, usableToday: false, readAt: '', date: '', text: NODATA };
     }
-    var usable = d === todayKST(nowMs);
+    var today = todayKST(nowMs);
+    var usable = d === today;
+    var days = daysBetween(d, today);
     var read = formatRead(raw);
+    var tag = usable ? '오늘 사용 가능' : (days + '일 전 자료');
     return {
       missing: false,
       usableToday: usable,
+      daysAgo: days,
       readAt: read,
       date: d,
-      text: '읽은 시각 ' + read + ' / ' + (usable ? '오늘 사용 가능' : '오늘 사용 불가')
+      text: '읽은 시각 ' + read + ' / ' + tag
     };
   }
   function esc(s) {

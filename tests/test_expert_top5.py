@@ -29,7 +29,7 @@ class HomeToday(unittest.TestCase):
         self.assertIn('HJFresh', read('js', 'modules', 'home.js'))
         i = read('index.html')
         self.assertIn('js/home-core.js?v=1', i)
-        self.assertIn('js/freshness.js?v=1', i)
+        self.assertIn('js/freshness.js?v=2', i)
         self.assertIn('js/calendar-core.js?v=1', i)
 
 
@@ -45,7 +45,7 @@ class FreshLine(unittest.TestCase):
         self.assertIn("var NODATA = '데이터 없음';", f)
         self.assertIn('built_at', f)
         self.assertIn('오늘 사용 가능', f)
-        self.assertIn('오늘 사용 불가', f)
+        self.assertIn('일 전 자료', f)
 
 
 class OneMenu(unittest.TestCase):
