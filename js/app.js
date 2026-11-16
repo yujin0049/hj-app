@@ -101,6 +101,8 @@
     return {
       appTitle: p.appTitle || '행정 연습장',
       packVersion: p.packVersion || '',
+      built_at: p.built_at || '',
+      source_at: p.source_at || '',
       corrections: p.corrections || [],
       catalogs: p.catalogs || {},
       conflicts: (ed.conflicts || []).slice(),
