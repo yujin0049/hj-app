@@ -7,9 +7,9 @@
 - 화면: `#/skill-map` (역량맵). 브랜드 C(`#4CC3FF`, Hahmlet).
 - 브랜치 `feature/skill-map-261116`. PR #79 DRAFT(합치지 않음, live 안 올림). 작업 클론 `/workspace/hjapp_skillmap_261116/repo`.
 - main(`75a45b4`, PR #78)을 **rebase가 아니라 merge 커밋**으로 넣음. force push 없음.
-- 코드 head: `72f254cdd21e6522fdd7e14821c2663d3ad84a70` (짧게 `72f254c`; 이 status를 올린 뒤 브랜치 끝에 문서 커밋이 한 번 더 붙음). CACHE `hj-v97`(main은 아직 hj-v96, 올리지 않음).
+- 코드 head: `e5fef78d47bb0a8904e67250b68d219551a23857` (짧게 `e5fef78`; 이 status를 올린 뒤 브랜치 끝에 문서 커밋이 한 번 더 붙음). CACHE `hj-v97`(main은 아직 hj-v96, 올리지 않음).
 - 미리보기(live 아님, `dorm.json` 없음, `data/skill_map` + `data/competency_map_v02.json` 포함): https://hj-pv-skillmap-261116.yujin06344.workers.dev/#/skill-map
-  - 워커 version `7f46fc2b-1303-44d3-84d2-eff30e6a226d` **100%**, 배포 시각 2026-11-16 10:20:03 (Asia/Seoul)
+  - 워커 version `eaab567e-fecd-4e08-98cb-4c1875704d26` **100%**, 배포 시각 2026-11-16 10:28:38 (Asia/Seoul)
 - **충돌을 풀어 두 기능을 모두 유지**한 파일(앞선 merge): `js/registry.js`, `js/app.js`, `js/intranet-nav.js`, `js/modules/more.js`, `tests/test_llms.py`, `llms.txt`, `ai/index.json`. MODULE_EXTRA 끝은 `office-guide`, `skill-map`.
 - **③ 기존 역량 10 위에 연결**(전문가 검토). 전용 화면은 원래 없었고, 자료는 `data/competency_map_v02.json`, 주간 엔진은 `js/app.js` `weekEngine`/`applyCompetencyMap`, 화면은 `#/study/week`(`js/modules/study.js`). 보조: `data/t020_zero_tolerance.json`, `data/wrong_anki_seed.json`, `tests/test_p002_schema.py`. 맵·붙여넣기·퀴즈 3문항은 `#/skill-map` 한 입구. 주간 카드·연습장 채점 뒤에 퀴즈로 이어짐. 레지스트리에서 메뉴를 지우거나 파일을 `_archive`로 옮기지 않음(중복 화면이 없었음).
 - **CP01~CP10 → 16칸 짝**(`data/skill_map/cp_map.json`):
@@ -25,9 +25,11 @@
   - CP10 일정·보고 → schedule, meeting
   - 기존 10에 없는 16칸: regs, records, haksa, dorm, civil, coop, ato, excel
 - 주간 카드는 사다리와 같은 CP만 보여 줌. 퀴즈 문항은 16칸 id라 나중에 고치기 쉽다.
-- **문서봇 내용검수**(79 pass · 5 fix · 0 drop): purchase-03 해설 재정경제부장관, cause-06 src 1-7 계산증명(`src_private.md` 같은 줄), meeting-01 정답에 법률 문구「출석한 위원과 교직원의 성명」(pii 패턴을 피하려고 「성명 및 표결수」), glocal-04·dorm-01 해설(및 glocal-04 정답)을 원문 요지에 맞춤. 겹침 4쌍은 한쪽만 다시 씀(regs-03, records-02, records-04, records-05). 보기 순서는 `shuffleChoices`로 렌더 때 섞음. 오답 길이를 정답의 45% 이상(정답 20자 이상)으로 맞춤.
+- **문서봇 내용검수**(79 pass · 5 fix · 0 drop): purchase-03 해설 재정경제부장관, cause-06 src 1-7 계산증명(`src_private.md` 같은 줄), meeting-01 정답에 법률 문구「출석한 위원과 교직원의 성명 및 표결수 등」, 해설은 제9조제1항 확정문, glocal-04·dorm-01 해설(및 glocal-04 정답)을 원문 요지에 맞춤. 겹침 4쌍은 한쪽만 다시 씀(regs-03, records-02, records-04, records-05). 보기 순서는 `shuffleChoices`로 렌더 때 섞음. 오답 길이를 정답의 45% 이상(정답 20자 이상)으로 맞춤.
 - **대비(춘식이3 HIGH)**: 전역 `textarea{background-color:#F2F4F6 !important}`에 밀려 `#sm-text`가 `#EAF6FF` on `#F2F4F6`(1.00:1)였음. 입력 배경 `#05121A`·글자 `#EAF6FF`를 `!important`로 고정. 계산 스타일 실측 **17.26:1**. `#sm` 안 입력·글자 64개 모두 4.5:1 이상(`tests/test_skill_map_contrast.py`).
-- 시험: node skill_map+office_guide **17/17**, python skill_map+office_guide+nav+intranet_home+llms 및 대비 시험 OK, CACHE 고정 46 OK. pii 변경 파일 rc0.
+- **길이 추측 보완**(春食이): 앞선 맞춤은 오답을 정답 길이 이하로만 늘려, 정답이 유일하게 가장 긴 문항이 67/84(동률 포함 75)였음. 정답·해설·출처는 그대로 두고(meeting-01 해설만 예외), 같은 출처 문서의 다른 조·절차명·가까운 금액·기관·기한으로 오답을 늘림. 발명한 사실을 참으로 적지 않음. **이전** 유일하게 가장 김 67 · 동률 포함 75 · 아님 9, 최단오답/정답 최소 0.29·1사분위 0.57·중앙 0.65·3사분위 0.75·최대 2.25. **이후** 유일하게 가장 김 **0/84** · 동률 포함 **0** · 아님 84, 최단오답/정답 최소 0.60·1사분위 1.12·중앙 1.32·3사분위 1.84·최대 6.00(정답 문구를 못 바꾸는 짧은 문항). 출처 용어 없이 늘릴 수 없었던 문항은 없음. 시험이 36%(84문항이면 30개) 상한을 고정.
+- **meeting-01**(문서봇, 회계법 제9조① 확인): 해설을 정확히 「제9조제1항은 회의록에 일시·안건·의사·출석한 위원과 교직원의 성명·표결수 등을 적도록 한다.」로 바꿈. 정답 끝은 「성명 및 표결수 등」(이미 있음). 보기 3의 ‘만’ 중복(「생략)만으로」)을 고침. 새 해설의 「성명·표결수」는 `pii_check --target github` NAME_LABEL에 걸리지 않음(허용 목록을 넣지 않음).
+- 시험: node skill_map+office_guide **18/18**(길이 상한 시험 포함), python skill_map+office_guide+nav+intranet_home+llms 및 대비 시험 OK, CACHE 고정 46 OK. pii 변경 파일 rc0.
 - 하는 일: 새 일 글을 붙여 넣으면 앱 안 낱말 사전으로 16칸 가운데 맞는 것을 밝힘. 「일 끝내기」는 밝힌 칸에서 객관식 3문항. 점수는 이 기기 localStorage에 칸 id와 득점만.
 - **네 갈래 묶음**(판단 기록):
   - **돈**: 예산·집행률, 원인행위·지출결의, 강사료·시수, 구매·검수 — 예산이 나가 정산되기까지의 돈의 흐름.
@@ -42,7 +44,7 @@
   - 합계 84. `src`에는 규정·법령·문서 제목과 조문만. 금고 경로·사람 이름은 없음.
 - 문제 출처 개인 대조표(커밋하지 않음): `/workspace/skillmap_261116/src_private.md`
 - 화면 갈무리(커밋하지 않음): `/workspace/skillmap_261116/shots/skill-map-empty-390.png`, `skill-map-empty-1280.png`, `skill-map-match-390.png`, `skill-map-match-1280.png`, `skill-map-quiz-1280.png`
-- 시험: `node --test tests/skill_map_core.test.js` 6/6, `python3 -m unittest tests.test_skill_map tests.test_nav tests.test_intranet_home tests.test_llms` OK, CACHE 고정(chat·docreg_cal·collab_board) 46 OK.
+- 시험: `node --test tests/skill_map_core.test.js tests/office_guide_core.test.js` 18/18, `python3 -m unittest tests.test_skill_map tests.test_office_guide tests.test_nav tests.test_intranet_home tests.test_llms tests.test_skill_map_contrast` OK, CACHE 고정(chat·docreg_cal·collab_board) 46 OK.
 - 개인정보: 이번 변경 파일 `pii_check --target github` rc0. (`index.html` Pretendard `@v1.3.9` 이메일 오탐은 main에도 있음, 이번 변경 아님.)
 - **main 머지·live(GitHub Pages) 안 함.** PR은 draft로만 열어 둠.
 
