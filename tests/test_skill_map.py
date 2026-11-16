@@ -19,7 +19,7 @@ class SkillMap(unittest.TestCase):
         self.assertIn("id === 'skill-map'", more)
         app = read('js', 'app.js')
         self.assertIn("id === 'skill-map'", app)
-        self.assertIn("var CACHE = 'hj-v96';", read('sw.js'))
+        self.assertIn("var CACHE = 'hj-v97';", read('sw.js'))
         self.assertTrue(os.path.exists(os.path.join(R, 'js', 'modules', 'skill-map.js')))
         self.assertTrue(os.path.exists(os.path.join(R, 'js', 'skill-map-core.js')))
 

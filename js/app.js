@@ -336,7 +336,7 @@
     if (id === 'tomorrow') id = 'todo';
     if (id === 'spider') id = 'coop'; /* 261029 거미줄 화면은 협조 검색으로 합침(_archive/spider) */
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs' || id === 'pubdata' || id === 'notice' || id === 'docsearch' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'skill-map' ? 'study' : id)));
+    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'office-guide' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs' || id === 'pubdata' || id === 'notice' || id === 'docsearch' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'skill-map' ? 'study' : id)));
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
