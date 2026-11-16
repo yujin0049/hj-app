@@ -8,7 +8,7 @@
 - 브랜치 `feature/expert-top5-261116` (main `75a45b4`에서). draft PR https://github.com/yujin0049/hj-app/pull/80 (합치지 않음). 작업 클론 `/workspace/hjapp_top5_261116/repo`. 다른 클론·`/workspace/hj-app-inventory`는 건드리지 않음.
 - CACHE `hj-v98` (main은 hj-v96, PR #79는 hj-v97). css `?v=39`, app.js `?v=56`, registry `?v=38`, intranet-nav `?v=5`, modules `?v=51`, freshness `?v=3`.
 - 미리보기(live 아님, `dorm.json`·3d 제외. 홈·현황·할일용으로 `data/status.json`·`data/todo.json`과 `public-pack.json`만 포함): https://hj-pv-top5-261116.yujin06344.workers.dev/#/home
-  - 워커 version `63eaba78-5ef4-4ed7-9851-3bf1ff85fc72` **100%**, 재배포 시각 2026-11-16 10:40:43 (Asia/Seoul). 배포 id `dfb76473-a22c-4e40-abce-27147930068e`. (직전 `8088c44b`, 10:34:20.)
+  - 워커 version `146310b8-22e3-4f7d-9f8d-5bd629a97839` **100%**, 재배포 시각 2026-11-16 10:46:52 (Asia/Seoul). 배포 id `01c235d7-2153-4076-92da-2926dd051f26`. (직전 `63eaba78` 10:40:43, 그 앞 `8088c44b` 10:34:20.)
 - 화면 갈무리(커밋하지 않음): `/workspace/hjapp_top5_261116/shots/` — home·status·todo·budget·more·work 각각 390·1280. 현황·할 일·예산 390은 source_at 반영 뒤 다시 찍음.
 - **① 홈 `#/home`을 오늘 할 일 한 장으로.** 남는 것은 날짜·제목, 오래된 자료 경고, `built_at` 한 줄, 오늘 마감·미완료 최대 3개, 지난 마감 건수(현황으로 이동), 할 일 전체 단추. 바로가기·봇 작업·게시판·AI·3D 타일은 홈에서 뺐다(메뉴·더보기·`#/3d`로). 오늘 남은 일이 없으면 「오늘 남은 할 일이 없어요.」, 자료를 못 읽으면 「데이터 없음」. 시험: `tests/home_core.test.js`, `tests/test_expert_top5.py`.
 - **② 신선도는 `source_at`(원자료 시각) 기준.** 한국 날짜가 오늘이면 오늘 사용 가능, 아니면 「N일 전 자료」 경고. 두 시각이 모두 없으면 「데이터 없음」. 시험: `tests/freshness_core.test.js`(고정 시계 2026-11-16 10:00 KST: 오늘·N일 전·git 커밋 시각·없음), `tests.test_built_at`, `tests.test_make_calendar.BuiltAt`, `tests.test_expert_top5`.
