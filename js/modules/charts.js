@@ -33,7 +33,7 @@
     '.ch-tbl{width:100%;table-layout:fixed;border-collapse:collapse;font-size:.82rem}',
     '.ch-tbl col.cn{width:38%}.ch-tbl col.cv{width:5.6rem}.ch-tbl col.cd{width:2.3rem}',
     '.ch-tbl td.s svg{display:block;width:100%;max-width:92px;height:26px}',
-    '.ch-leg2{font-size:.78rem;color:var(--ink-2);margin:6px 0 0;line-height:1.45}',
+    '.ch-leg2{font-size:0.8rem;color:var(--ink-2);margin:6px 0 0;line-height:1.45}',
     '.ch-tbl td{padding:7px 4px;border-top:1px solid var(--line);vertical-align:middle}',
     '.ch-tbl tr:first-child td{border-top:0}',
     '.ch-tbl td.n{white-space:nowrap;max-width:9.5rem;overflow:hidden;text-overflow:ellipsis}',
@@ -316,7 +316,7 @@
 
   /* 인터랙션: 화면에 들어오면 그리기(선 = stroke-dashoffset, 막대 = scaleY, 그 밖 = opacity) · 눌러서 값(<title> 의 실제 값) */
   var MOTION_CSS = [
-    '.ch-tipbox{position:absolute;z-index:3;pointer-events:none;max-width:240px;padding:6px 9px;border-radius:10px;background:var(--ink,#191F28);color:#fff;font-size:.78rem;font-weight:600;line-height:1.35;box-shadow:0 6px 16px -6px rgba(25,31,40,.35);transform-origin:50% 100%;animation:ch-pop .16s cubic-bezier(.23,1,.32,1)}',
+    '.ch-tipbox{position:absolute;z-index:3;pointer-events:none;max-width:240px;padding:6px 9px;border-radius:10px;background:var(--ink,#191F28);color:#fff;font-size:0.8rem;font-weight:600;line-height:1.35;box-shadow:0 6px 16px -6px rgba(25,31,40,.35);transform-origin:50% 100%;animation:ch-pop .16s cubic-bezier(.23,1,.32,1)}',
     '@keyframes ch-pop{from{opacity:0;transform:translateY(4px) scale(.96)}}',
     '.ch-card{position:relative}.ch-svg [data-tipon]{cursor:pointer}',
         '.ch-anim .ch-fig.in svg{animation:ch-fade .24s cubic-bezier(.23,1,.32,1) var(--ch-d,0ms) both}',

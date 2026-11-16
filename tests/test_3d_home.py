@@ -29,20 +29,18 @@ class ThreeDHome(unittest.TestCase):
         self.assertEqual([l['name'] for l in d['roof']['labels']], ['옥상'])
 
     def test_home_card_and_route(self):
-        home = read('js', 'modules', 'home.js')
-        self.assertIn("'3d/index.html'", home)
-        self.assertIn('?embed=1', home)
-        self.assertIn('data-go="#/3d"', home)
-        self.assertIn('3D 사이트(PIN)', home)
-        self.assertIn("'3d'", read('js', 'registry.js'))
-        self.assertIn('3d/index.html', read('js', 'modules', '3d.js'))
-        self.assertNotIn('workers.dev', read('js', 'modules', '3d.js').split('SITE =')[0])
+        d3 = read('js', 'modules', '3d.js')
+        self.assertIn("'3d/index.html'", d3)
+        self.assertIn('?embed=1', d3)
+        self.assertIn("id: '3d'", read('js', 'registry.js'))
+        self.assertIn('3d/index.html', d3)
+        self.assertNotIn('workers.dev', d3.split('SITE =')[0])
         import re as _re
         self.assertGreaterEqual(int(_re.search(r"'hj-v(\d+)'", read('sw.js')).group(1)), 18)  # 3D 넣은 v18 이상
-        self.assertIn('data-3dver="new"', home)
-        self.assertIn('data-3dver="old"', home)
-        self.assertIn('3d/v01/index.html', home)
-        self.assertIn('HJ3D', read('js', 'modules', '3d.js'))
+        self.assertIn('data-3dver="new"', d3)
+        self.assertIn('data-3dver="old"', d3)
+        self.assertIn('3d/v01/index.html', d3)
+        self.assertIn('HJ3D', d3)
 
     # 유진님이 3D 사이트에 입력한 호실번호(2026-10-20 17:39 저장값). 호실번호만 적음 — 사람 이름은 넣지 않음.
     YUJIN_ROOM_NOS = {

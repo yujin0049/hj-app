@@ -12,13 +12,11 @@ def read(*parts):
 
 class T(unittest.TestCase):
     def test_home_button_and_route(self):
-        home = read('js', 'modules', 'home.js')
-        self.assertIn('원인행위 붙임 만들기', home)
-        self.assertIn('data-go="#/ot-attach"', home)
-        self.assertIn('id="home-otattach"', home)
-        self.assertIn("'ot-attach'", read('js', 'registry.js'))
-        self.assertIn("id === 'ot-attach'", read('js', 'app.js'))
-        self.assertIn("menuBtn('ot-attach'", read('js', 'modules', 'more.js'))
+        r = read('js', 'registry.js')
+        self.assertIn("id: 'ot-attach'", r)
+        self.assertIn("name: '원인행위 붙임'", r)
+        self.assertIn('HJNav.moreGroups', read('js', 'modules', 'more.js'))
+        self.assertIn('HJNav.tabOf', read('js', 'app.js'))
         self.assertIn('js/otattach-core.js', read('index.html'))
         self.assertIn("ShellModules['ot-attach']", read('js', 'modules', 'ot-attach.js'))
         self.assertGreaterEqual(int(read('sw.js').split("hj-v")[1].split("'")[0]), 44)

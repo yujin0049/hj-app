@@ -101,6 +101,8 @@
     return {
       appTitle: p.appTitle || '행정 연습장',
       packVersion: p.packVersion || '',
+      built_at: p.built_at || '',
+      source_at: p.source_at || '',
       corrections: p.corrections || [],
       catalogs: p.catalogs || {},
       conflicts: (ed.conflicts || []).slice(),
@@ -336,7 +338,7 @@
     if (id === 'tomorrow') id = 'todo';
     if (id === 'spider') id = 'coop'; /* 261029 거미줄 화면은 협조 검색으로 합침(_archive/spider) */
     if (!ShellModules[id]) id = 'home';
-    var tabId = id === 'practice' ? 'study' : (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'office-guide' ? 'more' : (id === 'bots' || id === 'haksa' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'charts' || id === 'docs' || id === 'pubdata' || id === 'notice' || id === 'docsearch' ? 'home' : (id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'skill-map' ? 'study' : id)));
+    var tabId = (window.HJNav && window.HJNav.tabOf) ? window.HJNav.tabOf(id) : (id === 'practice' ? 'study' : id);
     document.querySelectorAll('.tabs button').forEach(function (b) {
       b.classList.toggle('on', b.getAttribute('data-tab') === tabId);
     });
@@ -381,7 +383,7 @@
       var id = list[i++];
       return new Promise(function (res, rej) {
         var s = document.createElement('script');
-        s.src = new URL('js/modules/' + id + '.js?v=50', base).href;
+        s.src = new URL('js/modules/' + id + '.js?v=52', base).href;
         s.onload = function () { res(); };
         s.onerror = function () { rej(new Error(id)); };
         document.body.appendChild(s);

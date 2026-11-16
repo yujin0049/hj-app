@@ -13,8 +13,8 @@
     '.td-body{min-width:0;flex:1}',
     '.td-body b{display:block;font-size:.98rem;line-height:1.35;margin:0 0 4px}',
     '.td-meta{font-size:.82rem;color:var(--ink-2);line-height:1.4;margin:2px 0}',
-    '.td-path{font-size:.76rem;color:var(--muted);line-height:1.35;word-break:break-all;margin:4px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}',
-    '.td-badge{flex:0 0 auto;font-size:.72rem;font-weight:700;border-radius:8px;padding:3px 8px;white-space:nowrap;background:var(--soft);color:var(--ink-2)}',
+    '.td-path{font-size:0.8rem;color:var(--muted);line-height:1.35;word-break:break-all;margin:4px 0 0;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}',
+    '.td-badge{flex:0 0 auto;font-size:0.8rem;font-weight:700;border-radius:8px;padding:3px 8px;white-space:nowrap;background:var(--soft);color:var(--ink-2)}',
     '.td-badge.ok{background:var(--okbg);color:var(--ok)}',
     '.td-empty{text-align:center;padding:24px 8px;color:var(--muted)}'
   ].join('\n');
@@ -43,7 +43,8 @@
     var items = (data && data.items) || [];
     var title = (data && data.title) || '내일 할 일';
     var dateLabel = fmtDate(data && data.date);
-    var h = '<div class="td-wrap"><section class="td-head"><h1>' + esc(title) + '</h1>' +
+    var fresh = (root.HJFresh ? root.HJFresh.lineHtml(data, null, esc) : '<p class="fresh-line fresh-none" id="fresh-line">데이터 없음</p>');
+    var h = '<div class="td-wrap">' + fresh + '<section class="td-head"><h1>' + esc(title) + '</h1>' +
       (dateLabel ? '<div class="td-date">' + esc(dateLabel) + ' 시드 · ' + items.length + '건</div>' : '') +
       '<p class="td-note">한 장 체크리스트. 자료는 data/todo.json (봇이 갈아끼움)' +
       ((data && data.note) ? ' · ' + esc(data.note) : '') +
@@ -79,5 +80,5 @@
       paint(el, api);
     });
   }
-  if (root.ShellModules) root.ShellModules.todo = { id: 'todo', tab: '내일', icon: '', render: render };
+  if (root.ShellModules) root.ShellModules.todo = { id: 'todo', tab: '할 일', icon: '', render: render };
 })(typeof window !== 'undefined' ? window : globalThis);

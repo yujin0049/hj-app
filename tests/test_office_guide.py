@@ -9,10 +9,12 @@ def read(*p):
 class OfficeGuide(unittest.TestCase):
     def test_registry_and_nav(self):
         reg = read('js', 'registry.js')
-        self.assertIn("'office-guide'", reg)
-        nav = read('js', 'intranet-nav.js')
-        self.assertIn("['#/office-guide', '신입 업무 가이드']", nav)
-        self.assertIn("id === 'banner' || id === 'office-guide' ? 'more'", read('js', 'app.js'))
+        self.assertIn("id: 'office-guide'", reg)
+        self.assertIn("name: '신입 업무 가이드'", reg)
+        self.assertIn("href: '#/office-guide'", reg)
+        self.assertIn('HJNav.sideGroups', read('js', 'intranet-nav.js'))
+        self.assertIn('HJNav.tabOf', read('js', 'app.js'))
+        self.assertIn("tabOf: 'more'", reg)
 
     def test_module_brand_and_empty(self):
         m = read('js', 'modules', 'office-guide.js')
@@ -30,12 +32,12 @@ class OfficeGuide(unittest.TestCase):
     def test_cache_and_script_versions(self):
         sw = read('sw.js')
         i = read('index.html')
-        self.assertIn("var CACHE = 'hj-v98';", sw)
-        self.assertIn('js/registry.js?v=37', i)
-        self.assertIn('js/app.js?v=54', i)
-        self.assertIn('js/intranet-nav.js?v=4', i)
-        self.assertIn('./js/app.js?v=54', sw)
-        self.assertIn('./js/intranet-nav.js?v=4', sw)
+        self.assertIn("var CACHE = 'hj-v99';", sw)
+        self.assertIn('js/registry.js?v=39', i)
+        self.assertIn('js/app.js?v=58', i)
+        self.assertIn('js/intranet-nav.js?v=5', i)
+        self.assertIn('./js/app.js?v=58', sw)
+        self.assertIn('./js/intranet-nav.js?v=5', sw)
 
     def test_print_ink_and_breaks(self):
         m = read('js', 'modules', 'office-guide.js')

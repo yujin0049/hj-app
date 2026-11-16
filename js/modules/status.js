@@ -10,19 +10,20 @@
     '.st-pin{background:#E8F3FF;border-radius:20px;padding:16px;margin-bottom:12px}',
     '.st-pin h2{font-size:18px;margin:0 0 4px;color:#1B64DA}',
     '.st-tbl{width:100%;border-collapse:collapse;font-size:14px}',
-    '.st-tbl th{font-size:12px;color:var(--muted);text-align:left;font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}',
+    '.st-tbl th{font-size:12.8px;color:var(--muted);text-align:left;font-weight:600;padding:8px 6px;border-bottom:1px solid var(--line)}',
     '.st-tbl td{padding:10px 6px;border-bottom:1px solid var(--line);vertical-align:top}',
     '.st-tbl td.t{font-weight:700;color:var(--ink-2);white-space:nowrap}.st-tbl td.ttl{word-break:keep-all;line-height:1.4}',
-    '.st-tbl td.who{color:var(--muted);font-size:12px}',
-    '.st-badge{display:inline-block;font-size:12px;font-weight:700;border-radius:8px;padding:2px 8px;white-space:nowrap}',
+    '.st-tbl td.who{color:var(--muted);font-size:12.8px}',
+    '.st-badge{display:inline-block;font-size:12.8px;font-weight:700;border-radius:8px;padding:2px 8px;white-space:nowrap}',
     '.b-할일{background:var(--soft);color:var(--ink-2)}.b-진행중{background:#E8F3FF;color:#1B64DA}.b-완료,.b-취소{background:var(--okbg);color:var(--ok)}',
     '.b-확인필요{background:#F3EEFF;color:#6D28D9}.b-보류,.b-대기{background:var(--warnbg);color:var(--warn)}',
-    '.st-steps{font-size:12px;color:var(--ink-2);margin-top:6px}.st-steps summary{cursor:pointer;color:var(--navy);font-weight:600}',
+    '.st-steps{font-size:12.8px;color:var(--ink-2);margin-top:6px}.st-steps summary{cursor:pointer;color:var(--navy);font-weight:600}',
     '.st-steps li{margin:3px 0}.st-steps .l-prof{color:#6D28D9}.st-steps .l-ref{color:var(--muted)}',
+    '.st-steps small,.st-tbl small,.oj-row small,small.muted{font-size:12.8px}',
     '.oj-row{margin:10px 0}.oj-row .lb{display:flex;justify-content:space-between;font-size:14px;margin-bottom:4px}',
     '.oj-bar{height:10px;border-radius:5px;background:var(--soft);overflow:hidden}.oj-bar i{display:block;height:100%;background:var(--navy);border-radius:5px}',
     '@media (max-width:640px){.st-tbl thead{display:none}.st-tbl tr{display:grid;grid-template-columns:auto 1fr auto;gap:2px 8px;padding:10px 0;border-bottom:1px solid var(--line)}',
-    '.st-tbl td{border:0;padding:0}.st-tbl td.ttl{grid-column:2/4}.st-tbl td.t{grid-row:1/3}.st-tbl td.who,.st-tbl td.bot{font-size:12px;color:var(--muted)}}'
+    '.st-tbl td{border:0;padding:0}.st-tbl td.ttl{grid-column:2/4}.st-tbl td.t{grid-row:1/3}.st-tbl td.who,.st-tbl td.bot{font-size:12.8px;color:var(--muted)}}'
   ].join('\n');
   function style() {
     if (root.HJCalStyle) root.HJCalStyle();
@@ -86,7 +87,8 @@
     var shown = tasks.filter(function (t) { return C.pass(t, view); });
     var late = tasks.filter(function (t) { return C.dueState(t.due, today, t.status).cls === 'late'; }).length;
     var soon = tasks.filter(function (t) { var c = C.dueState(t.due, today, t.status).cls; return c === 'soon' || c === 'today'; }).length;
-    var html = (st.warn ? '<div class="cl-stale" id="cl-stale">⚠ 자료가 최신이 아닐 수 있어요 — ' + esc(st.why) + '</div>' : '') +
+    var fresh = (root.HJFresh ? root.HJFresh.lineHtml(D.st, null, esc) : '<p class="fresh-line fresh-none" id="fresh-line">데이터 없음</p>');
+    var html = fresh + (st.warn ? '<div class="cl-stale" id="cl-stale">⚠ 자료가 최신이 아닐 수 있어요 — ' + esc(st.why) + '</div>' : '') +
       '<section class="st-pin" id="st-pin"><h2>유진님이 하실 일 ' + pin.length + '개</h2><p class="cl-note" style="margin:0 0 6px">대기: PC · 대기: KORUS(회계 시스템) · 결재·상신 · 확인 필요 · 유진님 직접. 지연 먼저.</p>' +
       table(C, pin, today, 'st-pin-tbl') + '</section>' +
       '<section class="card"><div class="cl-top"><h2>현황표</h2></div>' +

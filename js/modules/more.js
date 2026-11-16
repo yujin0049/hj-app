@@ -60,55 +60,18 @@
     if (page === 'plan') return plan(el, api);
     if (page === 'settings') return settings(el, api);
     if (page === 'roadmap') return roadmap(el, api);
-    el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p>' + (api.pack().packVersion ? '<p class="muted" id="pack-ver" style="font-size:.8rem;margin:4px 0 0">공부·규칙 자료판 ' + api.esc(api.pack().packVersion) + ' (public-pack.json)</p>' : '') + '</section>' +
-      menuGroup('일상·현장') +
-      menuBtn('news', '교육원 소식', '행사, 일정, 공지') +
-      menuBtn('dorm', '기숙사 현황판', '도면, 겨울방학 이동, 기숙사비') +
-      menuBtn('schedule', '남은 일정', '날짜, 담당, 완료, 시트 저장') +
-      menuBtn('lockers', '사물함', '5101호·2층 휴게실 색깔 판, 열쇠 수, 배정 추천') +
-      menuBtn('computers', '컴퓨터 현황', '대수, 윈도우 버전, 교체대상') +
-      menuBtn('filefind', '파일 찾기', '낱말로 옵시디언·PC 파일 찾기, 내려받은 파일 정리') +
-      menuBtn('banner', '현수막 만들기', '기본 시안, 예전 현수막, 4m·5m') +
-      menuBtn('ot-attach', '원인행위 붙임 만들기', '종류별 붙임 순서 · 10월 시간외근무수당 한 권 PDF') +
-      menuGroup('계획·현황') +
-      menuBtn('calendar', '계획 달력', '월·주 보기, 유진님 할 일·교수님 일정, D-day') +
-      menuBtn('regular-docs', '정례 문서 달력', '달 격자 · 분류 고르기 · 다가오는 달 예상') +
-      menuBtn('status', '현황표', '유진님 할 일 먼저, 상태·마감·담당 봇, OJNT 진행률') +
-      menuBtn('charts', '그래프', '일정 달력 · 글로컬 잔액 · 추세 · 강사료 구성') +
-      menuBtn('pubdata', '공공데이터', '정비사 응시·취득 · ARTS 원서 · 정비조직 · 산림항공 교육') +
-      menuBtn('docs', '중요문서', '국토교통부·산업인력공단 등 외부기관 · 웹으로만') +
-      menuBtn('office-guide', '신입 업무 가이드', '직급·전화·메신저·메일·업무 노트') +
-      menuBtn('bots', '봇 작업 현황', '지금 도는 일 한 줄씩 · 유진님 몫 · 마감 임박 · 감사 위험') +
-      menuGroup('공부·규정') +
-      menuBtn('skill-map', '역량맵', '일 글 붙여 찾기 · 약한 칸 · 일 끝내기 퀴즈') +
-      menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
-      menuBtn('study-must', '주무관 필독', '교육원·항공기술 규정 요지 10가지') +
-      menuBtn('changelog', '변경이력 카드', '표지 캐러셀 · 버전 요지 · 학습 패널') +
-      menuBtn('docreg', '문서등록대장 학습', '분류별 문제 · 정례 문서 달력 · 틀린 문제 다시') +
-      menuBtn('who', '학과·사람별 업무', '학과 카드 · 사람별 카드 · 누가 하나 문제') +
-      menuBtn('coop', '협조리스트 (원큐)', '오늘 Top5 · 휴보강 경로 · 내선·주업무') +
-      menuBtn('todo', '내일 할 일', '10.28 시드 · 한 장 리스트') +
-      menuGroup('시설') +
-      menuBtn('3d', '교육원 전경 3D', '앱 안에서 보기 · v02 모델') +
-      menuGroup('자료·설정') +
-      menuBtn('manual', '업무 매뉴얼', '인수인계서로 내보내기') +
-      menuBtn('budget', '예산 집행률', '빈칸은 확인 필요') +
-      menuBtn('plan', '사업 기획', '내년 준비 점검') +
-      menuBtn('roadmap', '로봇 로드맵', '내 로봇·3D 공부 단계') +
-      menuBtn('records', '내 기록', '점수와 자주 틀린 규칙') +
-      menuBtn('rules', '규칙 목록', '문장과 근거를 고칠 수 있어요') +
-      menuBtn('month', '매달 할 일', '알림 문구 수정') +
-      menuBtn('settings', '설정', '백업, 초기화') +
-      menuBtn('docreg-cal', '문서등록대장 달력', '3.4.~10.6. 월별 추세 · 날짜 누르면 그날 문서');
+    var menuHtml = '';
+    var groups = (window.HJNav && window.HJNav.moreGroups) ? window.HJNav.moreGroups() : [];
+    groups.forEach(function (g) {
+      menuHtml += menuGroup(g.group);
+      g.items.forEach(function (it) { menuHtml += menuBtn(it.id, it.name, it.moreSub || ''); });
+    });
+    el.innerHTML = '<section class="card"><h1>더보기</h1><p class="muted">매뉴얼, 예산, 기록, 규칙, 설정을 이 기기 안에서만 고쳐요.</p>' + (api.pack().packVersion ? '<p class="muted" id="pack-ver" style="font-size:.8rem;margin:4px 0 0">공부·규칙 자료판 ' + api.esc(api.pack().packVersion) + ' (public-pack.json)</p>' : '') + '</section>' + menuHtml;
     el.querySelectorAll('[data-page]').forEach(function (b) {
       b.onclick = function () {
         var id = b.getAttribute('data-page');
-        if (id === 'practice') api.go('#/practice');
-        else if (id === 'study-must') api.go('#/study/must');
-        else if (id === 'changelog') api.go('#/study/changelog');
-        else if (id === 'docreg-cal') api.go('#/docreg/cal');
-        else if (id === 'skill-map' || id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'pubdata' || id === 'charts' || id === 'docs' || id === 'office-guide') api.go('#/' + id);
-        else api.go('#/more/' + id);
+        var item = window.HJNav && window.HJNav.byId ? window.HJNav.byId(id) : null;
+        api.go(item && item.href ? item.href : ('#/more/' + id));
       };
     });
   }
@@ -147,7 +110,8 @@
   }
   function budget(el, api) {
     var rows = api.pack().entities.budget_lines || [];
-    var h = '<button class="linkish" id="back" type="button">← 더보기</button><section class="card"><h1>예산 집행률</h1><p class="muted">배정액이나 집행액이 비어 있으면 확인 필요예요. 집행률은 배정액이 있을 때만 계산해요. 숫자는 이 기기에 저장돼요.</p></section>';
+    var fresh = (window.HJFresh ? window.HJFresh.lineHtml(api.pack(), null, api.esc) : '<p class="fresh-line fresh-none" id="fresh-line">데이터 없음</p>');
+    var h = '<button class="linkish" id="back" type="button">← 더보기</button>' + fresh + '<section class="card"><h1>예산 집행률</h1><p class="muted">배정액이나 집행액이 비어 있으면 확인 필요예요. 집행률은 배정액이 있을 때만 계산해요. 숫자는 이 기기에 저장돼요.</p></section>';
     rows.forEach(function (b) {
       var alloc = b.allocated;
       var spent = b.spent;

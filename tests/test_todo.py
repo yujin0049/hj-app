@@ -54,8 +54,9 @@ class Todo(unittest.TestCase):
     def test_wired(self):
         self.assertIn("'todo'", read('js', 'registry.js'))
         self.assertIn('data-go="#/todo"', read('js', 'modules', 'home.js'))
-        self.assertIn("menuBtn('todo'", read('js', 'modules', 'more.js'))
-        self.assertIn("id === 'todo'", read('js', 'app.js'))
+        self.assertIn("id: 'todo'", read('js', 'registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js', 'modules', 'more.js'))
+        self.assertIn("id === 'tomorrow'", read('js', 'app.js'))
         self.assertIn('tomorrow', read('js', 'app.js'))
         self.assertIn('ShellModules.todo', read('js', 'modules', 'todo.js'))
         self.assertRegex(read('sw.js'), r"CACHE = 'hj-v\d+'")

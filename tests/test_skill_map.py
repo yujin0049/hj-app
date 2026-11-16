@@ -10,16 +10,20 @@ def read(*p):
 class SkillMap(unittest.TestCase):
     def test_route_and_cache(self):
         reg = read('js', 'registry.js')
-        self.assertIn("'skill-map'", reg)
-        self.assertTrue(reg.strip().endswith("'skill-map'];") or "'skill-map'" in reg)
+        self.assertIn("id: 'skill-map'", reg)
+        self.assertIn("href: '#/skill-map'", reg)
+        self.assertIn("name: '역량맵'", reg)
+        self.assertIn("tabOf: 'study'", reg)
+        self.assertIn("root.MODULE_EXTRA = api.moduleExtra()", reg)
         nav = read('js', 'intranet-nav.js')
-        self.assertIn("['#/skill-map', '역량맵']", nav)
+        self.assertIn('HJNav.sideGroups', nav)
+        self.assertNotIn("['#/skill-map', '역량맵']", nav)
         more = read('js', 'modules', 'more.js')
-        self.assertIn("menuBtn('skill-map', '역량맵'", more)
-        self.assertIn("id === 'skill-map'", more)
+        self.assertIn('HJNav.moreGroups', more)
+        self.assertNotIn("menuBtn('skill-map', '역량맵'", more)
         app = read('js', 'app.js')
-        self.assertIn("id === 'skill-map'", app)
-        self.assertIn("var CACHE = 'hj-v98';", read('sw.js'))
+        self.assertIn('HJNav.tabOf', app)
+        self.assertIn("var CACHE = 'hj-v99';", read('sw.js'))
         self.assertTrue(os.path.exists(os.path.join(R, 'js', 'modules', 'skill-map.js')))
         self.assertTrue(os.path.exists(os.path.join(R, 'js', 'skill-map-core.js')))
 
@@ -38,9 +42,11 @@ class SkillMap(unittest.TestCase):
         self.assertIn('Hahmlet', js)
 
     def test_llms_hook_last_extra(self):
-        # test_llms.py 가 마지막 MODULE_EXTRA 항목 뒤에 비밀 칸을 끼움
-        self.assertIn("root.MODULE_EXTRA = [", read('js', 'registry.js'))
-        self.assertRegex(read('js', 'registry.js'), r"'skill-map'\]")
+        # test_llms.py 가 MENU의 attend 줄 앞에 비밀 칸을 끼움
+        reg = read('js', 'registry.js')
+        self.assertIn("root.MODULE_EXTRA = api.moduleExtra()", reg)
+        self.assertIn("id: 'skill-map'", reg)
+        self.assertIn("{ id: 'attend',", reg)
 
     def test_cp10_connected(self):
         cmap = json.loads(read('data', 'skill_map', 'cp_map.json'))

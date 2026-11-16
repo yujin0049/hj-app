@@ -1,4 +1,4 @@
-/* 실무 탭: 판정 · 문서 만들기 · 자료함.
+/* 실무 탭: js/registry.js 의 실무 도구(판정·문서 만들기·자료함·현황·협조 등).
    화면 움직임 = 「상자 하나가 모양을 바꿈」 (봇공유 01 받은함/261106_모션그래픽_참고 기준) */
 (function () {
   var icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 13h18"/></svg>';
@@ -118,11 +118,8 @@
   window.WorkUI = WorkUI;
 
   function render(el, api) {
-    var items = [
-      ['#/judge', '판정', '휴보강 해야 하나 · 계약 방법 · 사전승인 필요한가'],
-      ['#/docgen', '문서 만들기', '칸 채우면 기안·계획서 초안 → 복사'],
-      ['#/library', '자료함', '규정 · 업무 순서 · 양식 · 어디 있나']
-    ];
+    var tools = (window.HJNav && window.HJNav.workTools) ? window.HJNav.workTools() : [];
+    var items = tools.map(function (it) { return [it.href, it.name, it.moreSub || '']; });
     var h = '<section class="card w-hero"><p class="kicker">교육원 실무</p><h1>실무</h1>' +
       '<p class="muted">규칙대로 판정하고, 문서 초안을 만들고, 흩어진 자료를 한곳에서 찾아요. 입력한 내용은 이 기기 밖으로 나가지 않아요.</p></section>';
     items.forEach(function (it, i) {

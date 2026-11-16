@@ -42,9 +42,9 @@ class Coop(unittest.TestCase):
 
     def test_wired(self):
         self.assertIn("'coop'", read('js', 'registry.js'))
-        self.assertIn('data-go="#/coop"', read('js', 'modules', 'home.js'))
-        self.assertIn("menuBtn('coop'", read('js', 'modules', 'more.js'))
-        self.assertIn("id === 'coop'", read('js', 'app.js'))
+        self.assertIn("id: 'coop'", read('js', 'registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js', 'modules', 'more.js'))
+        self.assertIn('HJNav.tabOf', read('js', 'app.js'))
         self.assertIn('ShellModules.coop', read('js', 'modules', 'coop.js'))
         self.assertRegex(read('sw.js'), r"CACHE = 'hj-v\d+'")
 
@@ -85,11 +85,9 @@ class Coop(unittest.TestCase):
         self.assertNotIn('d3.force', js.lower())
 
     def test_regression_others(self):
-        home = read('js', 'modules', 'home.js')
-        self.assertIn('data-go="#/haksa"', home)
-        self.assertIn('data-go="#/who"', home)
-        self.assertIn("'haksa'", read('js', 'registry.js'))
-        self.assertIn("'who'", read('js', 'registry.js'))
+        r = read('js', 'registry.js')
+        self.assertIn("id: 'haksa'", r)
+        self.assertIn("id: 'who'", r)
 
 
 class SpiderMerged(unittest.TestCase):

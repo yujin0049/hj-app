@@ -6,7 +6,7 @@
  "screens": [
   {
    "id": "home",
-   "title": "홈 · 현황판",
+   "title": "홈",
    "group": "홈",
    "desc": "앱 첫 화면. 오늘 볼 일과 바로 가기 카드를 모아 보여 줘요.",
    "route": "#/home",
@@ -62,8 +62,8 @@
   {
    "id": "judge",
    "title": "판정",
-   "group": "그 밖",
-   "desc": "휴보강 해야 하나 · 계약 방법 · 사전승인 필요한가",
+   "group": "업무",
+   "desc": "휴보강 · 계약 · 사전승인",
    "route": "#/judge",
    "visibility": "공개",
    "md": "ai/judge.md",
@@ -72,8 +72,8 @@
   {
    "id": "docgen",
    "title": "문서 만들기",
-   "group": "그 밖",
-   "desc": "칸 채우면 기안·계획서 초안 → 복사",
+   "group": "업무",
+   "desc": "기안·계획서 초안",
    "route": "#/docgen",
    "visibility": "공개",
    "md": "ai/docgen.md",
@@ -82,8 +82,8 @@
   {
    "id": "library",
    "title": "자료함",
-   "group": "그 밖",
-   "desc": "규정 · 업무 순서 · 양식 · 어디 있나",
+   "group": "업무",
+   "desc": "규정 · 양식 · 순서",
    "route": "#/library",
    "visibility": "공개",
    "md": "ai/library.md",
@@ -92,7 +92,7 @@
   {
    "id": "practice",
    "title": "연습장",
-   "group": "그 밖",
+   "group": "홈",
    "desc": "과제, 익힐 업무, 문제",
    "route": "#/practice",
    "visibility": "공개",
@@ -102,7 +102,7 @@
   {
    "id": "search",
    "title": "검색",
-   "group": "그 밖",
+   "group": "홈",
    "desc": "앱 안 검색: 학생 안내와 공개 자료를 낱말로 찾아요.",
    "route": "#/search",
    "visibility": "공개",
@@ -112,7 +112,7 @@
   {
    "id": "news",
    "title": "교육원 소식",
-   "group": "그 밖",
+   "group": "홈",
    "desc": "행사, 일정, 공지",
    "route": "#/news",
    "visibility": "공개",
@@ -137,8 +137,8 @@
   {
    "id": "banner",
    "title": "현수막 만들기",
-   "group": "그 밖",
-   "desc": "기본 시안, 예전 현수막, 4m·5m",
+   "group": "홈",
+   "desc": "시안, 4m·5m",
    "route": "#/banner",
    "visibility": "공개",
    "md": "ai/banner.md",
@@ -167,8 +167,8 @@
   {
    "id": "3d",
    "title": "교육원 전경 3D",
-   "group": "그 밖",
-   "desc": "앱 안에서 보기 · v02 모델",
+   "group": "홈",
+   "desc": "앱 안에서 보기",
    "route": "#/3d",
    "visibility": "공개",
    "md": "ai/3d.md",
@@ -183,7 +183,7 @@
    "id": "docreg",
    "title": "문서등록대장 학습",
    "group": "문서",
-   "desc": "분류별 문제 · 정례 문서 달력 · 틀린 문제 다시",
+   "desc": "분류별 문제",
    "route": "#/docreg",
    "visibility": "공개",
    "md": "ai/docreg.md",
@@ -198,7 +198,7 @@
    "id": "regular-docs",
    "title": "정례 문서 달력",
    "group": "문서",
-   "desc": "달 격자 · 분류 고르기 · 다가오는 달 예상",
+   "desc": "달마다 오는 문서",
    "route": "#/regular-docs",
    "visibility": "공개",
    "md": "ai/regular-docs.md",
@@ -206,17 +206,17 @@
   },
   {
    "id": "haksa",
-   "title": "통합학사 연습",
+   "title": "학사 연습",
    "visibility": "비공개"
   },
   {
    "id": "coop",
-   "title": "협조리스트 (원큐)",
+   "title": "협조리스트",
    "visibility": "비공개"
   },
   {
    "id": "todo",
-   "title": "내일 할 일",
+   "title": "할 일",
    "visibility": "비공개"
   },
   {
@@ -236,14 +236,14 @@
   },
   {
    "id": "chat",
-   "title": "대장↔클로드 방",
+   "title": "대화방",
    "visibility": "비공개"
   },
   {
    "id": "pubdata",
    "title": "공공데이터",
-   "group": "그 밖",
-   "desc": "정비사 응시·취득 · ARTS 원서 · 정비조직 · 산림항공 교육",
+   "group": "홈",
+   "desc": "정비사 응시·취득 대조",
    "route": "#/pubdata",
    "visibility": "공개",
    "md": "ai/pubdata.md",

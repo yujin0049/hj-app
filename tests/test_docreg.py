@@ -61,8 +61,8 @@ class MergeConditions(unittest.TestCase):
 class Wiring(unittest.TestCase):
     def test_entry_and_module(self):
         self.assertIn("'docreg'", read('js', 'registry.js'))
-        self.assertIn('data-go="#/docreg"', read('js', 'modules', 'home.js'))
-        self.assertIn("menuBtn('docreg'", read('js', 'modules', 'more.js'))
+        self.assertIn("id: 'docreg'", read('js', 'registry.js'))
+        self.assertIn('HJNav.moreGroups', read('js', 'modules', 'more.js'))
         idx = read('index.html')
         self.assertIn('js/docreg-core.js?v=22', idx)
         self.assertLess(idx.index('docreg-core.js'), idx.index('js/app.js'))

@@ -1,4 +1,28 @@
-/* 교육원 전경 3D: 앱 안 전체 화면. 모델은 이 저장소 3d/ 폴더(새 버전 3d/, 이전 버전 3d/v01/, 이름표 3d/assets/labels.json — 사람 이름 없음). 버전 전환은 home.js 의 HJ3D. */
+/* 교육원 전경 3D: 앱 안 전체 화면. 모델은 이 저장소 3d/ 폴더(새 버전 3d/, 이전 버전 3d/v01/, 이름표 3d/assets/labels.json — 사람 이름 없음). 버전 전환은 이 파일의 HJ3D. */
+(function () {
+  var V3D = { 'new': '3d/index.html', old: '3d/v01/index.html' };
+  function ver3d() { try { return sessionStorage.getItem('hj3dVer') === 'old' ? 'old' : 'new'; } catch (e) { return 'new'; } }
+  function verBtns() {
+    var v = ver3d();
+    return '<div class="v3d-ver" role="group" aria-label="3D 버전">' +
+      '<button type="button" data-3dver="new" aria-pressed="' + (v === 'new') + '">새 버전</button>' +
+      '<button type="button" data-3dver="old" aria-pressed="' + (v === 'old') + '">이전 버전</button></div>';
+  }
+  if (!window.__hj3dVerBound) {
+    window.__hj3dVerBound = true;
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest && e.target.closest('[data-3dver]');
+      if (!b) return;
+      var v = b.getAttribute('data-3dver') === 'old' ? 'old' : 'new';
+      try { sessionStorage.setItem('hj3dVer', v); } catch (err) { /* 무시 */ }
+      document.querySelectorAll('[data-3dver]').forEach(function (x) { x.setAttribute('aria-pressed', String(x.getAttribute('data-3dver') === v)); });
+      document.querySelectorAll('iframe[data-3dframe]').forEach(function (f) {
+        f.src = V3D[v] + (f.getAttribute('data-3dframe') === 'embed' ? '?embed=1&v=18' : '?v=18');
+      });
+    });
+  }
+  window.HJ3D = { src: function (embed) { return V3D[ver3d()] + (embed ? '?embed=1&v=18' : '?v=18'); }, btns: verBtns };
+})();
 (function () {
   var SITE = 'https://silseupdong-3d.yujin06344.workers.dev/';
   var prev = '';
