@@ -79,6 +79,7 @@
       menuBtn('docs', '중요문서', '국토교통부·산업인력공단 등 외부기관 · 웹으로만') +
       menuBtn('bots', '봇 작업 현황', '지금 도는 일 한 줄씩 · 유진님 몫 · 마감 임박 · 감사 위험') +
       menuGroup('공부·규정') +
+      menuBtn('skill-map', '역량맵', '일 글 붙여 찾기 · 약한 칸 · 일 끝내기 퀴즈') +
       menuBtn('practice', '연습장', '과제, 익힐 업무, 문제') +
       menuBtn('study-must', '주무관 필독', '교육원·항공기술 규정 요지 10가지') +
       menuBtn('changelog', '변경이력 카드', '표지 캐러셀 · 버전 요지 · 학습 패널') +
@@ -105,7 +106,7 @@
         else if (id === 'study-must') api.go('#/study/must');
         else if (id === 'changelog') api.go('#/study/changelog');
         else if (id === 'docreg-cal') api.go('#/docreg/cal');
-        else if (id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'pubdata' || id === 'charts' || id === 'docs') api.go('#/' + id);
+        else if (id === 'skill-map' || id === 'news' || id === 'computers' || id === 'dorm' || id === 'schedule' || id === 'banner' || id === 'lockers' || id === 'calendar' || id === 'status' || id === 'filefind' || id === '3d' || id === 'bots' || id === 'docreg' || id === 'who' || id === 'regular-docs' || id === 'coop' || id === 'todo' || id === 'ot-attach' || id === 'pubdata' || id === 'charts' || id === 'docs') api.go('#/' + id);
         else api.go('#/more/' + id);
       };
     });
