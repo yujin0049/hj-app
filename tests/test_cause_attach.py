@@ -7,7 +7,7 @@ import subprocess
 import unittest
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MATERIAL = ['계획 공문', '견적서', '비교견적서(500만원 이상)', '납품서 또는 거래명세서', '계약서(승낙사항)',
+MATERIAL = ['계획 공문', '견적서', '비교견적서(500만원 이상)', '납품서 또는 거래명세서', '계약서',
             '물품명세서, 물품사진', '신용카드매출전표 또는 전자세금계산서(사업자등록증,통장사본)',
             '국세/지방세완납증명서(500만원 이상)', '(홍보물, 기념품 경우)기념품불출대장 및 수령인 서명대장']
 
@@ -59,6 +59,50 @@ class T(unittest.TestCase):
         self.assertIn('data/cause_attach_types.json', ui)
         self.assertIn('id="ca-type"', ui)
         self.assertNotIn('<details', ui)
+
+
+BOOK = ['계획 공문', '견적서', '비교견적서(5백만원 이상)', '납품서 또는 거래명세서',
+        '물품명세서(검수·영수)', '물품사진', '신용카드매출전표 또는 전자세금계산서',
+        '사업자등록증사본, 통장사본', '국세/지방세완납증명서(500만원 이상)', '도서관리대장']
+
+# 도서구입 원인행위가 위 서류를 다 갖추고 승낙사항만 없을 때. 승낙사항은 필수 아님.
+BOOK_CASE_WITHOUT_SEUNGNAK = list(BOOK)
+
+
+class NoSeungnak(unittest.TestCase):
+    """붙임 목록에 승낙사항이 없고, 없어도 부족한 서류로 보지 않아요."""
+
+    def test_list_has_no_seungnak(self):
+        d = load()
+        hits = []
+        for typ in d['types']:
+            for x in typ['items']:
+                blob = json.dumps(x, ensure_ascii=False)
+                if '승낙사항' in blob:
+                    hits.append((typ['id'], x.get('name')))
+        self.assertEqual(hits, [])
+
+    def test_book_list_omits_seungnak_and_renumbers(self):
+        d = load()
+        book = [t for t in d['types'] if t['id'] == 'book'][0]
+        self.assertEqual([x['name'] for x in book['items']], BOOK)
+        self.assertEqual([x['no'] for x in book['items']], [str(i) for i in range(1, 11)])
+
+    def test_case_without_seungnak_is_not_missing(self):
+        d = load()
+        have = set(BOOK_CASE_WITHOUT_SEUNGNAK)
+        self.assertFalse(any('승낙사항' in n for n in have))
+        missing = []
+        for typ in d['types']:
+            if typ['id'] not in ('material', 'print', 'book'):
+                continue
+            for x in typ['items']:
+                if typ['id'] == 'book' and x['name'] not in have:
+                    missing.append((typ['id'], x['name']))
+        self.assertEqual(missing, [])
+        book = [t for t in d['types'] if t['id'] == 'book'][0]
+        self.assertNotIn('승낙사항(※ 온라인 구매 시 생략가능)', [x['name'] for x in book['items']])
+
 
 
 # 글로컬 출장(여비) 단계별 (유진님 10.30. 18:18). 정본: 부록 「2 사업비 지출 구비서류」 국내여비·국외여비 행.
@@ -167,6 +211,50 @@ class TripStageSwitch(unittest.TestCase):
         head = box[:box.index('</p>')]
         self.assertNotIn('나중에 업데이트', head)
         self.assertIn('1가지', head)
+
+
+
+SEUNGNAK_JS = r"""
+const fs = require('fs'), path = require('path'), vm = require('vm');
+const root = process.argv[process.argv.length - 1];
+const g = { ShellModules: {}, HJOtAttach: {}, console };
+g.window = g; vm.createContext(g);
+vm.runInContext(fs.readFileSync(path.join(root, 'js/modules/ot-attach.js'), 'utf8'), g);
+const c = g.ShellModules['ot-attach']._cause;
+c.state.data = JSON.parse(fs.readFileSync(path.join(root, 'data/cause_attach_types.json'), 'utf8'));
+const esc = s => String(s);
+const out = {};
+for (const id of ['material', 'print', 'book']) {
+  c.pickType(id);
+  const h = c.html(esc);
+  out[id] = {
+    failed: !!c.state.failed,
+    rows: (h.match(/class="ca-row[ "]/g) || []).length,
+    hasSeungnak: h.includes('승낙사항'),
+    hasContract: h.includes('계약서'),
+    kinds: ((h.match(/· (\d+)가지/) || [])[1] || null)
+  };
+}
+process.stdout.write(JSON.stringify(out));
+"""
+
+
+@unittest.skipUnless(NODE, 'node 없음')
+class ScreenNoSeungnak(unittest.TestCase):
+    def test_screen_lists_have_no_seungnak_and_do_not_fail(self):
+        r = subprocess.run([NODE, '-e', SEUNGNAK_JS, ROOT], capture_output=True, text=True, timeout=30)
+        self.assertEqual(r.returncode, 0, r.stderr)
+        o = json.loads(r.stdout)
+        self.assertEqual(o['book']['rows'], 10)
+        self.assertEqual(o['book']['kinds'], '10')
+        self.assertEqual(o['material']['rows'], 9)
+        self.assertEqual(o['print']['rows'], 8)
+        for tid in ('material', 'print', 'book'):
+            self.assertFalse(o[tid]['failed'], tid)
+            self.assertFalse(o[tid]['hasSeungnak'], tid)
+        self.assertTrue(o['material']['hasContract'])
+        self.assertTrue(o['print']['hasContract'])
+        self.assertFalse(o['book']['hasContract'])
 
 
 if __name__ == '__main__':
